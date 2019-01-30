@@ -7,6 +7,6 @@ dependencies {
 
   testImplementation deps.junit
   testImplementation deps.truth
-  testImplementation project(':dagger-reflect:reflect')
-  testImplementation project(':dagger-reflect:codegen')
+  testImplementation project(':reflect')
+  testImplementation project(':codegen')
 }

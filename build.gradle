@@ -1,0 +1,39 @@
+buildscript {
+  ext.versions = [
+      'dagger': '2.21',
+  ]
+
+  ext.deps = [
+      'dagger': [
+          'runtime': "com.google.dagger:dagger:${versions.dagger}",
+          'compiler': "com.google.dagger:dagger-compiler:${versions.dagger}",
+          'androidRuntime': "com.google.dagger:dagger-android:${versions.dagger}",
+          'androidCompiler': "com.google.dagger:dagger-android-processor:${versions.dagger}",
+      ],
+      'junit': 'junit:junit:4.13-beta-1',
+      'truth': 'com.google.truth:truth:0.42',
+      'compileTesting': 'com.google.testing.compile:compile-testing:0.15',
+      'javaPoet': 'com.squareup:javapoet:1.11.1',
+      'auto': [
+          'service': 'com.google.auto.service:auto-service:1.0-rc4',
+          'value': [
+              'annotations': 'com.google.auto.value:auto-value-annotations:1.6.2',
+              'compiler': 'com.google.auto.value:auto-value:1.6.2',
+          ],
+      ],
+      'jetbrainsAnnotations': 'org.jetbrains:annotations:16.0.3',
+  ]
+}
+
+allprojects {
+  repositories {
+    mavenCentral()
+  }
+
+  tasks.withType(Test) {
+    testLogging {
+      events "skipped", "failed", "passed"
+    }
+  }
+}
+

@@ -3,7 +3,7 @@ import org.gradle.internal.jvm.Jvm
 apply plugin: 'java-library'
 
 dependencies {
-  implementation project(':dagger-reflect:reflect')
+  implementation project(':reflect')
   implementation deps.javaPoet
   implementation deps.dagger.runtime
 

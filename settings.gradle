@@ -1,0 +1,4 @@
+include ':codegen'
+include ':integration-tests'
+include ':reflect'
+include ':reflect-compiler'
