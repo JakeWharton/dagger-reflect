@@ -45,6 +45,16 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("foo");
   }
 
+  @Test public void bindsInstanceCalledTwice() {
+    ignoreReflectionBackend();
+
+    InstanceBinding component = backend.builder(InstanceBinding.Builder.class)
+        .string("foo")
+        .string("bar")
+        .build();
+    assertThat(component.string()).isEqualTo("bar");
+  }
+
   @Test public void bindsInstanceNull() {
     InstanceBindingNull component = backend.builder(InstanceBindingNull.Builder.class)
         .string(null)
@@ -66,13 +76,20 @@ public final class IntegrationTest {
   }
 
   @Test public void builderExplicitModules() {
-    ignoreReflectionBackend();
-
     BuilderExplicitModules component = backend.builder(BuilderExplicitModules.Builder.class)
         .module1(new BuilderExplicitModules.Module1("3"))
         .build();
 
     assertThat(component.string()).isEqualTo("3");
+  }
+
+  @Test public void builderExplicitModulesSetTwice() {
+    BuilderExplicitModules component = backend.builder(BuilderExplicitModules.Builder.class)
+        .module1(new BuilderExplicitModules.Module1("3"))
+        .module1(new BuilderExplicitModules.Module1("4"))
+        .build();
+
+    assertThat(component.string()).isEqualTo("4");
   }
 
   @Test public void memberInjectionEmpty() {
