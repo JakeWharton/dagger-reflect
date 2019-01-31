@@ -1,0 +1,14 @@
+apply plugin: 'org.jetbrains.kotlin.jvm'
+apply plugin: 'org.jetbrains.kotlin.kapt'
+
+dependencies {
+  compileOnly project(':codegen')
+  implementation deps.kotlinStdlib
+
+  testImplementation deps.junit
+  testImplementation project(':codegen')
+  testImplementation deps.dagger.runtime
+  kaptTest deps.dagger.compiler
+}
+
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
