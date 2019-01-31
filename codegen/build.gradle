@@ -6,3 +6,5 @@ dependencies {
   testImplementation deps.dagger.runtime
   testAnnotationProcessor deps.dagger.compiler
 }
+
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
