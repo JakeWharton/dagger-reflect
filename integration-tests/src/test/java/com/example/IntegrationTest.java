@@ -23,6 +23,11 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("foo");
   }
 
+  @Test public void qualified() {
+    Qualified component = backend.create(Qualified.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
   @Test public void bindsProvider() {
     BindsProvider component = backend.create(BindsProvider.class);
     assertThat(component.string()).isEqualTo("foo");
@@ -63,6 +68,89 @@ public final class IntegrationTest {
         .build();
 
     assertThat(component.string()).isEqualTo("3");
+  }
+
+  @Test public void memberInjectionEmpty() {
+    MemberInjectionEmpty component = backend.create(MemberInjectionEmpty.class);
+    MemberInjectionEmpty.Target target = new MemberInjectionEmpty.Target();
+    component.inject(target);
+    // No state, nothing to verify, except it didn't throw.
+  }
+
+  @Test public void memberInjectionNoInjects() {
+    MemberInjectionNoInjects component = backend.create(MemberInjectionNoInjects.class);
+    MemberInjectionNoInjects.Target target = new MemberInjectionNoInjects.Target();
+    component.inject(target);
+    assertThat(target.one).isNull();
+    assertThat(target.two).isNull();
+    assertThat(target.three).isNull();
+    assertThat(target.count).isEqualTo(0);
+  }
+
+  @Test public void memberInjectionFieldBeforeMethod() {
+    MemberInjectionFieldBeforeMethod component =
+        backend.create(MemberInjectionFieldBeforeMethod.class);
+    MemberInjectionFieldBeforeMethod.Target target = new MemberInjectionFieldBeforeMethod.Target();
+    component.inject(target);
+    assertThat(target.fieldBeforeMethod).isTrue();
+  }
+
+  @Test public void memberInjectionFieldVisibility() {
+    MemberInjectionFieldVisibility component = backend.create(MemberInjectionFieldVisibility.class);
+    MemberInjectionFieldVisibility.Target target = new MemberInjectionFieldVisibility.Target();
+    component.inject(target);
+    assertThat(target.one).isEqualTo("one");
+    assertThat(target.two).isEqualTo(2L);
+    assertThat(target.three).isEqualTo(3);
+  }
+
+  @Test public void memberInjectionHierarchy() {
+    MemberInjectionHierarchy component = backend.create(MemberInjectionHierarchy.class);
+    MemberInjectionHierarchy.Subtype target = new MemberInjectionHierarchy.Subtype();
+    component.inject(target);
+    assertThat(target.baseOne).isEqualTo("foo");
+    assertThat(target.baseCalled).isTrue();
+    assertThat(target.subtypeOne).isEqualTo("foo");
+    assertThat(target.subtypeCalled).isTrue();
+  }
+
+  @Test public void memberInjectionMethodVisibility() {
+    MemberInjectionMethodVisibility component =
+        backend.create(MemberInjectionMethodVisibility.class);
+    MemberInjectionMethodVisibility.Target target = new MemberInjectionMethodVisibility.Target();
+    component.inject(target);
+    assertThat(target.count).isEqualTo(3);
+    assertThat(target.one).isEqualTo("one");
+    assertThat(target.two).isEqualTo(2L);
+    assertThat(target.three).isEqualTo(3);
+  }
+
+  @Test public void memberInjectionMethodMultipleParams() {
+    MemberInjectionMethodMultipleParams component =
+        backend.create(MemberInjectionMethodMultipleParams.class);
+    MemberInjectionMethodMultipleParams.Target target =
+        new MemberInjectionMethodMultipleParams.Target();
+    component.inject(target);
+    assertThat(target.one).isEqualTo("one");
+    assertThat(target.two).isEqualTo(2L);
+    assertThat(target.two2).isEqualTo(2L);
+    assertThat(target.three).isEqualTo(3);
+  }
+
+  @Test public void memberInjectionMethodReturnTypes() {
+    MemberInjectionMethodReturnTypes component =
+        backend.create(MemberInjectionMethodReturnTypes.class);
+    MemberInjectionMethodReturnTypes.Target target = new MemberInjectionMethodReturnTypes.Target();
+    component.inject(target);
+    assertThat(target.count).isEqualTo(3);
+  }
+
+  @Test public void memberInjectionQualified() {
+    MemberInjectionQualified component = backend.create(MemberInjectionQualified.class);
+    MemberInjectionQualified.Target target = new MemberInjectionQualified.Target();
+    component.inject(target);
+    assertThat(target.fromField).isEqualTo("foo");
+    assertThat(target.fromMethod).isEqualTo("foo");
   }
 
   private void ignoreReflectionBackend() {
