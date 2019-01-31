@@ -22,7 +22,7 @@ public final class Dagger {
     return DaggerReflect.create(componentClass);
   }
 
-  public static <C, B> B builder(Class<B> builderClass) {
+  public static <B> B builder(Class<B> builderClass) {
     return DaggerReflect.builder(builderClass);
   }
 
