@@ -1,6 +1,7 @@
 # IDEA
 *.iml
 /.idea
+out/
 
 # Gradle
 .gradle
