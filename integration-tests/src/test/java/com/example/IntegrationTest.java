@@ -66,13 +66,20 @@ public final class IntegrationTest {
   }
 
   @Test public void builderExplicitModules() {
-    ignoreReflectionBackend();
-
     BuilderExplicitModules component = backend.builder(BuilderExplicitModules.Builder.class)
         .module1(new BuilderExplicitModules.Module1("3"))
         .build();
 
     assertThat(component.string()).isEqualTo("3");
+  }
+
+  @Test public void builderExplicitModulesSetTwice() {
+    BuilderExplicitModules component = backend.builder(BuilderExplicitModules.Builder.class)
+        .module1(new BuilderExplicitModules.Module1("3"))
+        .module1(new BuilderExplicitModules.Module1("4"))
+        .build();
+
+    assertThat(component.string()).isEqualTo("4");
   }
 
   @Test public void memberInjectionEmpty() {

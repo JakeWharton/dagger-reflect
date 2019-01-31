@@ -16,14 +16,18 @@
 package dagger.reflect;
 
 import dagger.BindsInstance;
+import dagger.Module;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
+import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findQualifier;
 
 final class ComponentBuilderInvocationHandler implements InvocationHandler {
@@ -44,18 +48,29 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
 
   private final Class<?> componentClass;
   private final Class<?> builderClass;
-  private final Set<Class<?>> missingModules;
-  private final Set<Class<?>> missingDependencies;
+  private final Map<Class<?>, Object> componentModuleInstances;
+  private final Map<Class<?>, Object> componentDependencyInstances;
   private final BindingGraph.Builder graphBuilder;
 
   private ComponentBuilderInvocationHandler(Class<?> componentClass, Class<?> builderClass,
-      BindingGraph.Builder graphBuilder, Set<Class<?>> missingModules,
-      Set<Class<?>> missingDependencies) {
+      BindingGraph.Builder graphBuilder, Set<Class<?>> componentModules,
+      Set<Class<?>> componentDependencies) {
     this.componentClass = componentClass;
     this.builderClass = builderClass;
+
+    // Start with all modules bound to null. Any remaining nulls will be assumed stateless.
+    componentModuleInstances = new LinkedHashMap<>();
+    for (Class<?> componentModule : componentModules) {
+      componentModuleInstances.put(componentModule, null);
+    }
+
+    // Start with all dependencies as null. Any remaining nulls at creation time is an error.
+    componentDependencyInstances = new LinkedHashMap<>();
+    for (Class<?> componentDependency : componentDependencies) {
+      componentDependencyInstances.put(componentDependency, null);
+    }
+
     this.graphBuilder = graphBuilder;
-    this.missingModules = missingModules;
-    this.missingDependencies = missingDependencies;
   }
 
   @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -71,21 +86,26 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
       if (parameterTypes.length != 0) {
         throw new IllegalStateException(); // TODO must be no-arg
       }
-      if (!missingDependencies.isEmpty()) {
-        throw new IllegalStateException(); // TODO missingDependencies must have provided instances
+      for (Map.Entry<Class<?>, Object> entry : componentDependencyInstances.entrySet()) {
+        if (entry.getValue() == null) {
+          throw new IllegalStateException(); // TODO missing dependency
+        }
+        throw notImplemented("Component dependencies");
       }
-      for (Class<?> missingModule : missingModules) {
-        ReflectiveModuleParser.parse(missingModule, null, graphBuilder);
+      for (Map.Entry<Class<?>, Object> entry : componentModuleInstances.entrySet()) {
+        ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), graphBuilder);
       }
 
       return ComponentInvocationHandler.create(componentClass, graphBuilder.build());
     }
 
+    // TODO these are allowed to be void or a supertype
     if (returnType.equals(builderClass)) {
+      if (parameterTypes.length != 1) {
+        throw new IllegalStateException(); // TODO must be single arg
+      }
+
       if (method.getAnnotation(BindsInstance.class) != null) {
-        if (parameterTypes.length != 1) {
-          throw new IllegalStateException(); // TODO must be single arg
-        }
         Key key = Key.of(findQualifier(parameterAnnotations[0]), parameterTypes[0]);
         Object instance = args[0];
         // TODO most nullable annotations don't have runtime retention. so maybe just always allow?
@@ -94,7 +114,31 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         //}
         graphBuilder.add(key, new Binding.Instance<>(instance));
       } else {
-        throw new IllegalStateException(method.toString()); // TODO report unsupported builder shape
+        Type parameterType = parameterTypes[0];
+        if (parameterType instanceof Class<?>) {
+          Class<?> parameterClass = (Class<?>) parameterType;
+          if (parameterClass.getAnnotation(Module.class) != null) {
+            if (componentModuleInstances.containsKey(parameterClass)) {
+              componentModuleInstances.put(parameterClass, args[0]);
+            } else {
+              throw new IllegalStateException("Module "
+                  + parameterClass.getName()
+                  + " not declared in component "
+                  + componentClass.getName());
+            }
+          } else {
+            if (componentDependencyInstances.containsKey(parameterClass)) {
+              componentDependencyInstances.put(parameterClass, args[0]);
+            } else {
+              throw new IllegalStateException("Dependency on "
+                  + parameterClass.getName()
+                  + " not declared in component "
+                  + componentClass.getName());
+            }
+          }
+        } else {
+          throw new IllegalStateException(method.toString()); // TODO report unsupported method shape
+        }
       }
       return proxy;
     }
