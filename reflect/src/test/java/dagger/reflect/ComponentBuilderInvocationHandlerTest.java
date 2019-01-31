@@ -34,7 +34,7 @@ public final class ComponentBuilderInvocationHandlerTest {
   @Test public void undeclaredModule() {
     UndeclaredModules.Builder builder =
         ComponentBuilderInvocationHandler.create(UndeclaredModules.class,
-            UndeclaredModules.Builder.class, new BindingGraph.Builder(), emptySet(), emptySet());
+            UndeclaredModules.Builder.class, emptySet(), emptySet());
     try {
       builder.module(new UndeclaredModules.Module1());
       fail();
@@ -52,8 +52,7 @@ public final class ComponentBuilderInvocationHandlerTest {
   @Test public void undeclaredDependencies() {
     UndeclaredDependencies.Builder builder =
         ComponentBuilderInvocationHandler.create(UndeclaredDependencies.class,
-            UndeclaredDependencies.Builder.class, new BindingGraph.Builder(), emptySet(),
-            emptySet());
+            UndeclaredDependencies.Builder.class, emptySet(), emptySet());
     try {
       builder.dep("hey");
       fail();

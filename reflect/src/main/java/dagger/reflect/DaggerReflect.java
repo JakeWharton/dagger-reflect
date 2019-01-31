@@ -95,11 +95,8 @@ public final class DaggerReflect {
     Set<Class<?>> dependencies = new LinkedHashSet<>();
     Collections.addAll(dependencies, component.dependencies());
 
-    BindingGraph.Builder graphBuilder = new BindingGraph.Builder()
-        .justInTimeProvider(new ReflectiveJustInTimeProvider());
-
-    return ComponentBuilderInvocationHandler.create(componentClass, builderClass, graphBuilder,
-        modules, dependencies);
+    return ComponentBuilderInvocationHandler.create(componentClass, builderClass, modules,
+        dependencies);
   }
 
   static RuntimeException notImplemented(String feature) {
