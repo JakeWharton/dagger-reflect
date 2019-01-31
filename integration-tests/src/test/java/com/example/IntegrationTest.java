@@ -77,6 +77,14 @@ public final class IntegrationTest {
     // No state, nothing to verify, except it didn't throw.
   }
 
+  @Test public void memberInjectionReturnInstance() {
+    MemberInjectionReturnInstance component = backend.create(MemberInjectionReturnInstance.class);
+    MemberInjectionReturnInstance.Target in = new MemberInjectionReturnInstance.Target();
+    MemberInjectionReturnInstance.Target out = component.inject(in);
+    assertThat(out.foo).isEqualTo("foo");
+    assertThat(out).isSameAs(in);
+  }
+
   @Test public void memberInjectionNoInjects() {
     MemberInjectionNoInjects component = backend.create(MemberInjectionNoInjects.class);
     MemberInjectionNoInjects.Target target = new MemberInjectionNoInjects.Target();
