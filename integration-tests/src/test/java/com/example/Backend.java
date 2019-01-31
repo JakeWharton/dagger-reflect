@@ -3,7 +3,7 @@ package com.example;
 import dagger.internal.DaggerCodegen;
 import dagger.reflect.DaggerReflect;
 
-enum Frontend {
+enum Backend {
   REFLECT {
     @Override <C> C create(Class<C> componentClass) {
       return DaggerReflect.create(componentClass);
