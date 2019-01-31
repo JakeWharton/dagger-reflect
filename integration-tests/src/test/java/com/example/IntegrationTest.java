@@ -45,6 +45,16 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("foo");
   }
 
+  @Test public void bindsInstanceCalledTwice() {
+    ignoreReflectionBackend();
+
+    InstanceBinding component = backend.builder(InstanceBinding.Builder.class)
+        .string("foo")
+        .string("bar")
+        .build();
+    assertThat(component.string()).isEqualTo("bar");
+  }
+
   @Test public void bindsInstanceNull() {
     InstanceBindingNull component = backend.builder(InstanceBindingNull.Builder.class)
         .string(null)
