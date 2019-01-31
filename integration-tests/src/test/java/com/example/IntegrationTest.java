@@ -18,13 +18,18 @@ public final class IntegrationTest {
 
   @Parameter public Backend backend;
 
-  @Test public void staticProvider() {
-    StaticProvider component = backend.create(StaticProvider.class);
+  @Test public void componentProvider() {
+    ComponentProvider component = backend.create(ComponentProvider.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void qualified() {
-    Qualified component = backend.create(Qualified.class);
+  @Test public void componentProviderQualified() {
+    ComponentProviderQualified component = backend.create(ComponentProviderQualified.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void staticProvider() {
+    StaticProvider component = backend.create(StaticProvider.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 
