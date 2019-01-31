@@ -34,5 +34,5 @@ License
 
 
 
- [dagger]: http://square.github.com/dagger/
+ [dagger]: https://github.com/google/dagger/
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
