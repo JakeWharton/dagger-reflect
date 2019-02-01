@@ -1,7 +1,7 @@
 Dagger Reflect
 ==============
 
-A reflection-based implementation of the [Dagger][dagger] dependency injection library.
+A reflection-based implementation of the [Dagger][dagger] dependency injection library for fast IDE builds.
 
 More info soon...
 
