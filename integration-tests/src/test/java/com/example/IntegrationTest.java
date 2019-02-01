@@ -1,5 +1,8 @@
 package com.example;
 
+import java.util.Map;
+import java.util.Set;
+import javax.inject.Provider;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -179,6 +182,78 @@ public final class IntegrationTest {
     component.inject(target);
     assertThat(target.fromField).isEqualTo("foo");
     assertThat(target.fromMethod).isEqualTo("foo");
+  }
+
+  @Test public void scoped() {
+    ignoreReflectionBackend();
+
+    Scoped component = backend.create(Scoped.class);
+    assertThat(component.value()).isEqualTo(1);
+    assertThat(component.value()).isEqualTo(1);
+  }
+
+  @Test public void multibindingSet() {
+    ignoreReflectionBackend();
+
+    MultibindingSet component = backend.create(MultibindingSet.class);
+    assertThat(component.values()).containsExactly("one", "two");
+  }
+
+  @Test public void multibindingSetElements() {
+    ignoreReflectionBackend();
+
+    MultibindingSetElements component = backend.create(MultibindingSetElements.class);
+    assertThat(component.values()).containsExactly("one", "two");
+  }
+
+  @Test public void multibindingProviderSet() {
+    ignoreReflectionBackend();
+
+    MultibindingProviderSet component = backend.create(MultibindingProviderSet.class);
+    Provider<Set<String>> values = component.values();
+
+    // Ensure the Provider is lazy in invoking and aggregating its backing @Provides methods.
+    MultibindingProviderSet.Module1.oneCount.set(1);
+    MultibindingProviderSet.Module1.twoCount.set(1);
+
+    assertThat(values.get()).containsExactly("one1", "two1");
+    assertThat(values.get()).containsExactly("one2", "two2");
+  }
+
+  @Test public void multibindingMap() {
+    ignoreReflectionBackend();
+
+    MultibindingMap component = backend.create(MultibindingMap.class);
+    assertThat(component.values()).containsExactly("1", "one", "2", "two");
+  }
+
+  @Test public void multibindingProviderMap() {
+    ignoreReflectionBackend();
+
+    MultibindingProviderMap component = backend.create(MultibindingProviderMap.class);
+    Provider<Map<String, String>> values = component.values();
+
+    // Ensure the Provider is lazy in invoking and aggregating its backing @Provides methods.
+    MultibindingProviderMap.Module1.oneCount.set(1);
+    MultibindingProviderMap.Module1.twoCount.set(1);
+
+    assertThat(values.get()).containsExactly("1", "one1", "2", "two1");
+    assertThat(values.get()).containsExactly("1", "one2", "2", "two2");
+  }
+
+  @Test public void multibindingMapProvider() {
+    ignoreReflectionBackend();
+
+    MultibindingMapProvider component = backend.create(MultibindingMapProvider.class);
+    Map<String, Provider<String>> values = component.values();
+    assertThat(values.keySet()).containsExactly("1", "2");
+
+    // Ensure each Provider is lazy in invoking its backing @Provides method.
+    MultibindingMapProvider.Module1.twoValue.set("two");
+    assertThat(values.get("2").get()).isEqualTo("two");
+
+    MultibindingMapProvider.Module1.oneValue.set("one");
+    assertThat(values.get("1").get()).isEqualTo("one");
   }
 
   private void ignoreReflectionBackend() {
