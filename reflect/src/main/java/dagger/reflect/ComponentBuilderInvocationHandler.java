@@ -31,8 +31,8 @@ import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findQualifier;
 
 final class ComponentBuilderInvocationHandler implements InvocationHandler {
-  static <T> T create(Class<?> componentClass, Class<T> builderClass,
-      BindingGraph.Builder graphBuilder, Set<Class<?>> modules, Set<Class<?>> dependencies) {
+  static <T> T create(Class<?> componentClass, Class<T> builderClass, Set<Class<?>> modules,
+      Set<Class<?>> dependencies) {
     if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
@@ -42,35 +42,33 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
     }
     return builderClass.cast(
         Proxy.newProxyInstance(builderClass.getClassLoader(), new Class[] { builderClass },
-            new ComponentBuilderInvocationHandler(componentClass, builderClass, graphBuilder,
-                modules, dependencies)));
+            new ComponentBuilderInvocationHandler(componentClass, builderClass, modules,
+                dependencies)));
   }
 
   private final Class<?> componentClass;
   private final Class<?> builderClass;
-  private final Map<Class<?>, Object> componentModuleInstances;
-  private final Map<Class<?>, Object> componentDependencyInstances;
-  private final BindingGraph.Builder graphBuilder;
+  private final Map<Key, Object> boundInstances;
+  private final Map<Class<?>, Object> moduleInstances;
+  private final Map<Class<?>, Object> dependencyInstances;
 
   private ComponentBuilderInvocationHandler(Class<?> componentClass, Class<?> builderClass,
-      BindingGraph.Builder graphBuilder, Set<Class<?>> componentModules,
-      Set<Class<?>> componentDependencies) {
+      Set<Class<?>> componentModules, Set<Class<?>> componentDependencies) {
     this.componentClass = componentClass;
     this.builderClass = builderClass;
+    this.boundInstances = new LinkedHashMap<>();
 
     // Start with all modules bound to null. Any remaining nulls will be assumed stateless.
-    componentModuleInstances = new LinkedHashMap<>();
+    moduleInstances = new LinkedHashMap<>();
     for (Class<?> componentModule : componentModules) {
-      componentModuleInstances.put(componentModule, null);
+      moduleInstances.put(componentModule, null);
     }
 
     // Start with all dependencies as null. Any remaining nulls at creation time is an error.
-    componentDependencyInstances = new LinkedHashMap<>();
+    dependencyInstances = new LinkedHashMap<>();
     for (Class<?> componentDependency : componentDependencies) {
-      componentDependencyInstances.put(componentDependency, null);
+      dependencyInstances.put(componentDependency, null);
     }
-
-    this.graphBuilder = graphBuilder;
   }
 
   @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -86,14 +84,21 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
       if (parameterTypes.length != 0) {
         throw new IllegalStateException(); // TODO must be no-arg
       }
-      for (Map.Entry<Class<?>, Object> entry : componentDependencyInstances.entrySet()) {
+
+      BindingGraph.Builder graphBuilder = new BindingGraph.Builder()
+          .justInTimeProvider(new ReflectiveJustInTimeProvider());
+
+      for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
+        graphBuilder.add(entry.getKey(), new Binding.Instance<>(entry.getValue()));
+      }
+      for (Map.Entry<Class<?>, Object> entry : moduleInstances.entrySet()) {
+        ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), graphBuilder);
+      }
+      for (Map.Entry<Class<?>, Object> entry : dependencyInstances.entrySet()) {
         if (entry.getValue() == null) {
           throw new IllegalStateException(); // TODO missing dependency
         }
         throw notImplemented("Component dependencies");
-      }
-      for (Map.Entry<Class<?>, Object> entry : componentModuleInstances.entrySet()) {
-        ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), graphBuilder);
       }
 
       return ComponentInvocationHandler.create(componentClass, graphBuilder.build());
@@ -112,14 +117,14 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         //if (instance == null && !hasNullable(parameterAnnotations[0])) {
         //  throw new NullPointerException(); // TODO message
         //}
-        graphBuilder.add(key, new Binding.Instance<>(instance));
+        boundInstances.put(key, instance);
       } else {
         Type parameterType = parameterTypes[0];
         if (parameterType instanceof Class<?>) {
           Class<?> parameterClass = (Class<?>) parameterType;
           if (parameterClass.getAnnotation(Module.class) != null) {
-            if (componentModuleInstances.containsKey(parameterClass)) {
-              componentModuleInstances.put(parameterClass, args[0]);
+            if (moduleInstances.containsKey(parameterClass)) {
+              moduleInstances.put(parameterClass, args[0]);
             } else {
               throw new IllegalStateException("Module "
                   + parameterClass.getName()
@@ -127,8 +132,8 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
                   + componentClass.getName());
             }
           } else {
-            if (componentDependencyInstances.containsKey(parameterClass)) {
-              componentDependencyInstances.put(parameterClass, args[0]);
+            if (dependencyInstances.containsKey(parameterClass)) {
+              dependencyInstances.put(parameterClass, args[0]);
             } else {
               throw new IllegalStateException("Dependency on "
                   + parameterClass.getName()

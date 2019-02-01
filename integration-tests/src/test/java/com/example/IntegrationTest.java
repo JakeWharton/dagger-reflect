@@ -46,8 +46,6 @@ public final class IntegrationTest {
   }
 
   @Test public void bindsInstanceCalledTwice() {
-    ignoreReflectionBackend();
-
     InstanceBinding component = backend.builder(InstanceBinding.Builder.class)
         .string("foo")
         .string("bar")
