@@ -23,7 +23,7 @@ public final class DaggerCodegen {
     return invokeStatic(findImplementationClass(componentClass), "create", componentClass);
   }
 
-  public static <C, B> B builder(Class<B> builderClass) {
+  public static <B> B builder(Class<B> builderClass) {
     Class<?> componentClass = builderClass.getEnclosingClass();
     if (componentClass == null) {
       throw new IllegalArgumentException(builderClass.getCanonicalName()
