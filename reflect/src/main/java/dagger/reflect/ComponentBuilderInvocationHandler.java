@@ -52,7 +52,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
   private final Map<Class<?>, Object> dependencyInstances;
 
   private ComponentBuilderInvocationHandler(Class<?> componentClass, Class<?> builderClass,
-      Set<Class<?>> componentModules, Set<Class<?>> componentDependencies) {
+      Iterable<Class<?>> componentModules, Iterable<Class<?>> componentDependencies) {
     this.componentClass = componentClass;
     this.builderClass = builderClass;
     this.boundInstances = new LinkedHashMap<>();

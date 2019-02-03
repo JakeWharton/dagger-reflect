@@ -87,7 +87,7 @@ public final class DaggerReflectCompiler extends AbstractProcessor {
     return false;
   }
 
-  private static @Nullable TypeElement findBuilder(TypeElement component) {
+  private static @Nullable TypeElement findBuilder(Element component) {
     for (Element enclosed : component.getEnclosedElements()) {
       if (enclosed.getAnnotation(Component.Builder.class) != null) {
         return (TypeElement) enclosed;
