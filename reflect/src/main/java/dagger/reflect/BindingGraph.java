@@ -41,7 +41,7 @@ final class BindingGraph {
     chain.put(key, unlinked);
 
     Key[] dependencyKeys = unlinked.dependencies();
-    Binding<?>[] dependencies = new Binding[dependencyKeys.length];
+    Binding<?>[] dependencies = new Binding<?>[dependencyKeys.length];
 
     for (int i = 0; i < dependencyKeys.length; i++) {
       Key dependencyKey = dependencyKeys[i];

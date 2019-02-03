@@ -20,22 +20,25 @@ final class ReflectiveJustInTimeProvider implements BindingGraph.JustInTimeProvi
     if (!(type instanceof Class<?>)) {
       return null; // Parameterized/array types can't be just-in-time satisfied.
     }
-    Class<Object> cls = (Class<Object>) type;
+    return create((Class<?>) type);
+  }
 
+  private static <T> @Nullable Binding<T> create(Class<T> cls) {
     Annotation scope = findScope(cls.getAnnotations());
     if (scope != null) {
       throw notImplemented("Just-in-time scoped bindings");
     }
 
-    Constructor<?>[] constructors = cls.getDeclaredConstructors();
-    Constructor<Object> target = null;
-    for (Constructor<?> constructor : constructors) {
+    @SuppressWarnings("unchecked")
+    Constructor<T>[] constructors = (Constructor<T>[]) cls.getDeclaredConstructors();
+    Constructor<T> target = null;
+    for (Constructor<T> constructor : constructors) {
       if (constructor.getAnnotation(Inject.class) != null) {
         if (target != null) {
           throw new IllegalStateException(
               cls.getCanonicalName() + " defines multiple @Inject-annotations constructors");
         }
-        target = (Constructor<Object>) constructor;
+        target = constructor;
       }
     }
     if (target == null) {

@@ -65,5 +65,15 @@ subprojects {
       check("JavaxInjectOnAbstractMethod", CheckSeverity.OFF)
       option("NullAway:AnnotatedPackages", "dagger.reflect")
     }
+    options.setCompilerArgs(options.getCompilerArgs() + [
+        // strict compilation, treat all warnings as errors, including errorprone
+        '-Werror',
+        // enable all warnings
+        '-Xlint:all',
+        // hide warning: No processor claimed any of these annotations: dagger.*,org.junit.Test
+        '-Xlint:-processing',
+        // hide warning: MethodParameters attribute introduced in version 52.0 class files is ignored in version 51.0 class files
+        '-Xlint:-classfile'
+    ])
   }
 }

@@ -75,8 +75,7 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
 
         Type[] parameterTypes = method.getGenericParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-        @SuppressWarnings("rawtypes")
-        Binding<?>[] bindings = new Binding[parameterTypes.length];
+        Binding<?>[] bindings = new Binding<?>[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
           Key key = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
           bindings[i] = graph.getBinding(key);

@@ -32,6 +32,7 @@ public final class DaggerCodegen {
     return invokeStatic(findImplementationClass(componentClass), "builder", builderClass);
   }
 
+  @SuppressWarnings("unchecked")
   private static <C> Class<? extends C> findImplementationClass(Class<C> componentClass) {
     String implementationName =
         componentClass.getPackage().getName() + ".Dagger" + componentClass.getSimpleName();

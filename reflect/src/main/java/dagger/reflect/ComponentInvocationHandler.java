@@ -29,7 +29,7 @@ import static dagger.reflect.Reflection.findQualifier;
 
 final class ComponentInvocationHandler implements InvocationHandler {
   static <T> T create(Class<T> cls, BindingGraph graph) {
-    return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class[] { cls },
+    return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls },
         new ComponentInvocationHandler(graph)));
   }
 
@@ -74,6 +74,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
             "Members injection methods may only return the injected type or void: " + method);
       }
 
+      @SuppressWarnings({"unchecked", "RedundantCast"})
       MembersInjector<Object> injector =
           (MembersInjector<Object>) ReflectiveMembersInjector.create(parameterTypes[0], graph);
       return new MembersInjectorMethodInvocationHandler(injector, returnInstance);

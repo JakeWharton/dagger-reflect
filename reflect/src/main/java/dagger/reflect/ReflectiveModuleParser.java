@@ -46,10 +46,10 @@ final class ReflectiveModuleParser {
         TypeWrapper wrapper = TypeWrapper.NONE;
         if ((method.getModifiers() & ABSTRACT) != 0) {
           if (method.getAnnotation(Binds.class) != null) {
-            binding = new Binding.UnlinkedBinds(method);
+            binding = new Binding.UnlinkedBinds<>(method);
           } else if (method.getAnnotation(BindsOptionalOf.class) != null) {
             wrapper = TypeWrapper.OPTIONAL;
-            binding = new Binding.UnlinkedOptionalBinding(method);
+            binding = new Binding.UnlinkedOptionalBinding<>(method);
           } else {
             continue;
           }
@@ -59,7 +59,7 @@ final class ReflectiveModuleParser {
           }
 
           if (method.getAnnotation(Provides.class) != null) {
-            binding = new Binding.UnlinkedProvides(instance, method);
+            binding = new Binding.UnlinkedProvides<>(instance, method);
           } else {
             continue;
           }

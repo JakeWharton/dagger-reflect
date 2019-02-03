@@ -65,8 +65,7 @@ final class Reflection {
     }
   }
 
-  @Nullable
-  static Object tryInvoke(@Nullable Object instance, Method method, Object... arguments) {
+  static @Nullable Object tryInvoke(@Nullable Object instance, Method method, Object... arguments) {
     if ((method.getModifiers() & Modifier.PUBLIC) == 0) {
       method.setAccessible(true);
     }

@@ -92,6 +92,7 @@ interface Binding<T> extends Provider<T> {
       return new Key[] { dependency };
     }
 
+    @SuppressWarnings("unchecked")
     @Override public Binding<T> link(Binding<?>[] dependencies) {
       return (Binding<T>) dependencies[0];
     }
@@ -137,7 +138,9 @@ interface Binding<T> extends Provider<T> {
       if (dependency == null) {
         return Optional.empty();
       }
-      return Optional.of((T) dependency.get());
+      @SuppressWarnings("unchecked")
+      T value = (T) dependency.get();
+      return Optional.of(value);
     }
   }
 
@@ -184,7 +187,9 @@ interface Binding<T> extends Provider<T> {
       for (int i = 0; i < arguments.length; i++) {
         arguments[i] = dependencies[i].get();
       }
-      return (T) tryInvoke(instance, method, arguments);
+      @SuppressWarnings("unchecked") // the binding is associated with the return type of method as key
+      T value = (T) tryInvoke(instance, method, arguments);
+      return value;
     }
   }
 
