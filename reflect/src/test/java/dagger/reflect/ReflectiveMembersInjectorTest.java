@@ -21,7 +21,7 @@ import org.junit.Test;
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
-@SuppressWarnings("ALL") // Unused fields/parameters and over-specified visibility for testing.
+@SuppressWarnings("unused") // Unused fields/parameters and over-specified visibility for testing.
 public final class ReflectiveMembersInjectorTest {
   private static class PrivateField {
     // [dagger-compiler] error: Dagger does not support injection into private fields
@@ -95,7 +95,7 @@ public final class ReflectiveMembersInjectorTest {
     }
   }
 
-  private static interface Interface {
+  private interface Interface {
     // [dagger-compile] Methods with @Inject may not be abstract
     @Inject void interfaceMethod(String one);
   }
