@@ -47,7 +47,7 @@ dependencies {
 }
 ```
 
-_(No need to upgrade Proguard shirking configuration with this approach.)_
+_(No need to upgrade Proguard shrinking configuration with this approach.)_
 
 ### Pure reflection, no APT
 This usage type replaces everything with reflection, but requires a few trivial code changes across the app.
