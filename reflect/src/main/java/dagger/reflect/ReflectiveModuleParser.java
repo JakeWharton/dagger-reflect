@@ -39,8 +39,7 @@ final class ReflectiveModuleParser {
           }
         } else {
           if ((method.getModifiers() & STATIC) == 0 && instance == null) {
-            throw new IllegalArgumentException(
-                "Module methods must be static or abstract: " + method);
+            throw new IllegalStateException(moduleClass.getCanonicalName() + " must be set");
           }
 
           if (method.getAnnotation(Provides.class) != null) {

@@ -123,6 +123,16 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("4");
   }
 
+  @Test public void builderExplicitModulesOmitted() {
+    try {
+      backend.builder(BuilderExplicitModules.Builder.class).build();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.BuilderExplicitModules.Module1 must be set");
+    }
+  }
+
   @Test public void builderDependency() {
     BuilderDependency component = backend.builder(BuilderDependency.Builder.class)
         .other(new BuilderDependency.Other("hey"))
