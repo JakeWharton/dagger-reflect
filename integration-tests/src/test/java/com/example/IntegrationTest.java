@@ -43,15 +43,11 @@ public final class IntegrationTest {
   }
 
   @Test public void optionalBinding() {
-    ignoreReflectionBackend();
-
     OptionalBinding component = backend.create(OptionalBinding.class);
     assertThat(component.string()).isEqualTo(Optional.of("foo"));
   }
 
   @Test public void optionalBindingAbsent() {
-    ignoreReflectionBackend();
-
     OptionalBindingAbsent component = backend.create(OptionalBindingAbsent.class);
     assertThat(component.string()).isEqualTo(Optional.empty());
   }
