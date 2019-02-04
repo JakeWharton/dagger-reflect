@@ -256,6 +256,43 @@ public final class IntegrationTest {
     assertThat(values.get("1").get()).isEqualTo("one");
   }
 
+  @Test public void moduleClass() {
+    ModuleClass component = backend.create(ModuleClass.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleClassAndInterfaceHierarchy() {
+    ModuleClassAndInterfaceHierarchy component =
+        backend.create(ModuleClassAndInterfaceHierarchy.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleClassAndInterfaceDuplicatesHierarchy() {
+    ModuleClassAndInterfaceDuplicatesHierarchy component =
+        backend.create(ModuleClassAndInterfaceDuplicatesHierarchy.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleClassHierarchy() {
+    ModuleClassHierarchy component = backend.create(ModuleClassHierarchy.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleClassHierarchyStatics() {
+    ModuleClassHierarchyStatics component = backend.create(ModuleClassHierarchyStatics.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleInterface() {
+    ModuleInterface component = backend.create(ModuleInterface.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleInterfaceHierarchy() {
+    ModuleInterface component = backend.create(ModuleInterface.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
   private void ignoreReflectionBackend() {
     assumeTrue("Not yet implemented for reflection backend", backend != Backend.REFLECT);
   }
