@@ -68,7 +68,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
       } else if (method.getReturnType().equals(parameterTypes[0])) {
         returnInstance = true;
       } else {
-        throw new IllegalStateException(); // TODO return type must be void or assignable
+        throw new IllegalStateException(
+            "Members injection methods may only return the injected type or void: " + method);
       }
 
       MembersInjector<Object> injector =
