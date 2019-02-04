@@ -1,6 +1,7 @@
 package com.example;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import javax.inject.Provider;
 import org.junit.Test;
@@ -39,6 +40,34 @@ public final class IntegrationTest {
   @Test public void bindsProvider() {
     BindsProvider component = backend.create(BindsProvider.class);
     assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void optionalBinding() {
+    ignoreReflectionBackend();
+
+    OptionalBinding component = backend.create(OptionalBinding.class);
+    assertThat(component.string()).isEqualTo(Optional.of("foo"));
+  }
+
+  @Test public void optionalBindingAbsent() {
+    ignoreReflectionBackend();
+
+    OptionalBindingAbsent component = backend.create(OptionalBindingAbsent.class);
+    assertThat(component.string()).isEqualTo(Optional.empty());
+  }
+
+  @Test public void optionalGuavaBinding() {
+    ignoreReflectionBackend();
+
+    OptionalGuavaBinding component = backend.create(OptionalGuavaBinding.class);
+    assertThat(component.string()).isEqualTo(com.google.common.base.Optional.of("foo"));
+  }
+
+  @Test public void optionalGuavaBindingAbsent() {
+    ignoreReflectionBackend();
+
+    OptionalGuavaBindingAbsent component = backend.create(OptionalGuavaBindingAbsent.class);
+    assertThat(component.string()).isEqualTo(com.google.common.base.Optional.absent());
   }
 
   @Test public void bindsInstance() {
