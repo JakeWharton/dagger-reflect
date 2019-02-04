@@ -22,6 +22,7 @@ buildscript {
           ],
       ],
       'jetbrainsAnnotations': 'org.jetbrains:annotations:16.0.3',
+      'guava': 'com.google.guava:guava:27.0.1-jre',
   ]
 }
 
