@@ -20,6 +20,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
@@ -92,6 +93,59 @@ interface Binding<T> extends Provider<T> {
 
     @Override public Binding<T> link(Binding<?>[] dependencies) {
       return (Binding<T>) dependencies[0];
+    }
+  }
+
+  final class UnlinkedOptionalBinding<T> extends UnlinkedBinding<Optional<T>> {
+    private final @Nullable Object instance;
+    private final Method method;
+
+    public UnlinkedOptionalBinding(@Nullable Object instance, Method method) {
+      this.instance = instance;
+      this.method = method;
+    }
+
+    @Override
+    public Key[] dependencies() {
+      Type[] parameterTypes = method.getGenericParameterTypes();
+      if (parameterTypes.length != 0) {
+        throw new IllegalArgumentException(
+            "@BindsOptionalOf methods must not have parameters: " + method);
+      }
+
+      Annotation[] methodAnnotations = method.getDeclaredAnnotations();
+      Annotation qualifier = findQualifier(methodAnnotations);
+      Key dependency = Key.of(qualifier, method.getReturnType());
+      return new Key[] { dependency };
+    }
+
+    @Override
+    public Binding<Optional<T>> link(Binding<?>[] dependencies) {
+      return new LinkedOptionalBinding<>(dependencies);
+    }
+  }
+
+  final class LinkedOptionalBinding<T> extends LinkedBinding<Optional<T>> {
+    private final Binding<?>[] dependencies;
+
+    public LinkedOptionalBinding(Binding<?>[] dependencies) {
+      this.dependencies = dependencies;
+    }
+
+    @Override
+    public Optional<T> get() {
+      if (dependencies.length == 0) {
+        return Optional.empty();
+      }
+      else {
+        Binding<?> dependency = dependencies[0];
+        if (dependency == null) {
+          return Optional.empty();
+        }
+        else {
+          return Optional.of((T) dependency.get());
+        }
+      }
     }
   }
 

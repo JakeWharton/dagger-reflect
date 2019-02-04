@@ -8,7 +8,10 @@ import dagger.multibindings.IntoMap;
 import dagger.multibindings.IntoSet;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Optional;
+
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.DaggerReflect.notImplemented;
@@ -29,11 +32,13 @@ final class ReflectiveModuleParser {
         }
 
         Binding<?> binding;
+        TypeWrapper wrapper = TypeWrapper.NONE;
         if ((method.getModifiers() & ABSTRACT) != 0) {
           if (method.getAnnotation(Binds.class) != null) {
             binding = new Binding.UnlinkedBinds(method);
           } else if (method.getAnnotation(BindsOptionalOf.class) != null) {
-            throw notImplemented("@BindsOptionalOf");
+            wrapper = TypeWrapper.OPTIONAL;
+            binding = new Binding.UnlinkedOptionalBinding(instance, method);
           } else {
             continue;
           }
@@ -51,17 +56,32 @@ final class ReflectiveModuleParser {
         }
 
         if (method.getAnnotation(IntoSet.class) != null) {
+          wrapper = TypeWrapper.SET;
           throw notImplemented("@IntoSet");
         }
         if (method.getAnnotation(ElementsIntoSet.class) != null) {
+          wrapper = TypeWrapper.SET;
           throw notImplemented("@ElementsIntoSet");
         }
         if (method.getAnnotation(IntoMap.class) != null) {
+          wrapper = TypeWrapper.MAP;
           throw notImplemented("@IntoMap");
         }
 
         Annotation[] annotations = method.getAnnotations();
-        Type returnType = method.getGenericReturnType();
+        Type returnType;
+        switch (wrapper) {
+          case NONE:
+            returnType = method.getGenericReturnType();
+            break;
+          case OPTIONAL:
+            Type genericReturnType = method.getGenericReturnType();
+            returnType = new TypeUtil.ParameterizedTypeImpl(null, Optional.class,
+                genericReturnType);
+            break;
+          default:
+            throw notImplemented(wrapper.toString());
+        }
         Key key = Key.of(findQualifier(annotations), returnType);
 
         Annotation scope = findScope(annotations);
@@ -74,5 +94,9 @@ final class ReflectiveModuleParser {
       }
       target = target.getSuperclass();
     }
+  }
+
+  enum TypeWrapper {
+    NONE, SET, MAP, OPTIONAL
   }
 }
