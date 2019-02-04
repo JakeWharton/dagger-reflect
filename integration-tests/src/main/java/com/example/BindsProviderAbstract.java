@@ -5,8 +5,8 @@ import dagger.Component;
 import dagger.Module;
 import dagger.Provides;
 
-@Component(modules = BindsProvider.Module1.class)
-interface BindsProvider {
+@Component(modules = BindsProviderAbstract.Module1.class)
+interface BindsProviderAbstract {
   CharSequence string();
 
   @Module

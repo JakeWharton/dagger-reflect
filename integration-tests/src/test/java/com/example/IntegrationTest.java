@@ -33,8 +33,13 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void bindsProvider() {
-    BindsProvider component = backend.create(BindsProvider.class);
+  @Test public void bindsProviderAbstract() {
+    BindsProviderAbstract component = backend.create(BindsProviderAbstract.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void bindsProviderInterface() {
+    BindsProviderInterface component = backend.create(BindsProviderInterface.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 

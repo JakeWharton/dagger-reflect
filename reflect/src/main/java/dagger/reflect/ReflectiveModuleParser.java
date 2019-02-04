@@ -22,7 +22,7 @@ final class ReflectiveModuleParser {
   static void parse(Class<?> moduleClass, @Nullable Object instance,
       BindingGraph.Builder graphBuilder) {
     Class<?> target = moduleClass;
-    while (target != Object.class) {
+    while (target != Object.class && target != null) {
       for (Method method : target.getDeclaredMethods()) {
         if ((method.getModifiers() & PRIVATE) != 0) {
           throw new IllegalArgumentException("Private module methods are not allowed: " + method);
