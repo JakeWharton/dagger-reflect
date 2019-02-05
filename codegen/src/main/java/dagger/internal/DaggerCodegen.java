@@ -17,6 +17,8 @@ package dagger.internal;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 public final class DaggerCodegen {
   public static <C> C create(Class<C> componentClass) {
@@ -33,8 +35,7 @@ public final class DaggerCodegen {
   }
 
   private static <C> Class<? extends C> findImplementationClass(Class<C> componentClass) {
-    String implementationName =
-        componentClass.getPackage().getName() + ".Dagger" + componentClass.getSimpleName();
+    String implementationName = deduceImplementationClassName(componentClass);
     try {
       //noinspection unchecked Dagger compiler guarantees this cast to succeed.
       return (Class<? extends C>) componentClass.getClassLoader().loadClass(implementationName);
@@ -44,6 +45,25 @@ public final class DaggerCodegen {
           + " for component "
           + componentClass.getName(), e);
     }
+  }
+
+  private static <C> String deduceImplementationClassName(Class<C> componentClass) {
+    Deque<Class<?>> classes = new ArrayDeque<>();
+    Class<?> nesting = componentClass.getEnclosingClass();
+    while (nesting != null) {
+      classes.addFirst(nesting);
+      nesting = nesting.getEnclosingClass();
+    }
+
+    StringBuilder daggerName = new StringBuilder();
+    daggerName.append(componentClass.getPackage().getName());
+    daggerName.append(".Dagger");
+    for (Class<?> clazz : classes) {
+      daggerName.append(clazz.getSimpleName());
+      daggerName.append('_');
+    }
+    daggerName.append(componentClass.getSimpleName());
+    return daggerName.toString();
   }
 
   private static <T> T invokeStatic(Class<?> target, String name, Class<T> returnType) {
