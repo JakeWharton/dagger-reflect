@@ -103,12 +103,33 @@ repositories {
 ```
 
 
+Limitations
+-----------
+
+ * `@Component`s and `@Component.Builder`s must be interfaces  
+   While Dagger allows `abstract class`es for these, `dagger-reflect` uses Java Proxies to handle invocations which cannot extend classes at runtime.
+ 
+ * `@Component` interfaces must be public (default visible won't work):  
+   This is due to a limitation in Java, where instances of proxies cannot create another proxy instance where the second interface is not public. This prevents proxies of builders from creating proxies of the component. See `dagger.reflect.ComponentBuilderInvocationHandler.create`.
+ 
+ * There are some missing features that are not yet implemented.  
+   They can be found by looking at [`notImplemented` calls in the code](https://github.com/JakeWharton/dagger-reflect/search?q=notImplemented&type=Code).  
+   (Beware: GitHub shows only the first few occurrences in each file, not all of them.)
+
 Compatibility
 -------------
 
  * ProGuard/DexGuard/R8: since the dependency injection entry point (e.g. `@Component.Builder`) is being reflected with either usage case, you'll lose some shrinkability, but the majority of the generated `@Component` code using `@Module`s will be shrinked the same as before.
 
- * dagger-android: Details soon...
+ * `dagger-android`: it uses a lot of Dagger features, namingly:
+   * `@Multibinds` in `AndroidInjectionModule`
+   * `@ContributesAndroidInjector` generates a `@Module` with a `@Subcomponent(modules = ...)`
+   * the generated module uses `@Binds @IntoMap @ClassKey`
+   * the generated subcomponent inherits a generic builder base
+   * the generated subcomponent inherits a generic `@BindsInstance` method
+   * the generated subcomponent's builder is an `abstract class` because of `dagger.android.AndroidInjector.Builder#create`
+   
+   Sadly, this last one is a showstopper for `dagger-reflect` and to mitigate we'll need help from the core Dagger team. Alternative it may be possible to add direct support for `@ContributesAndroidInjector` in the future to `dagger-reflect`.
 
 
 License
