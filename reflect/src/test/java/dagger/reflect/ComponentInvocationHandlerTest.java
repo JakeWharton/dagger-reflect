@@ -15,19 +15,23 @@
  */
 package dagger.reflect;
 
+import dagger.Component;
+import java.lang.reflect.Method;
 import org.junit.Test;
 
+import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 public final class ComponentInvocationHandlerTest {
-  @SuppressWarnings("UnusedReturnValue") // Behavior under test.
-  interface MembersInjectorWrongReturnType {
+  @Component interface MembersInjectorWrongReturnType {
+    // [dagger-compile] error: Members injection methods may only return the injected type or void.
+    @SuppressWarnings("UnusedReturnValue") // Behavior under test.
     String inject(Target instance);
 
     class Target {}
   }
 
-  @Test public void membersInjectionWrongReturnType() {
+  @Test public void membersInjectionWrongReturnType() throws NoSuchMethodException {
     BindingGraph graph = new BindingGraph.Builder().build();
     MembersInjectorWrongReturnType component =
         ComponentInvocationHandler.create(MembersInjectorWrongReturnType.class, graph);
@@ -36,7 +40,10 @@ public final class ComponentInvocationHandlerTest {
       component.inject(instance);
       fail();
     } catch (IllegalStateException e) {
-      // TODO assert message
+      Method expectedMethod = MembersInjectorWrongReturnType.class.getDeclaredMethod(
+          "inject", MembersInjectorWrongReturnType.Target.class);
+      assertThat(e).hasMessageThat().isEqualTo(
+          "Members injection methods may only return the injected type or void: " + expectedMethod);
     }
   }
 }
