@@ -8,7 +8,6 @@ import dagger.multibindings.IntoMap;
 import dagger.multibindings.IntoSet;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Optional;
 
@@ -38,7 +37,7 @@ final class ReflectiveModuleParser {
             binding = new Binding.UnlinkedBinds(method);
           } else if (method.getAnnotation(BindsOptionalOf.class) != null) {
             wrapper = TypeWrapper.OPTIONAL;
-            binding = new Binding.UnlinkedOptionalBinding(instance, method);
+            binding = new Binding.UnlinkedOptionalBinding(method);
           } else {
             continue;
           }

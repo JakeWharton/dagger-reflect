@@ -98,11 +98,9 @@ interface Binding<T> extends Provider<T> {
   }
 
   final class UnlinkedOptionalBinding<T> extends UnlinkedBinding<Optional<T>> {
-    private final @Nullable Object instance;
     private final Method method;
 
-    public UnlinkedOptionalBinding(@Nullable Object instance, Method method) {
-      this.instance = instance;
+    public UnlinkedOptionalBinding(Method method) {
       this.method = method;
     }
 
