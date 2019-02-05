@@ -17,6 +17,7 @@ package dagger.reflect;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -44,7 +45,11 @@ final class BindingGraph {
 
     for (int i = 0; i < dependencyKeys.length; i++) {
       Key dependencyKey = dependencyKeys[i];
-      Binding<?> dependency = locateBinding(dependencyKey);
+      @Nullable Binding<?> dependency = locateBinding(dependencyKey);
+
+      if (dependency == null && Types.equals(Types.getRawType(key.type()), Optional.class)) {
+        continue;
+      }
 
       if (!dependency.isLinked()) {
         if (chain.containsKey(dependencyKey)) {
@@ -84,7 +89,7 @@ final class BindingGraph {
         : bindings.get(key); // We raced another thread and lost.
   }
 
-  private Binding<?> locateBinding(Key key) {
+  @Nullable private Binding<?> locateBinding(Key key) {
     Binding<?> binding = bindings.get(key);
     if (binding != null) {
       return binding;
@@ -97,8 +102,9 @@ final class BindingGraph {
           ? replaced // We raced another thread and lost.
           : jitBinding;
     }
-
-    throw new IllegalArgumentException("Unable to locate binding for " + key);
+    else {
+      return null;
+    }
   }
 
   static final class Builder {
