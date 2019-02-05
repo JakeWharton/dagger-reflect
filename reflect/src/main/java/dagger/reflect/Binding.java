@@ -100,7 +100,7 @@ interface Binding<T> extends Provider<T> {
   final class UnlinkedOptionalBinding<T> extends UnlinkedBinding<Optional<T>> {
     private final Method method;
 
-    public UnlinkedOptionalBinding(Method method) {
+    UnlinkedOptionalBinding(Method method) {
       this.method = method;
     }
 
