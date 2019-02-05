@@ -1,3 +1,5 @@
+import net.ltgt.gradle.errorprone.CheckSeverity
+
 buildscript {
   ext.versions = [
       'dagger': '2.21',
@@ -24,11 +26,22 @@ buildscript {
       'jetbrainsAnnotations': 'org.jetbrains:annotations:16.0.3',
       'guava': 'com.google.guava:guava:27.0.1-jre',
   ]
+
+  repositories {
+    mavenCentral()
+    gradlePluginPortal()
+  }
+
+  dependencies {
+    classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.7'
+  }
 }
 
-allprojects {
+subprojects {
   group = GROUP
   version = VERSION_NAME
+
+  apply plugin: 'net.ltgt.errorprone'
 
   repositories {
     mavenCentral()
@@ -39,5 +52,18 @@ allprojects {
       events "skipped", "failed", "passed"
     }
   }
-}
 
+  dependencies {
+    errorproneJavac 'com.google.errorprone:javac:9+181-r4173-1'
+    errorprone 'com.google.errorprone:error_prone_core:2.3.2'
+    errorprone 'com.uber.nullaway:nullaway:0.6.4'
+  }
+
+  tasks.withType(JavaCompile).configureEach {
+    options.errorprone {
+      disableWarningsInGeneratedCode = true
+      check("JavaxInjectOnAbstractMethod", CheckSeverity.OFF)
+      option("NullAway:AnnotatedPackages", "dagger.reflect")
+    }
+  }
+}

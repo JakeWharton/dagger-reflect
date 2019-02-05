@@ -22,7 +22,7 @@ import static dagger.reflect.Annotations.named;
 import static org.junit.Assert.fail;
 
 public final class BindingGraphTest {
-  class DummyBinding extends Binding.UnlinkedBinding<Object> {
+  static class DummyBinding extends Binding.UnlinkedBinding<Object> {
     private final Object value;
     private final Key[] dependencies;
 

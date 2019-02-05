@@ -23,6 +23,7 @@ import com.squareup.javapoet.TypeSpec;
 import dagger.Component;
 import dagger.reflect.DaggerReflect;
 import java.util.Set;
+import javax.annotation.Nullable;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -86,7 +87,7 @@ public final class DaggerReflectCompiler extends AbstractProcessor {
     return false;
   }
 
-  private static TypeElement findBuilder(TypeElement component) {
+  private static @Nullable TypeElement findBuilder(TypeElement component) {
     for (Element enclosed : component.getEnclosedElements()) {
       if (enclosed.getAnnotation(Component.Builder.class) != null) {
         return (TypeElement) enclosed;
@@ -95,7 +96,7 @@ public final class DaggerReflectCompiler extends AbstractProcessor {
     return null;
   }
 
-  private static TypeSpec createComponent(ClassName component, ClassName builder) {
+  private static TypeSpec createComponent(ClassName component, @Nullable ClassName builder) {
     TypeSpec.Builder type = TypeSpec.classBuilder("Dagger" + component.simpleName())
         .addModifiers(PUBLIC, FINAL)
         .addMethod(MethodSpec.constructorBuilder()
