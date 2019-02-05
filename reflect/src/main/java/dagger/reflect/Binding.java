@@ -23,6 +23,7 @@ import java.lang.reflect.Type;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.inject.Provider;
+
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.DaggerReflect.notImplemented;
@@ -134,18 +135,11 @@ interface Binding<T> extends Provider<T> {
 
     @Override
     public Optional<T> get() {
-      if (dependencies.length == 0) {
+      Binding<?> dependency = dependencies[0];
+      if (dependency == null) {
         return Optional.empty();
       }
-      else {
-        Binding<?> dependency = dependencies[0];
-        if (dependency == null) {
-          return Optional.empty();
-        }
-        else {
-          return Optional.of((T) dependency.get());
-        }
-      }
+      return Optional.of((T) dependency.get());
     }
   }
 
