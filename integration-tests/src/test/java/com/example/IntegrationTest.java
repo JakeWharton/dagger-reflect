@@ -43,6 +43,27 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("foo");
   }
 
+  @Test public void bindIntoSet() {
+    ignoreReflectionBackend();
+
+    BindsIntoSet component = backend.create(BindsIntoSet.class);
+    assertThat(component.strings()).containsExactly("foo");
+  }
+
+  @Test public void bindElementsIntoSet() {
+    ignoreReflectionBackend();
+
+    BindsElementsIntoSet component = backend.create(BindsElementsIntoSet.class);
+    assertThat(component.strings()).containsExactly("foo");
+  }
+
+  @Test public void bindIntoMap() {
+    ignoreReflectionBackend();
+
+    BindsIntoMap component = backend.create(BindsIntoMap.class);
+    assertThat(component.strings()).containsExactly("bar", "foo");
+  }
+
   @Test public void optionalBinding() {
     ignoreReflectionBackend();
 
