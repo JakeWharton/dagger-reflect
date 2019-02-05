@@ -27,7 +27,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findQualifier;
 
 final class ComponentBuilderInvocationHandler implements InvocationHandler {
@@ -95,10 +94,12 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), graphBuilder);
       }
       for (Map.Entry<Class<?>, Object> entry : dependencyInstances.entrySet()) {
-        if (entry.getValue() == null) {
-          throw new IllegalStateException(); // TODO missing dependency
+        Class<?> key = entry.getKey();
+        Object value = entry.getValue();
+        if (value == null) {
+          throw new IllegalStateException(key.getCanonicalName() + " must be set");
         }
-        throw notImplemented("Component dependencies");
+        ReflectiveComponentParser.parse(key, value, graphBuilder);
       }
 
       return ComponentInvocationHandler.create(componentClass, graphBuilder.build());

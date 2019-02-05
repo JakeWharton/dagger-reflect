@@ -11,6 +11,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
@@ -120,6 +121,42 @@ public final class IntegrationTest {
         .build();
 
     assertThat(component.string()).isEqualTo("4");
+  }
+
+  @Test public void builderExplicitModulesOmitted() {
+    try {
+      backend.builder(BuilderExplicitModules.Builder.class).build();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.BuilderExplicitModules.Module1 must be set");
+    }
+  }
+
+  @Test public void builderDependency() {
+    BuilderDependency component = backend.builder(BuilderDependency.Builder.class)
+        .other(new BuilderDependency.Other("hey"))
+        .build();
+
+    assertThat(component.string()).isEqualTo("hey");
+  }
+
+  @Test public void builderDependencySetTwice() {
+    BuilderDependency component = backend.builder(BuilderDependency.Builder.class)
+        .other(new BuilderDependency.Other("hey"))
+        .other(new BuilderDependency.Other("there"))
+        .build();
+
+    assertThat(component.string()).isEqualTo("there");
+  }
+
+  @Test public void builderDependencyOmitted() {
+    try {
+      backend.builder(BuilderDependency.Builder.class).build();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().isEqualTo("com.example.BuilderDependency.Other must be set");
+    }
   }
 
   @Test public void memberInjectionEmpty() {
