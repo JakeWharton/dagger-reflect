@@ -10,6 +10,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Optional;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.jetbrains.annotations.Nullable;
 
@@ -23,8 +28,15 @@ import static java.lang.reflect.Modifier.STATIC;
 final class ReflectiveModuleParser {
   static void parse(Class<?> moduleClass, @Nullable Object instance,
       BindingGraph.Builder graphBuilder) {
-    Class<?> target = moduleClass;
-    while (target != Object.class) {
+    Set<Class<?>> seen = new LinkedHashSet<>();
+    Deque<Class<?>> queue = new ArrayDeque<>();
+    queue.add(moduleClass);
+    while (!queue.isEmpty()) {
+      Class<?> target = queue.removeFirst();
+      if (!seen.add(target)) {
+        continue;
+      }
+
       for (Method method : target.getDeclaredMethods()) {
         if ((method.getModifiers() & PRIVATE) != 0) {
           throw new IllegalArgumentException("Private module methods are not allowed: " + method);
@@ -43,8 +55,7 @@ final class ReflectiveModuleParser {
           }
         } else {
           if ((method.getModifiers() & STATIC) == 0 && instance == null) {
-            throw new IllegalArgumentException(
-                "Module methods must be static or abstract: " + method);
+            throw new IllegalStateException(moduleClass.getCanonicalName() + " must be set");
           }
 
           if (method.getAnnotation(Provides.class) != null) {
@@ -91,7 +102,12 @@ final class ReflectiveModuleParser {
 
         graphBuilder.add(key, binding);
       }
-      target = target.getSuperclass();
+
+      Class<?> superclass = target.getSuperclass();
+      if (superclass != Object.class && superclass != null) {
+        queue.add(superclass);
+      }
+      Collections.addAll(queue, target.getInterfaces());
     }
   }
 

@@ -15,23 +15,28 @@
  */
 package dagger.reflect;
 
+import dagger.Component;
 import dagger.Module;
 import org.junit.Test;
 
+import static com.google.common.truth.Truth.assertThat;
 import static java.util.Collections.emptySet;
 import static org.junit.Assert.fail;
 
 public final class ComponentBuilderInvocationHandlerTest {
-  public interface UndeclaredModules {
-    interface Builder {
-      UndeclaredModules module(Module1 module);
+  @Component public interface UndeclaredModules {
+    // [dagger-compiler] error: @Component.Builder has setters for modules or components that aren't required:
+    // [UndeclaredModules.Builder UndeclaredModules.Builder.module(UndeclaredModules.Module1)]
+    @Component.Builder interface Builder {
+      Builder module(Module1 module);
+      UndeclaredModules build();
     }
 
     @Module
     class Module1 {}
   }
 
-  @Test public void undeclaredModule() {
+  @Test public void undeclaredModule() throws NoSuchMethodException {
     UndeclaredModules.Builder builder =
         ComponentBuilderInvocationHandler.create(UndeclaredModules.class,
             UndeclaredModules.Builder.class, emptySet(), emptySet());
@@ -39,17 +44,23 @@ public final class ComponentBuilderInvocationHandlerTest {
       builder.module(new UndeclaredModules.Module1());
       fail();
     } catch (IllegalStateException e) {
-      // TODO assert message
+      assertThat(e).hasMessageThat().isEqualTo(
+          "@Component.Builder has setters for modules or components that aren't required: ["
+              + UndeclaredModules.Builder.class.getDeclaredMethod("module", UndeclaredModules.Module1.class)
+              + "]");
     }
   }
 
-  public interface UndeclaredDependencies {
-    interface Builder {
-      UndeclaredDependencies dep(String module);
+  @Component public interface UndeclaredDependencies {
+    // [dagger-compiler] error: @Component.Builder has setters for modules or components that aren't required:
+    // [UndeclaredDependencies.Builder UndeclaredDependencies.Builder.dep(String)]
+    @Component.Builder interface Builder {
+      Builder dep(String module);
+      UndeclaredDependencies build();
     }
   }
 
-  @Test public void undeclaredDependencies() {
+  @Test public void undeclaredDependencies() throws NoSuchMethodException {
     UndeclaredDependencies.Builder builder =
         ComponentBuilderInvocationHandler.create(UndeclaredDependencies.class,
             UndeclaredDependencies.Builder.class, emptySet(), emptySet());
@@ -57,7 +68,10 @@ public final class ComponentBuilderInvocationHandlerTest {
       builder.dep("hey");
       fail();
     } catch (IllegalStateException e) {
-      // TODO assert message
+      assertThat(e).hasMessageThat().isEqualTo(
+          "@Component.Builder has setters for modules or components that aren't required: ["
+              + UndeclaredDependencies.Builder.class.getDeclaredMethod("dep", String.class)
+              + "]");
     }
   }
 }

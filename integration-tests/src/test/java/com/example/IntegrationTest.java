@@ -11,6 +11,7 @@ import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
@@ -40,6 +41,27 @@ public final class IntegrationTest {
   @Test public void bindsProvider() {
     BindsProvider component = backend.create(BindsProvider.class);
     assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void bindIntoSet() {
+    ignoreReflectionBackend();
+
+    BindsIntoSet component = backend.create(BindsIntoSet.class);
+    assertThat(component.strings()).containsExactly("foo");
+  }
+
+  @Test public void bindElementsIntoSet() {
+    ignoreReflectionBackend();
+
+    BindsElementsIntoSet component = backend.create(BindsElementsIntoSet.class);
+    assertThat(component.strings()).containsExactly("foo");
+  }
+
+  @Test public void bindIntoMap() {
+    ignoreReflectionBackend();
+
+    BindsIntoMap component = backend.create(BindsIntoMap.class);
+    assertThat(component.strings()).containsExactly("bar", "foo");
   }
 
   @Test public void optionalBinding() {
@@ -116,6 +138,42 @@ public final class IntegrationTest {
         .build();
 
     assertThat(component.string()).isEqualTo("4");
+  }
+
+  @Test public void builderExplicitModulesOmitted() {
+    try {
+      backend.builder(BuilderExplicitModules.Builder.class).build();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.BuilderExplicitModules.Module1 must be set");
+    }
+  }
+
+  @Test public void builderDependency() {
+    BuilderDependency component = backend.builder(BuilderDependency.Builder.class)
+        .other(new BuilderDependency.Other("hey"))
+        .build();
+
+    assertThat(component.string()).isEqualTo("hey");
+  }
+
+  @Test public void builderDependencySetTwice() {
+    BuilderDependency component = backend.builder(BuilderDependency.Builder.class)
+        .other(new BuilderDependency.Other("hey"))
+        .other(new BuilderDependency.Other("there"))
+        .build();
+
+    assertThat(component.string()).isEqualTo("there");
+  }
+
+  @Test public void builderDependencyOmitted() {
+    try {
+      backend.builder(BuilderDependency.Builder.class).build();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().isEqualTo("com.example.BuilderDependency.Other must be set");
+    }
   }
 
   @Test public void memberInjectionEmpty() {
@@ -279,6 +337,43 @@ public final class IntegrationTest {
 
     MultibindingMapProvider.Module1.oneValue.set("one");
     assertThat(values.get("1").get()).isEqualTo("one");
+  }
+
+  @Test public void moduleClass() {
+    ModuleClass component = backend.create(ModuleClass.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleClassAndInterfaceHierarchy() {
+    ModuleClassAndInterfaceHierarchy component =
+        backend.create(ModuleClassAndInterfaceHierarchy.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleClassAndInterfaceDuplicatesHierarchy() {
+    ModuleClassAndInterfaceDuplicatesHierarchy component =
+        backend.create(ModuleClassAndInterfaceDuplicatesHierarchy.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleClassHierarchy() {
+    ModuleClassHierarchy component = backend.create(ModuleClassHierarchy.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleClassHierarchyStatics() {
+    ModuleClassHierarchyStatics component = backend.create(ModuleClassHierarchyStatics.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleInterface() {
+    ModuleInterface component = backend.create(ModuleInterface.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void moduleInterfaceHierarchy() {
+    ModuleInterface component = backend.create(ModuleInterface.class);
+    assertThat(component.string()).isEqualTo("foo");
   }
 
   private void ignoreReflectionBackend() {
