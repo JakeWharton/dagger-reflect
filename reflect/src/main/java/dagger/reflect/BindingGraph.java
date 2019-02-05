@@ -79,9 +79,14 @@ final class BindingGraph {
           + " but it reported itself as unlinked.");
     }
 
-    return bindings.replace(key, unlinked, linked)
-        ? linked
-        : bindings.get(key); // We raced another thread and lost.
+    if (bindings.replace(key, unlinked, linked)) {
+      return linked;
+    }
+
+    // If replace() returned false we raced another thread and lost.
+    Binding<?> race = bindings.get(key);
+    if (race == null) throw new AssertionError();
+    return race;
   }
 
   private Binding<?> locateBinding(Key key) {

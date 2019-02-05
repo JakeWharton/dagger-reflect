@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
+import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findQualifier;
@@ -40,7 +41,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
     this.graph = graph;
   }
 
-  @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+  @Override public @Nullable Object invoke(Object proxy, Method method, Object[] args)
+      throws Throwable {
     if (method.getDeclaringClass() == Object.class) {
       return method.invoke(this, args);
     }
@@ -92,7 +94,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
   }
 
   private interface MethodInvocationHandler {
-    Object invoke(Object[] args);
+    @Nullable Object invoke(Object[] args);
   }
 
   private static final class BindingMethodInvocationHandler implements MethodInvocationHandler {
@@ -119,7 +121,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
       this.returnInstance = returnInstance;
     }
 
-    @Override public Object invoke(Object[] args) {
+    @Override public @Nullable Object invoke(Object[] args) {
       Object instance = args[0];
       membersInjector.injectMembers(instance);
       return returnInstance ? instance : null;
