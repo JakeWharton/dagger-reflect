@@ -376,6 +376,18 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("foo");
   }
 
+  @Test public void nestedComponent() {
+    NestedComponent.MoreNesting.AndMore.TheComponent component =
+        backend.create(NestedComponent.MoreNesting.AndMore.TheComponent.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void nestedComponentBuilder() {
+    NestedComponent.MoreNesting.AndMore.TheComponent component =
+        backend.builder(NestedComponent.MoreNesting.AndMore.TheComponent.Builder.class).build();
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
   private void ignoreReflectionBackend() {
     assumeTrue("Not yet implemented for reflection backend", backend != Backend.REFLECT);
   }
