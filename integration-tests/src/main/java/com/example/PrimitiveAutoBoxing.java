@@ -8,40 +8,60 @@ import dagger.Provides;
 interface PrimitiveAutoBoxing {
 
   Byte getByte();
+
   Short getShort();
+
   Integer getInteger();
+
   Long getLong();
 
   Float getFloat();
+
   Double getDouble();
 
   Boolean getBoolean();
+
   Character getCharacter();
 
   @Module
   abstract class Module1 {
-    @Provides static byte provideByte() {
+    @Provides
+    static byte provideByte() {
       return 8;
     }
-    @Provides static short provideShort() {
+
+    @Provides
+    static short provideShort() {
       return 16;
     }
-    @Provides static int provideInt() {
+
+    @Provides
+    static int provideInt() {
       return 32;
     }
-    @Provides static long provideLong() {
+
+    @Provides
+    static long provideLong() {
       return 64L;
     }
-    @Provides static float provideFloat() {
+
+    @Provides
+    static float provideFloat() {
       return -32.0f;
     }
-    @Provides static double provideDouble() {
+
+    @Provides
+    static double provideDouble() {
       return -64.0;
     }
-    @Provides static boolean provideBoolean() {
+
+    @Provides
+    static boolean provideBoolean() {
       return true;
     }
-    @Provides static char provideChar() {
+
+    @Provides
+    static char provideChar() {
       return '\u221E';
     }
   }

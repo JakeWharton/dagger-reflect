@@ -1,12 +1,12 @@
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findQualifier;
+
 import dagger.MembersInjector;
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
-
-import static dagger.reflect.Reflection.findQualifier;
 
 final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
   private final Class<T> cls;
@@ -17,7 +17,8 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
     this.constructor = constructor;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
+  @Override
+  public LinkedBinding<?> link(Linker linker, Scope scope) {
     Type[] parameterTypes = constructor.getGenericParameterTypes();
     Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
 
@@ -32,7 +33,8 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
     return new LinkedJustInTimeBinding<>(constructor, bindings, membersInjector);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "@Inject[" + cls.getName() + ".<init>(…)]";
   }
 }

@@ -15,7 +15,8 @@ interface MemberInjectionReturnInstance {
 
   @Module
   abstract class Module1 {
-    @Provides static String foo() {
+    @Provides
+    static String foo() {
       return "foo";
     }
   }

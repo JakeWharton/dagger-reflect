@@ -1,5 +1,9 @@
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findEnclosedAnnotatedClass;
+import static dagger.reflect.Reflection.findScopes;
+import static dagger.reflect.Reflection.requireAnnotation;
+
 import dagger.Component;
 import dagger.Module;
 import dagger.Subcomponent;
@@ -12,10 +16,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;
-
-import static dagger.reflect.Reflection.findEnclosedAnnotatedClass;
-import static dagger.reflect.Reflection.findScopes;
-import static dagger.reflect.Reflection.requireAnnotation;
 
 final class ComponentScopeBuilder {
   static ComponentScopeBuilder buildComponent(Class<?> componentClass) {
@@ -30,8 +30,11 @@ final class ComponentScopeBuilder {
     return create(subcomponent.modules(), new Class<?>[0], scopeAnnotation, parent);
   }
 
-  private static ComponentScopeBuilder create(Class<?>[] moduleClasses, Class<?>[] dependencyClasses,
-      Set<Annotation> scopeAnnotations, @Nullable Scope parent) {
+  private static ComponentScopeBuilder create(
+      Class<?>[] moduleClasses,
+      Class<?>[] dependencyClasses,
+      Set<Annotation> scopeAnnotations,
+      @Nullable Scope parent) {
     Map<Class<?>, Object> moduleInstances = new LinkedHashMap<>();
     Set<Class<?>> subcomponentClasses = new LinkedHashSet<>();
 
@@ -54,8 +57,8 @@ final class ComponentScopeBuilder {
       dependencyInstances.put(dependencyClass, null);
     }
 
-    return new ComponentScopeBuilder(moduleInstances, dependencyInstances, subcomponentClasses,
-        scopeAnnotations, parent);
+    return new ComponentScopeBuilder(
+        moduleInstances, dependencyInstances, subcomponentClasses, scopeAnnotations, parent);
   }
 
   private final Map<Key, Object> boundInstances = new LinkedHashMap<>();
@@ -65,9 +68,12 @@ final class ComponentScopeBuilder {
   private final Set<Annotation> scopeAnnotations;
   private final @Nullable Scope parent;
 
-  private ComponentScopeBuilder(Map<Class<?>, Object> moduleInstances,
-      Map<Class<?>, Object> dependencyInstances, Set<Class<?>> subcomponentClasses,
-      Set<Annotation> scopeAnnotations, @Nullable Scope parent) {
+  private ComponentScopeBuilder(
+      Map<Class<?>, Object> moduleInstances,
+      Map<Class<?>, Object> dependencyInstances,
+      Set<Class<?>> subcomponentClasses,
+      Set<Annotation> scopeAnnotations,
+      @Nullable Scope parent) {
     this.moduleInstances = moduleInstances;
     this.dependencyInstances = dependencyInstances;
     this.subcomponentClasses = subcomponentClasses;
@@ -84,10 +90,11 @@ final class ComponentScopeBuilder {
     if (moduleInstances.containsKey(moduleClass)) {
       moduleInstances.put(moduleClass, instance);
     } else {
-      throw new IllegalArgumentException("Module "
-          + moduleClass.getName()
-          + " not in expected transitive set: "
-          + moduleInstances.keySet());
+      throw new IllegalArgumentException(
+          "Module "
+              + moduleClass.getName()
+              + " not in expected transitive set: "
+              + moduleInstances.keySet());
     }
   }
 
@@ -96,16 +103,18 @@ final class ComponentScopeBuilder {
     if (dependencyInstances.containsKey(dependencyClass)) {
       dependencyInstances.put(dependencyClass, instance);
     } else {
-      throw new IllegalArgumentException("Dependency "
-          + dependencyClass.getName()
-          + " not in expected transitive set: "
-          + dependencyInstances.keySet());
+      throw new IllegalArgumentException(
+          "Dependency "
+              + dependencyClass.getName()
+              + " not in expected transitive set: "
+              + dependencyInstances.keySet());
     }
   }
 
   Scope build() {
-    Scope.Builder scopeBuilder = new Scope.Builder(parent, scopeAnnotations)
-        .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
+    Scope.Builder scopeBuilder =
+        new Scope.Builder(parent, scopeAnnotations)
+            .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
 
     for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
       scopeBuilder.addInstance(entry.getKey(), entry.getValue());
@@ -143,15 +152,16 @@ final class ComponentScopeBuilder {
                 + factoryClass.getCanonicalName()
                 + "]");
       } else if (builderClass != null) {
-        scopeBuilder.addBinding(Key.of(null, builderClass),
-            UnlinkedSubcomponentBinding.forBuilder(builderClass));
+        scopeBuilder.addBinding(
+            Key.of(null, builderClass), UnlinkedSubcomponentBinding.forBuilder(builderClass));
       } else if (factoryClass != null) {
-        scopeBuilder.addBinding(Key.of(null, factoryClass),
-            UnlinkedSubcomponentBinding.forFactory(factoryClass));
+        scopeBuilder.addBinding(
+            Key.of(null, factoryClass), UnlinkedSubcomponentBinding.forFactory(factoryClass));
       } else {
-        throw new IllegalStateException(subcomponentClass.getCanonicalName()
-            + " doesn't have a @Subcomponent.Builder or @Subcomponent.Factory,"
-            + " which is required when used with @Module.subcomponents");
+        throw new IllegalStateException(
+            subcomponentClass.getCanonicalName()
+                + " doesn't have a @Subcomponent.Builder or @Subcomponent.Factory,"
+                + " which is required when used with @Module.subcomponents");
       }
     }
 

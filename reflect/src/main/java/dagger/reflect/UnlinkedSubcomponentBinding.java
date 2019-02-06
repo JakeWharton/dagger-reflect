@@ -19,7 +19,8 @@ final class UnlinkedSubcomponentBinding extends UnlinkedBinding {
     this.cls = cls;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
+  @Override
+  public LinkedBinding<?> link(Linker linker, Scope scope) {
     Object factory;
     if (isBuilder) {
       factory = ComponentBuilderInvocationHandler.forSubcomponentBuilder(cls, scope);

@@ -21,6 +21,7 @@ public interface BuilderDependency {
   @Component.Builder
   interface Builder {
     Builder other(Other other);
+
     BuilderDependency build();
   }
 }

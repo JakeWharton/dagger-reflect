@@ -15,5 +15,4 @@
  */
 package dagger;
 
-interface JustComponentNoAnnotation {
-}
+interface JustComponentNoAnnotation {}

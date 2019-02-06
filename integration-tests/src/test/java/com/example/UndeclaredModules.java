@@ -8,6 +8,7 @@ public interface UndeclaredModules {
   @Component.Builder
   interface Builder {
     Builder module(Module1 module);
+
     UndeclaredModules build();
   }
 

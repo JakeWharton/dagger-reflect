@@ -7,6 +7,5 @@ interface MemberInjectionEmptyInterface {
 
   void inject(Target target);
 
-  interface Target {
-  }
+  interface Target {}
 }

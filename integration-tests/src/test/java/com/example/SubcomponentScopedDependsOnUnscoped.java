@@ -10,6 +10,5 @@ public interface SubcomponentScopedDependsOnUnscoped {
 
   @Singleton
   @Subcomponent
-  interface ScopedComponent {
-  }
+  interface ScopedComponent {}
 }

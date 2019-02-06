@@ -10,6 +10,7 @@ public interface BuilderBindsInstanceOnParameter {
   @Component.Builder
   interface Builder {
     Builder string(@BindsInstance String string);
+
     BuilderBindsInstanceOnParameter build();
   }
 }

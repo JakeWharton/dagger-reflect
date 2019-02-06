@@ -9,7 +9,9 @@ public interface BuilderBindsInstanceOnParameterAndMethod {
 
   @Component.Builder
   interface Builder {
-    @BindsInstance Builder string(@BindsInstance String string);
+    @BindsInstance
+    Builder string(@BindsInstance String string);
+
     BuilderBindsInstanceOnParameterAndMethod build();
   }
 }

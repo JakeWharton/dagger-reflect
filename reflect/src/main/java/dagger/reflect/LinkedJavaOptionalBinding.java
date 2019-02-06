@@ -26,7 +26,8 @@ final class LinkedJavaOptionalBinding<T> extends LinkedBinding<Optional<T>> {
     return Optional.of(value);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "@BindsOptionalOf[" + dependency + ']';
   }
 }

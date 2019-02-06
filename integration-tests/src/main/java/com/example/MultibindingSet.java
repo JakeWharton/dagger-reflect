@@ -12,10 +12,15 @@ interface MultibindingSet {
 
   @Module
   abstract class Module1 {
-    @Provides @IntoSet static String one() {
+    @Provides
+    @IntoSet
+    static String one() {
       return "one";
     }
-    @Provides @IntoSet static String two() {
+
+    @Provides
+    @IntoSet
+    static String two() {
       return "two";
     }
   }

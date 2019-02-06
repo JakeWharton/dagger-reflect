@@ -22,7 +22,8 @@ final class Linker {
     throw failure(key, "Missing binding", "was not found");
   }
 
-  @Nullable LinkedBinding<?> find(Key key) {
+  @Nullable
+  LinkedBinding<?> find(Key key) {
     return scope.findBinding(key, this);
   }
 
@@ -38,22 +39,16 @@ final class Linker {
   }
 
   private RuntimeException failure(Key key, String reason, String cause) {
-    StringBuilder builder = new StringBuilder(reason)
-        .append(" for ")
-        .append(key)
-        .append('\n');
+    StringBuilder builder = new StringBuilder(reason).append(" for ").append(key).append('\n');
     for (Map.Entry<Key, Binding> entry : chain.entrySet()) {
-      builder.append(" * Requested: ")
+      builder
+          .append(" * Requested: ")
           .append(entry.getKey())
           .append("\n     from ")
           .append(entry.getValue())
           .append('\n');
     }
-    builder.append(" * Requested: ")
-        .append(key)
-        .append("\n     which ")
-        .append(cause)
-        .append('.');
+    builder.append(" * Requested: ").append(key).append("\n     which ").append(cause).append('.');
     throw new IllegalStateException(builder.toString());
   }
 }

@@ -15,7 +15,8 @@ final class ScopeKeyedProvider<T> implements Provider<T> {
   }
 
   @SuppressWarnings("unchecked") // We trust Scope to return correct binding.
-  @Override public @Nullable T get() {
+  @Override
+  public @Nullable T get() {
     LinkedBinding<T> binding = this.binding;
     if (binding == null) {
       binding = this.binding = (LinkedBinding<T>) scope.getBinding(key);

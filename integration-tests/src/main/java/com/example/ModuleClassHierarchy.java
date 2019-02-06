@@ -11,13 +11,15 @@ interface ModuleClassHierarchy {
 
   @Module
   abstract class Module1 extends BaseModule {
-    @Provides static Integer integer() {
+    @Provides
+    static Integer integer() {
       return 42;
     }
   }
 
   @Module
   abstract class BaseModule {
-    @Binds abstract Number number(Integer num);
+    @Binds
+    abstract Number number(Integer num);
   }
 }

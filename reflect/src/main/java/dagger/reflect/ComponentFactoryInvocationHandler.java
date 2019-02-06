@@ -1,5 +1,11 @@
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findQualifier;
+import static dagger.reflect.Reflection.hasAnnotation;
+import static dagger.reflect.Reflection.newProxy;
+import static dagger.reflect.Reflection.requireAnnotation;
+import static dagger.reflect.Reflection.requireEnclosingClass;
+
 import dagger.BindsInstance;
 import dagger.Component;
 import dagger.Module;
@@ -11,12 +17,6 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import javax.inject.Provider;
 
-import static dagger.reflect.Reflection.findQualifier;
-import static dagger.reflect.Reflection.hasAnnotation;
-import static dagger.reflect.Reflection.newProxy;
-import static dagger.reflect.Reflection.requireAnnotation;
-import static dagger.reflect.Reflection.requireEnclosingClass;
-
 final class ComponentFactoryInvocationHandler implements InvocationHandler {
   static <F> F forComponentFactory(Class<F> factoryClass) {
     requireAnnotation(factoryClass, Component.Factory.class);
@@ -25,14 +25,16 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
     if (!Modifier.isPublic(componentClass.getModifiers())) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
-      throw new IllegalArgumentException("Component interface "
-          + componentClass.getCanonicalName()
-          + " must be public in order to be reflectively created");
+      throw new IllegalArgumentException(
+          "Component interface "
+              + componentClass.getCanonicalName()
+              + " must be public in order to be reflectively created");
     }
 
-    return newProxy(factoryClass,
-        new ComponentFactoryInvocationHandler(componentClass,
-            () -> ComponentScopeBuilder.buildComponent(componentClass)));
+    return newProxy(
+        factoryClass,
+        new ComponentFactoryInvocationHandler(
+            componentClass, () -> ComponentScopeBuilder.buildComponent(componentClass)));
   }
 
   static <F> F forSubcomponentFactory(Class<F> factoryClass, Scope scope) {
@@ -42,26 +44,29 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
     if (!Modifier.isPublic(componentClass.getModifiers())) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
-      throw new IllegalArgumentException("Component interface "
-          + componentClass.getCanonicalName()
-          + " must be public in order to be reflectively created");
+      throw new IllegalArgumentException(
+          "Component interface "
+              + componentClass.getCanonicalName()
+              + " must be public in order to be reflectively created");
     }
 
-    return newProxy(factoryClass,
-        new ComponentFactoryInvocationHandler(componentClass,
-            () -> ComponentScopeBuilder.buildSubcomponent(componentClass, scope)));
+    return newProxy(
+        factoryClass,
+        new ComponentFactoryInvocationHandler(
+            componentClass, () -> ComponentScopeBuilder.buildSubcomponent(componentClass, scope)));
   }
 
   private final Class<?> componentClass;
   private final Provider<ComponentScopeBuilder> scopeBuilderProvider;
 
-  private ComponentFactoryInvocationHandler(Class<?> componentClass,
-      Provider<ComponentScopeBuilder> scopeBuilderProvider) {
+  private ComponentFactoryInvocationHandler(
+      Class<?> componentClass, Provider<ComponentScopeBuilder> scopeBuilderProvider) {
     this.componentClass = componentClass;
     this.scopeBuilderProvider = scopeBuilderProvider;
   }
 
-  @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+  @Override
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     if (method.getDeclaringClass() == Object.class) {
       return method.invoke(proxy, args);
     }
@@ -96,17 +101,21 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
           try {
             scopeBuilder.setModule(parameterClass, argument);
           } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("@Component.Factory has a parameter for module + "
-                + parameterClass.getName()
-                + " that isn't required", e);
+            throw new IllegalStateException(
+                "@Component.Factory has a parameter for module + "
+                    + parameterClass.getName()
+                    + " that isn't required",
+                e);
           }
         } else {
           try {
             scopeBuilder.setDependency(parameterClass, argument);
           } catch (IllegalArgumentException e) {
-            throw new IllegalStateException("@Component.Factory has a parameter for dependency "
-                + parameterClass.getName()
-                + " that isn't required", e);
+            throw new IllegalStateException(
+                "@Component.Factory has a parameter for dependency "
+                    + parameterClass.getName()
+                    + " that isn't required",
+                e);
           }
         }
       } else {

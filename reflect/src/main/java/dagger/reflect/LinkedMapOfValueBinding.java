@@ -12,7 +12,8 @@ final class LinkedMapOfValueBinding<K, V> extends LinkedBinding<Map<K, V>> {
     this.mapOfProviderBinding = mapOfProviderBinding;
   }
 
-  @Override public Map<K, V> get() {
+  @Override
+  public Map<K, V> get() {
     Map<K, Provider<V>> mapOfProvider = mapOfProviderBinding.get();
     assert mapOfProvider != null;
 

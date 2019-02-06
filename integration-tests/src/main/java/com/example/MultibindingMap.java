@@ -13,10 +13,17 @@ interface MultibindingMap {
 
   @Module
   abstract class Module1 {
-    @Provides @IntoMap @StringKey("1") static String one() {
+    @Provides
+    @IntoMap
+    @StringKey("1")
+    static String one() {
       return "one";
     }
-    @Provides @IntoMap @StringKey("2") static String two() {
+
+    @Provides
+    @IntoMap
+    @StringKey("2")
+    static String two() {
       return "two";
     }
   }

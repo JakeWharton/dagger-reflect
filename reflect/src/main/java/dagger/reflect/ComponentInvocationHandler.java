@@ -15,6 +15,9 @@
  */
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findQualifier;
+import static dagger.reflect.Reflection.newProxy;
+
 import dagger.MembersInjector;
 import dagger.Subcomponent;
 import dagger.reflect.Binding.LinkedBinding;
@@ -23,9 +26,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
-
-import static dagger.reflect.Reflection.findQualifier;
-import static dagger.reflect.Reflection.newProxy;
 
 final class ComponentInvocationHandler implements InvocationHandler {
   static <C> C forComponent(Class<C> cls) {
@@ -45,8 +45,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
     this.scope = scope;
   }
 
-  @Override public @Nullable Object invoke(Object proxy, Method method, Object[] args)
-      throws Throwable {
+  @Override
+  public @Nullable Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     if (method.getDeclaringClass() == Object.class) {
       return method.invoke(this, args);
     }
@@ -117,7 +117,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
   }
 
   private interface MethodInvocationHandler {
-    @Nullable Object invoke(Object[] args);
+    @Nullable
+    Object invoke(Object[] args);
   }
 
   private static final class ProvisionMethodInvocationHandler implements MethodInvocationHandler {
@@ -127,7 +128,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
       this.binding = binding;
     }
 
-    @Override public @Nullable Object invoke(Object[] args) {
+    @Override
+    public @Nullable Object invoke(Object[] args) {
       return binding.get();
     }
   }
@@ -138,13 +140,13 @@ final class ComponentInvocationHandler implements InvocationHandler {
     private final boolean returnInstance;
 
     MembersInjectorMethodInvocationHandler(
-        MembersInjector<Object> membersInjector,
-        boolean returnInstance) {
+        MembersInjector<Object> membersInjector, boolean returnInstance) {
       this.membersInjector = membersInjector;
       this.returnInstance = returnInstance;
     }
 
-    @Override public @Nullable Object invoke(Object[] args) {
+    @Override
+    public @Nullable Object invoke(Object[] args) {
       Object instance = args[0];
       membersInjector.injectMembers(instance);
       return returnInstance ? instance : null;
@@ -163,7 +165,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
       this.scope = scope;
     }
 
-    @Override public Object invoke(Object[] args) {
+    @Override
+    public Object invoke(Object[] args) {
       ComponentScopeBuilder scopeBuilder = ComponentScopeBuilder.buildSubcomponent(cls, scope);
       ComponentFactoryInvocationHandler.parseFactoryMethod(method, args, scopeBuilder);
       return create(cls, scopeBuilder.build());
@@ -180,7 +183,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
       this.scope = scope;
     }
 
-    @Override public Object invoke(Object[] args) {
+    @Override
+    public Object invoke(Object[] args) {
       return ComponentBuilderInvocationHandler.forSubcomponentBuilder(cls, scope);
     }
   }
@@ -195,7 +199,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
       this.scope = scope;
     }
 
-    @Override public Object invoke(Object[] args) {
+    @Override
+    public Object invoke(Object[] args) {
       return ComponentFactoryInvocationHandler.forSubcomponentFactory(cls, scope);
     }
   }

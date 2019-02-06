@@ -15,7 +15,8 @@ public interface MembersInjectionPrivateField {
 
   @Module
   abstract class Module1 {
-    @Provides static String one() {
+    @Provides
+    static String one() {
       return "one";
     }
   }

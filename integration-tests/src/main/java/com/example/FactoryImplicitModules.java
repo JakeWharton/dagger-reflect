@@ -11,7 +11,8 @@ public interface FactoryImplicitModules {
 
   @Module
   abstract class Module1 {
-    @Provides static String string(Long value) {
+    @Provides
+    static String string(Long value) {
       return Long.toString(value);
     }
   }

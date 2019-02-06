@@ -1,5 +1,7 @@
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findScope;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
@@ -7,10 +9,9 @@ import java.lang.reflect.Type;
 import javax.inject.Inject;
 import org.jetbrains.annotations.Nullable;
 
-import static dagger.reflect.Reflection.findScope;
-
 final class ReflectiveJustInTimeLookupFactory implements JustInTimeLookup.Factory {
-  @Override public @Nullable JustInTimeLookup create(Key key) {
+  @Override
+  public @Nullable JustInTimeLookup create(Key key) {
     if (key.qualifier() != null) {
       return null; // Qualified types can't be just-in-time satisfied.
     }

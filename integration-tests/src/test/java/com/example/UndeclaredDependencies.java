@@ -7,6 +7,7 @@ public interface UndeclaredDependencies {
   @Component.Builder
   interface Builder {
     Builder dep(String module);
+
     UndeclaredDependencies build();
   }
 }

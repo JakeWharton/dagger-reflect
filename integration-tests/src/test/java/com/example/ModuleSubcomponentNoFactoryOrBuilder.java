@@ -24,7 +24,8 @@ public interface ModuleSubcomponentNoFactoryOrBuilder {
 
   @Module
   abstract class LongValue {
-    @Provides static Long string() {
+    @Provides
+    static Long string() {
       return 5L;
     }
   }

@@ -13,14 +13,16 @@ interface MemberInjectionFieldBeforeMethod {
     @Inject String foo;
     Boolean fieldBeforeMethod;
 
-    @Inject void method(String foo) {
+    @Inject
+    void method(String foo) {
       fieldBeforeMethod = this.foo != null;
     }
   }
 
   @Module
   abstract class Module1 {
-    @Provides static String foo() {
+    @Provides
+    static String foo() {
       return "foo";
     }
   }

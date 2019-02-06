@@ -12,7 +12,9 @@ final class ScopeKeyedLazy<T> extends DoubleChecked<T> {
   }
 
   @SuppressWarnings("unchecked") // We trust Scope to return correct binding.
-  @Override @Nullable T compute() {
+  @Override
+  @Nullable
+  T compute() {
     return (T) scope.getBinding(key).get();
   }
 }

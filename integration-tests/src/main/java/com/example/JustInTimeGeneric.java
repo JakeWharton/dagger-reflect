@@ -8,6 +8,7 @@ interface JustInTimeGeneric {
   Thing<String> thing();
 
   final class Thing<T> {
-    @Inject Thing() {}
+    @Inject
+    Thing() {}
   }
 }

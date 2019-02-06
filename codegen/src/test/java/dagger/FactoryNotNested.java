@@ -1,4 +1,3 @@
 package dagger;
 
-interface FactoryNotNested {
-}
+interface FactoryNotNested {}

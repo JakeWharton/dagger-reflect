@@ -8,13 +8,14 @@ final class LinkedSetBinding<T> extends Binding.LinkedBinding<Set<T>> {
   private final List<LinkedBinding<T>> elementBindings;
   private final List<LinkedBinding<Set<T>>> elementsBindings;
 
-  LinkedSetBinding(List<LinkedBinding<T>> elementBindings,
-      List<LinkedBinding<Set<T>>> elementsBindings) {
+  LinkedSetBinding(
+      List<LinkedBinding<T>> elementBindings, List<LinkedBinding<Set<T>>> elementsBindings) {
     this.elementBindings = elementBindings;
     this.elementsBindings = elementsBindings;
   }
 
-  @Override public Set<T> get() {
+  @Override
+  public Set<T> get() {
     Set<T> elements = new LinkedHashSet<>();
     for (LinkedBinding<T> elementBinding : elementBindings) {
       elements.add(elementBinding.get());

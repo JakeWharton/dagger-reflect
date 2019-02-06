@@ -26,7 +26,9 @@ public interface ModuleSubcomponentBindsFactoryAndBuilder {
 
     @Subcomponent.Builder
     interface Builder {
-      @BindsInstance Builder longValue(Long value);
+      @BindsInstance
+      Builder longValue(Long value);
+
       StringSubcomponent build();
     }
 

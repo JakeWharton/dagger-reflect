@@ -13,7 +13,8 @@ interface BindsIntoSet {
 
   @Module
   abstract class Module1 {
-    @Provides static String string() {
+    @Provides
+    static String string() {
       return "foo";
     }
 

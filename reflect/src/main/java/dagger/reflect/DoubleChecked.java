@@ -32,7 +32,8 @@ abstract class DoubleChecked<T> implements Lazy<T>, Provider<T> {
       this.provider = provider;
     }
 
-    @Override T compute() {
+    @Override
+    T compute() {
       return provider.get();
     }
   }

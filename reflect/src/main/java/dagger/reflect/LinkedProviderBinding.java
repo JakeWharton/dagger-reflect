@@ -12,7 +12,8 @@ final class LinkedProviderBinding<T> extends LinkedBinding<Provider<T>> {
     this.key = key;
   }
 
-  @Override public Provider<T> get() {
+  @Override
+  public Provider<T> get() {
     return new ScopeKeyedProvider<>(scope, key);
   }
 }

@@ -16,7 +16,8 @@ final class LinkedScopedBinding<T> extends LinkedBinding<T> {
   }
 
   @SuppressWarnings("unchecked") // Instance will only be of type T at the point of cast.
-  @Override public @Nullable T get() {
+  @Override
+  public @Nullable T get() {
     Object instance = this.instance;
     if (instance == this) {
       synchronized (this) {

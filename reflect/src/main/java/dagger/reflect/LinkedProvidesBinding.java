@@ -1,10 +1,10 @@
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.tryInvoke;
+
 import dagger.reflect.Binding.LinkedBinding;
 import java.lang.reflect.Method;
 import org.jetbrains.annotations.Nullable;
-
-import static dagger.reflect.Reflection.tryInvoke;
 
 public final class LinkedProvidesBinding<T> extends LinkedBinding<T> {
   private final @Nullable Object instance;
@@ -17,7 +17,8 @@ public final class LinkedProvidesBinding<T> extends LinkedBinding<T> {
     this.dependencies = dependencies;
   }
 
-  @Override public @Nullable T get() {
+  @Override
+  public @Nullable T get() {
     Object[] arguments = new Object[dependencies.length];
     for (int i = 0; i < arguments.length; i++) {
       arguments[i] = dependencies[i].get();
@@ -28,7 +29,8 @@ public final class LinkedProvidesBinding<T> extends LinkedBinding<T> {
     return value;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "@Provides[" + method.getDeclaringClass().getName() + '.' + method.getName() + "(…)]";
   }
 }

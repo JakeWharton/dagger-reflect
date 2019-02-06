@@ -16,9 +16,11 @@ interface MemberInjectionNoInjects {
     protected void one(String one) {
       count++;
     }
+
     void two(Long two) {
       count++;
     }
+
     public void three(Integer three) {
       count++;
     }

@@ -25,8 +25,7 @@ import org.jetbrains.annotations.Nullable;
 final class TypeUtil {
   private static final Type[] EMPTY_TYPE_ARRAY = new Type[] {};
 
-  private TypeUtil() {
-  }
+  private TypeUtil() {}
 
   /**
    * Returns a type that is functionally equal but not necessarily equal according to {@link
@@ -40,8 +39,8 @@ final class TypeUtil {
     } else if (type instanceof ParameterizedType) {
       if (type instanceof ParameterizedTypeImpl) return type;
       ParameterizedType p = (ParameterizedType) type;
-      return new ParameterizedTypeImpl(p.getOwnerType(),
-          p.getRawType(), p.getActualTypeArguments());
+      return new ParameterizedTypeImpl(
+          p.getOwnerType(), p.getRawType(), p.getActualTypeArguments());
 
     } else if (type instanceof GenericArrayType) {
       if (type instanceof GenericArrayTypeImpl) return type;
@@ -87,8 +86,7 @@ final class TypeUtil {
                 "unexpected owner type for " + rawType + ": " + ownerType);
           }
         } else if (enclosingClass != null) {
-          throw new IllegalArgumentException(
-              "unexpected owner type for " + rawType + ": null");
+          throw new IllegalArgumentException("unexpected owner type for " + rawType + ": null");
         }
       }
 
@@ -102,30 +100,33 @@ final class TypeUtil {
       }
     }
 
-    @Override public Type[] getActualTypeArguments() {
+    @Override
+    public Type[] getActualTypeArguments() {
       return typeArguments.clone();
     }
 
-    @Override public Type getRawType() {
+    @Override
+    public Type getRawType() {
       return rawType;
     }
 
-    @Override public @Nullable Type getOwnerType() {
+    @Override
+    public @Nullable Type getOwnerType() {
       return ownerType;
     }
 
-    @Override public boolean equals(Object other) {
-      return other instanceof ParameterizedType
-          && Types.equals(this, (ParameterizedType) other);
+    @Override
+    public boolean equals(Object other) {
+      return other instanceof ParameterizedType && Types.equals(this, (ParameterizedType) other);
     }
 
-    @Override public int hashCode() {
-      return Arrays.hashCode(typeArguments)
-          ^ rawType.hashCode()
-          ^ hashCodeOrZero(ownerType);
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(typeArguments) ^ rawType.hashCode() ^ hashCodeOrZero(ownerType);
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
       StringBuilder result = new StringBuilder(30 * (typeArguments.length + 1));
       result.append(typeToString(rawType));
 
@@ -148,20 +149,23 @@ final class TypeUtil {
       this.componentType = canonicalize(componentType);
     }
 
-    @Override public Type getGenericComponentType() {
+    @Override
+    public Type getGenericComponentType() {
       return componentType;
     }
 
-    @Override public boolean equals(Object o) {
-      return o instanceof GenericArrayType
-          && Types.equals(this, (GenericArrayType) o);
+    @Override
+    public boolean equals(Object o) {
+      return o instanceof GenericArrayType && Types.equals(this, (GenericArrayType) o);
     }
 
-    @Override public int hashCode() {
+    @Override
+    public int hashCode() {
       return componentType.hashCode();
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
       return typeToString(componentType) + "[]";
     }
   }
@@ -194,26 +198,29 @@ final class TypeUtil {
       }
     }
 
-    @Override public Type[] getUpperBounds() {
-      return new Type[] { upperBound };
+    @Override
+    public Type[] getUpperBounds() {
+      return new Type[] {upperBound};
     }
 
-    @Override public Type[] getLowerBounds() {
-      return lowerBound != null ? new Type[] { lowerBound } : EMPTY_TYPE_ARRAY;
+    @Override
+    public Type[] getLowerBounds() {
+      return lowerBound != null ? new Type[] {lowerBound} : EMPTY_TYPE_ARRAY;
     }
 
-    @Override public boolean equals(Object other) {
-      return other instanceof WildcardType
-          && Types.equals(this, (WildcardType) other);
+    @Override
+    public boolean equals(Object other) {
+      return other instanceof WildcardType && Types.equals(this, (WildcardType) other);
     }
 
-    @Override public int hashCode() {
+    @Override
+    public int hashCode() {
       // This equals Arrays.hashCode(getLowerBounds()) ^ Arrays.hashCode(getUpperBounds()).
-      return (lowerBound != null ? 31 + lowerBound.hashCode() : 1)
-          ^ (31 + upperBound.hashCode());
+      return (lowerBound != null ? 31 + lowerBound.hashCode() : 1) ^ (31 + upperBound.hashCode());
     }
 
-    @Override public String toString() {
+    @Override
+    public String toString() {
       if (lowerBound != null) {
         return "? super " + typeToString(lowerBound);
       } else if (upperBound == Object.class) {

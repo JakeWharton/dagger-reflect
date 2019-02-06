@@ -26,8 +26,7 @@ import java.util.Arrays;
 import org.jetbrains.annotations.Nullable;
 
 final class Types {
-  private Types() {
-  }
+  private Types() {}
 
   static Class<?> getRawType(Type type) {
     if (type instanceof Class<?>) {
@@ -56,8 +55,12 @@ final class Types {
 
     } else {
       String className = type == null ? "null" : type.getClass().getName();
-      throw new IllegalArgumentException("Expected a Class, ParameterizedType, or "
-          + "GenericArrayType, but <" + type + "> is of type " + className);
+      throw new IllegalArgumentException(
+          "Expected a Class, ParameterizedType, or "
+              + "GenericArrayType, but <"
+              + type
+              + "> is of type "
+              + className);
     }
   }
 
@@ -68,8 +71,8 @@ final class Types {
 
     } else if (a instanceof Class) {
       if (b instanceof GenericArrayType) {
-        return equals(((Class<?>) a).getComponentType(),
-            ((GenericArrayType) b).getGenericComponentType());
+        return equals(
+            ((Class<?>) a).getComponentType(), ((GenericArrayType) b).getGenericComponentType());
       }
       return a.equals(b); // Class already specifies equals().
 
@@ -77,20 +80,22 @@ final class Types {
       if (!(b instanceof ParameterizedType)) return false;
       ParameterizedType pa = (ParameterizedType) a;
       ParameterizedType pb = (ParameterizedType) b;
-      Type[] aTypeArguments = pa instanceof ParameterizedTypeImpl
-          ? ((ParameterizedTypeImpl) pa).typeArguments
-          : pa.getActualTypeArguments();
-      Type[] bTypeArguments = pb instanceof ParameterizedTypeImpl
-          ? ((ParameterizedTypeImpl) pb).typeArguments
-          : pb.getActualTypeArguments();
+      Type[] aTypeArguments =
+          pa instanceof ParameterizedTypeImpl
+              ? ((ParameterizedTypeImpl) pa).typeArguments
+              : pa.getActualTypeArguments();
+      Type[] bTypeArguments =
+          pb instanceof ParameterizedTypeImpl
+              ? ((ParameterizedTypeImpl) pb).typeArguments
+              : pb.getActualTypeArguments();
       return equals(pa.getOwnerType(), pb.getOwnerType())
           && pa.getRawType().equals(pb.getRawType())
           && Arrays.equals(aTypeArguments, bTypeArguments);
 
     } else if (a instanceof GenericArrayType) {
       if (b instanceof Class) {
-        return equals(((Class<?>) b).getComponentType(),
-            ((GenericArrayType) a).getGenericComponentType());
+        return equals(
+            ((Class<?>) b).getComponentType(), ((GenericArrayType) a).getGenericComponentType());
       }
       if (!(b instanceof GenericArrayType)) return false;
       GenericArrayType ga = (GenericArrayType) a;

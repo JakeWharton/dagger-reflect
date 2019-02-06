@@ -12,7 +12,8 @@ final class LinkedLazyBinding<T> extends LinkedBinding<Lazy<T>> {
     this.key = key;
   }
 
-  @Override public Lazy<T> get() {
+  @Override
+  public Lazy<T> get() {
     return new ScopeKeyedLazy<>(scope, key);
   }
 }

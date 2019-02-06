@@ -15,5 +15,4 @@
  */
 package dagger;
 
-interface BuilderNotNested {
-}
+interface BuilderNotNested {}
