@@ -21,6 +21,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.ArrayDeque;
+import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.inject.Inject;
@@ -33,11 +35,11 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
   static <T> MembersInjector<T> create(Class<T> cls, BindingGraph graph) {
     // TODO throw if interface?
 
-    Map<Field, Binding<?>> fieldBindings = new LinkedHashMap<>();
-    Map<Method, Binding<?>[]> methodBindings = new LinkedHashMap<>();
-
+    Deque<ClassBindings> hierarchyBindings = new ArrayDeque<>();
     Class<?> target = cls;
     while (target != Object.class) {
+      Map<Field, Binding<?>> fieldBindings = new LinkedHashMap<>();
+      Map<Method, Binding<?>[]> methodBindings = new LinkedHashMap<>();
       for (Field field : target.getDeclaredFields()) {
         if (field.getAnnotation(Inject.class) == null) {
           continue;
@@ -84,34 +86,55 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
 
         methodBindings.put(method, bindings);
       }
+      if (!fieldBindings.isEmpty() || !methodBindings.isEmpty()) {
+        // [@Inject] Fields and methods in superclasses are injected before those in subclasses.
+        // we are walking up (getSuperclass), but spec says @Inject should be walking down the hierarchy
+        hierarchyBindings.addFirst(new ClassBindings(fieldBindings, methodBindings));
+      }
 
       target = target.getSuperclass();
     }
 
-    return new ReflectiveMembersInjector<>(fieldBindings, methodBindings);
+    return new ReflectiveMembersInjector<>(hierarchyBindings);
   }
 
-  private final Map<Field, Binding<?>> fieldBindings;
-  private final Map<Method, Binding<?>[]> methodBindings;
+  private final Iterable<ClassBindings> classBindings;
 
-  private ReflectiveMembersInjector(
-      Map<Field, Binding<?>> fieldBindings,
-      Map<Method, Binding<?>[]> methodBindings) {
-    this.fieldBindings = fieldBindings;
-    this.methodBindings = methodBindings;
+  private ReflectiveMembersInjector(Iterable<ClassBindings> classBindings) {
+    this.classBindings = classBindings;
   }
 
   @Override public void injectMembers(T instance) {
-    for (Map.Entry<Field, Binding<?>> fieldBinding : fieldBindings.entrySet()) {
-      trySet(instance, fieldBinding.getKey(), fieldBinding.getValue().get());
+    for (ClassBindings classBinding : classBindings) {
+      classBinding.injectMembers(instance);
     }
-    for (Map.Entry<Method, Binding<?>[]> methodBinding : methodBindings.entrySet()) {
-      Binding<?>[] bindings = methodBinding.getValue();
-      Object[] arguments = new Object[bindings.length];
-      for (int i = 0; i < bindings.length; i++) {
-        arguments[i] = bindings[i].get();
+  }
+
+  private static final class ClassBindings {
+    final Map<Field, Binding<?>> fieldBindings;
+    final Map<Method, Binding<?>[]> methodBindings;
+
+    ClassBindings(
+        Map<Field, Binding<?>> fieldBindings,
+        Map<Method, Binding<?>[]> methodBindings) {
+      this.fieldBindings = fieldBindings;
+      this.methodBindings = methodBindings;
+    }
+
+    void injectMembers(Object instance) {
+      // [@Inject] Constructors are injected first, followed by fields, and then methods.
+      // Note: the constructor injection is in dagger.reflect.Binding.UnlinkedJustInTime.dependencies
+      for (Map.Entry<Field, Binding<?>> fieldBinding : fieldBindings.entrySet()) {
+        trySet(instance, fieldBinding.getKey(), fieldBinding.getValue().get());
       }
-      tryInvoke(instance, methodBinding.getKey(), arguments);
+      for (Map.Entry<Method, Binding<?>[]> methodBinding : methodBindings.entrySet()) {
+        Binding<?>[] bindings = methodBinding.getValue();
+        Object[] arguments = new Object[bindings.length];
+        for (int i = 0; i < bindings.length; i++) {
+          arguments[i] = bindings[i].get();
+        }
+        tryInvoke(instance, methodBinding.getKey(), arguments);
+      }
     }
   }
 }

@@ -228,6 +228,22 @@ public final class IntegrationTest {
     assertThat(target.subtypeCalled).isTrue();
   }
 
+  @Test public void memberInjectionOrder() {
+    MemberInjectionOrder component = backend.create(MemberInjectionOrder.class);
+    MemberInjectionOrder.SubType target = new MemberInjectionOrder.SubType();
+    component.inject(target);
+    assertThat(target.calls)
+        .containsExactly(
+            // @Inject specification: Constructors are injected first
+            "instantiation: baseField=null, subField=null",
+            // followed by fields, and then methods.
+            "baseMethod(foo): baseField=foo, subField=null",
+            // Fields and methods in superclasses are injected before those in subclasses.
+            "subMethod(foo): baseField=foo, subField=foo"
+        )
+        .inOrder();
+  }
+
   @Test public void memberInjectionMethodVisibility() {
     MemberInjectionMethodVisibility component =
         backend.create(MemberInjectionMethodVisibility.class);
