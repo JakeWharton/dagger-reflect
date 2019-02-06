@@ -2,6 +2,7 @@
 *.iml
 /.idea
 out/
+/local.properties
 
 # Gradle
 .gradle
