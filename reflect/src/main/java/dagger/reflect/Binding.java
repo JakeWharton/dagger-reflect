@@ -182,7 +182,7 @@ interface Binding<T> extends Provider<T> {
       this.dependencies = dependencies;
     }
 
-    @Override public T get() {
+    @Override public @Nullable T get() {
       Object[] arguments = new Object[dependencies.length];
       for (int i = 0; i < arguments.length; i++) {
         arguments[i] = dependencies[i].get();

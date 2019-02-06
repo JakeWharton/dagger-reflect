@@ -32,6 +32,9 @@ final class BindingGraph {
 
   Binding<?> getBinding(Key key) {
     Binding<?> binding = locateBinding(key);
+    if (binding == null) {
+      throw new IllegalArgumentException("Unable to locate binding for " + key);
+    }
     return binding.isLinked()
         ? binding
         : performLinking(key, binding, new LinkedHashMap<>());
@@ -47,8 +50,11 @@ final class BindingGraph {
       Key dependencyKey = dependencyKeys[i];
       @Nullable Binding<?> dependency = locateBinding(dependencyKey);
 
-      if (dependency == null && Types.equals(Types.getRawType(key.type()), Optional.class)) {
-        continue;
+      if (dependency == null) {
+        if (Types.equals(Types.getRawType(key.type()), Optional.class)) {
+          continue;
+        }
+        throw new IllegalArgumentException("Unable to locate binding for " + key);
       }
 
       if (!dependency.isLinked()) {
@@ -94,7 +100,7 @@ final class BindingGraph {
     return race;
   }
 
-  @Nullable private Binding<?> locateBinding(Key key) {
+  private @Nullable Binding<?> locateBinding(Key key) {
     Binding<?> binding = bindings.get(key);
     if (binding != null) {
       return binding;
@@ -107,9 +113,8 @@ final class BindingGraph {
           ? replaced // We raced another thread and lost.
           : jitBinding;
     }
-    else {
-      return null;
-    }
+
+    return null;
   }
 
   static final class Builder {

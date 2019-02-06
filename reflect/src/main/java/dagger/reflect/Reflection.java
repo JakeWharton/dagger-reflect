@@ -54,7 +54,7 @@ final class Reflection {
     return scope;
   }
 
-  static void trySet(@Nullable Object instance, Field field, Object value) {
+  static void trySet(@Nullable Object instance, Field field, @Nullable Object value) {
     if ((field.getModifiers() & Modifier.PUBLIC) == 0) {
       field.setAccessible(true);
     }
