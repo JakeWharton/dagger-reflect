@@ -113,7 +113,7 @@ Limitations
    This is due to a limitation in Java, where instances of proxies cannot create another proxy instance where the second interface is not public. This prevents proxies of builders from creating proxies of the component. See `dagger.reflect.ComponentBuilderInvocationHandler.create`.
  
  * There are some missing features that are not yet implemented.  
-   They can be found by looking at [`notImplemented` calls in the code](https://github.com/JakeWharton/dagger-reflect/search?q=notImplemented&type=Code).  
+   They can be found by looking at [`notImplemented` calls in the code][notImplemented].  
    (Beware: GitHub shows only the first few occurrences in each file, not all of them.)
 
 Compatibility
@@ -153,3 +153,4 @@ License
  [dagger]: https://github.com/google/dagger/
  [snap]: https://oss.sonatype.org/content/repositories/snapshots/
  [talk]: https://jakewharton.com/helping-dagger-help-you/
+ [notImplemented]: https://github.com/JakeWharton/dagger-reflect/search?q=%22throw%20notImplemented%22&type=Code
