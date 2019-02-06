@@ -1,5 +1,6 @@
 package dagger.reflect;
 
+import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Type;
@@ -10,7 +11,7 @@ import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findScope;
 
 final class ReflectiveJustInTimeProvider implements BindingGraph.JustInTimeProvider {
-  @Override public @Nullable Binding<?> create(Key key) {
+  @Override public @Nullable UnlinkedBinding create(Key key) {
     Annotation qualifier = key.qualifier();
     if (qualifier != null) {
       return null; // Qualified types can't be just-in-time satisfied.

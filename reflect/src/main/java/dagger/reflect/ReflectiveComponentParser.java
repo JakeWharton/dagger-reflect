@@ -1,5 +1,6 @@
 package dagger.reflect;
 
+import dagger.reflect.Binding.LinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -12,7 +13,7 @@ import java.util.Set;
 import static dagger.reflect.Reflection.findQualifier;
 
 final class ReflectiveComponentParser {
-  private static final Binding<?>[] NO_BINDINGS = new Binding<?>[0];
+  private static final LinkedBinding<?>[] NO_BINDINGS = new LinkedBinding<?>[0];
 
   static void parse(Class<?> moduleClass, Object instance,
       BindingGraph.Builder graphBuilder) {
@@ -34,7 +35,7 @@ final class ReflectiveComponentParser {
         Type type = method.getGenericReturnType();
         Key key = Key.of(qualifier, type);
 
-        Binding<?> binding = new Binding.LinkedProvides<>(instance, method, NO_BINDINGS);
+        Binding binding = new Binding.LinkedProvides<>(instance, method, NO_BINDINGS);
 
         graphBuilder.add(key, binding);
       }

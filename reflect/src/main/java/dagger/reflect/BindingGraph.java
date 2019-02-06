@@ -15,46 +15,55 @@
  */
 package dagger.reflect;
 
+import dagger.reflect.Binding.LinkedBinding;
+import dagger.reflect.Binding.UnlinkedBinding;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
 
 final class BindingGraph {
-  private final ConcurrentHashMap<Key, Binding<?>> bindings;
+  private final ConcurrentHashMap<Key, Binding> bindings;
   private final JustInTimeProvider jitProvider;
 
-  private BindingGraph(Map<Key, Binding<?>> bindings, JustInTimeProvider jitProvider) {
+  private BindingGraph(Map<Key, Binding> bindings, JustInTimeProvider jitProvider) {
     this.bindings = new ConcurrentHashMap<>(bindings);
     this.jitProvider = jitProvider;
   }
 
-  Binding<?> getBinding(Key key) {
-    Binding<?> binding = locateBinding(key);
-    return binding.isLinked()
-        ? binding
-        : performLinking(key, binding, new LinkedHashMap<>());
+  Provider<?> getProvider(Key key) {
+    Binding binding = findBinding(key);
+    if (binding == null) {
+      throw new IllegalArgumentException("No provider available for " + key);
+    }
+
+    return binding instanceof LinkedBinding<?>
+        ? (LinkedBinding<?>) binding
+        : performLinking(key, (UnlinkedBinding) binding, new LinkedHashMap<>());
   }
 
-  private Binding<?> performLinking(Key key, Binding<?> unlinked, Map<Key, Binding<?>> chain) {
+  private LinkedBinding<?> performLinking(Key key, UnlinkedBinding unlinked,
+      Map<Key, Binding> chain) {
     chain.put(key, unlinked);
 
-    Key[] dependencyKeys = unlinked.dependencies();
-    Binding<?>[] dependencies = new Binding[dependencyKeys.length];
+    Binding.LinkRequest request = unlinked.request();
+    Key[] requestKeys = request.keys;
+    boolean[] requestOptionals = request.optionals;
 
-    for (int i = 0; i < dependencyKeys.length; i++) {
-      Key dependencyKey = dependencyKeys[i];
-      @Nullable Binding<?> dependency = locateBinding(dependencyKey);
+    LinkedBinding<?>[] dependencies = new LinkedBinding<?>[requestKeys.length];
+    for (int i = 0; i < requestKeys.length; i++) {
+      Key requestKey = requestKeys[i];
+      boolean isOptional = requestOptionals[i];
+      Binding dependency = findBinding(requestKey);
 
-      if (dependency == null && Types.equals(Types.getRawType(key.type()), Optional.class)) {
-        continue;
-      }
-
-      if (!dependency.isLinked()) {
-        if (chain.containsKey(dependencyKey)) {
+      LinkedBinding<?> linkedBinding;
+      if (dependency instanceof LinkedBinding<?>) {
+        linkedBinding = (LinkedBinding<?>) dependency;
+      } else if (dependency instanceof UnlinkedBinding) {
+        if (chain.containsKey(requestKey)) {
           StringBuilder builder = new StringBuilder("Dependency cycle detected!\n");
-          for (Map.Entry<Key, Binding<?>> entry : chain.entrySet()) {
+          for (Map.Entry<Key, Binding> entry : chain.entrySet()) {
             builder.append(" * Requested: ")
                 .append(entry.getKey())
                 .append("\n     from ")
@@ -62,58 +71,64 @@ final class BindingGraph {
                 .append('\n');
           }
           builder.append(" * Requested: ")
-              .append(dependencyKey)
+              .append(requestKey)
               .append("\n     which forms a cycle.");
           throw new IllegalStateException(builder.toString());
         }
-
-        dependency = performLinking(dependencyKey, dependency, chain);
+        linkedBinding = performLinking(requestKey, (UnlinkedBinding) dependency, chain);
+      } else if (isOptional) {
+        linkedBinding = null;
+      } else {
+        StringBuilder builder = new StringBuilder("Cannot locate binding for ");
+        builder.append(requestKey).append('\n');
+        for (Map.Entry<Key, Binding> entry : chain.entrySet()) {
+          builder.append(" * Requested: ")
+              .append(entry.getKey())
+              .append("\n     from ")
+              .append(entry.getValue())
+              .append('\n');
+        }
+        builder.append(" * Requested: ")
+            .append(requestKey)
+            .append("\n     which was not found.");
+        throw new IllegalStateException(builder.toString());
       }
 
-      dependencies[i] = dependency;
+      dependencies[i] = linkedBinding;
     }
 
     chain.remove(key);
 
-    Binding<?> linked = unlinked.link(dependencies);
-    if (!linked.isLinked()) {
-      throw new IllegalStateException("A call to link on "
-          + unlinked
-          + " returned "
-          + linked
-          + " but it reported itself as unlinked.");
-    }
-
+    LinkedBinding<?> linked = unlinked.link(dependencies);
     if (bindings.replace(key, unlinked, linked)) {
       return linked;
     }
 
     // If replace() returned false we raced another thread and lost.
-    Binding<?> race = bindings.get(key);
+    LinkedBinding<?> race = (LinkedBinding<?>) bindings.get(key);
     if (race == null) throw new AssertionError();
     return race;
   }
 
-  @Nullable private Binding<?> locateBinding(Key key) {
-    Binding<?> binding = bindings.get(key);
+  private @Nullable Binding findBinding(Key key) {
+    Binding binding = bindings.get(key);
     if (binding != null) {
       return binding;
     }
 
-    Binding<?> jitBinding = jitProvider.create(key);
+    Binding jitBinding = jitProvider.create(key);
     if (jitBinding != null) {
-      Binding<?> replaced = bindings.putIfAbsent(key, jitBinding);
+      Binding replaced = bindings.putIfAbsent(key, jitBinding);
       return replaced != null
           ? replaced // We raced another thread and lost.
           : jitBinding;
     }
-    else {
-      return null;
-    }
+
+    return null;
   }
 
   static final class Builder {
-    private final Map<Key, Binding<?>> bindings = new LinkedHashMap<>();
+    private final Map<Key, Binding> bindings = new LinkedHashMap<>();
     private JustInTimeProvider jitProvider = JustInTimeProvider.NONE;
 
     Builder justInTimeProvider(JustInTimeProvider jitProvider) {
@@ -122,11 +137,11 @@ final class BindingGraph {
       return this;
     }
 
-    Builder add(Key key, Binding<?> binding) {
+    Builder add(Key key, Binding binding) {
       if (key == null) throw new NullPointerException("key == null");
       if (binding == null) throw new NullPointerException("binding == null");
 
-      Binding<?> replaced = bindings.put(key, binding);
+      Binding replaced = bindings.put(key, binding);
       if (replaced != null) {
         throw new IllegalStateException(
             "Duplicate binding for " + key + ": " + replaced + " and " + binding);
@@ -140,7 +155,7 @@ final class BindingGraph {
   }
 
   interface JustInTimeProvider {
-    @Nullable Binding<?> create(Key key);
+    @Nullable UnlinkedBinding create(Key key);
 
     JustInTimeProvider NONE = key -> null;
   }

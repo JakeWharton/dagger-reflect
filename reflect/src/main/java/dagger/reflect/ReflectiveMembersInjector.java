@@ -26,6 +26,7 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.inject.Inject;
+import javax.inject.Provider;
 
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.tryInvoke;
@@ -38,8 +39,7 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
     Deque<ClassBindings> hierarchyBindings = new ArrayDeque<>();
     Class<?> target = cls;
     while (target != Object.class) {
-      Map<Field, Binding<?>> fieldBindings = new LinkedHashMap<>();
-      Map<Method, Binding<?>[]> methodBindings = new LinkedHashMap<>();
+      Map<Field, Provider<?>> fieldProviders = new LinkedHashMap<>();
       for (Field field : target.getDeclaredFields()) {
         if (field.getAnnotation(Inject.class) == null) {
           continue;
@@ -54,10 +54,12 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
         }
 
         Key key = Key.of(findQualifier(field.getDeclaredAnnotations()), field.getGenericType());
-        Binding<?> binding = graph.getBinding(key);
+        Provider<?> provider = graph.getProvider(key);
 
-        fieldBindings.put(field, binding);
+        fieldProviders.put(field, provider);
       }
+
+      Map<Method, Provider<?>[]> methodProviders = new LinkedHashMap<>();
       for (Method method : target.getDeclaredMethods()) {
         if (method.getAnnotation(Inject.class) == null) {
           continue;
@@ -77,19 +79,19 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
 
         Type[] parameterTypes = method.getGenericParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-        @SuppressWarnings("rawtypes")
-        Binding<?>[] bindings = new Binding[parameterTypes.length];
+        Provider<?>[] providers = new Provider<?>[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
           Key key = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
-          bindings[i] = graph.getBinding(key);
+          providers[i] = graph.getProvider(key);
         }
 
-        methodBindings.put(method, bindings);
+        methodProviders.put(method, providers);
       }
-      if (!fieldBindings.isEmpty() || !methodBindings.isEmpty()) {
+
+      if (!fieldProviders.isEmpty() || !methodProviders.isEmpty()) {
         // [@Inject] Fields and methods in superclasses are injected before those in subclasses.
         // we are walking up (getSuperclass), but spec says @Inject should be walking down the hierarchy
-        hierarchyBindings.addFirst(new ClassBindings(fieldBindings, methodBindings));
+        hierarchyBindings.addFirst(new ClassBindings(fieldProviders, methodProviders));
       }
 
       target = target.getSuperclass();
@@ -111,29 +113,29 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
   }
 
   private static final class ClassBindings {
-    final Map<Field, Binding<?>> fieldBindings;
-    final Map<Method, Binding<?>[]> methodBindings;
+    final Map<Field, Provider<?>> fieldProviders;
+    final Map<Method, Provider<?>[]> methodProviders;
 
     ClassBindings(
-        Map<Field, Binding<?>> fieldBindings,
-        Map<Method, Binding<?>[]> methodBindings) {
-      this.fieldBindings = fieldBindings;
-      this.methodBindings = methodBindings;
+        Map<Field, Provider<?>> fieldProviders,
+        Map<Method, Provider<?>[]> methodProviders) {
+      this.fieldProviders = fieldProviders;
+      this.methodProviders = methodProviders;
     }
 
     void injectMembers(Object instance) {
       // [@Inject] Constructors are injected first, followed by fields, and then methods.
       // Note: the constructor injection is in dagger.reflect.Binding.UnlinkedJustInTime.dependencies
-      for (Map.Entry<Field, Binding<?>> fieldBinding : fieldBindings.entrySet()) {
-        trySet(instance, fieldBinding.getKey(), fieldBinding.getValue().get());
+      for (Map.Entry<Field, Provider<?>> fieldProvider : fieldProviders.entrySet()) {
+        trySet(instance, fieldProvider.getKey(), fieldProvider.getValue().get());
       }
-      for (Map.Entry<Method, Binding<?>[]> methodBinding : methodBindings.entrySet()) {
-        Binding<?>[] bindings = methodBinding.getValue();
-        Object[] arguments = new Object[bindings.length];
-        for (int i = 0; i < bindings.length; i++) {
-          arguments[i] = bindings[i].get();
+      for (Map.Entry<Method, Provider<?>[]> methodProvider : methodProviders.entrySet()) {
+        Provider<?>[] providers = methodProvider.getValue();
+        Object[] arguments = new Object[providers.length];
+        for (int i = 0; i < providers.length; i++) {
+          arguments[i] = providers[i].get();
         }
-        tryInvoke(instance, methodBinding.getKey(), arguments);
+        tryInvoke(instance, methodProvider.getKey(), arguments);
       }
     }
   }

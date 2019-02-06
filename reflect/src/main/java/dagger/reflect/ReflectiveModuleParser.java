@@ -42,7 +42,7 @@ final class ReflectiveModuleParser {
           throw new IllegalArgumentException("Private module methods are not allowed: " + method);
         }
 
-        Binding<?> binding;
+        Binding binding;
         TypeWrapper wrapper = TypeWrapper.NONE;
         if ((method.getModifiers() & ABSTRACT) != 0) {
           if (method.getAnnotation(Binds.class) != null) {
