@@ -32,4 +32,8 @@ final class UnlinkedProvidesBinding extends Binding.UnlinkedBinding {
   @Override public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
     return new LinkedProvidesBinding<>(instance, method, dependencies);
   }
+
+  @Override public String toString() {
+    return "@Provides[" + method.getDeclaringClass().getName() + '.' + method.getName() + "(…)]";
+  }
 }

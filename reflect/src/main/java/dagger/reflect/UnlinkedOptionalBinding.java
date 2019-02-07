@@ -32,4 +32,8 @@ public final class UnlinkedOptionalBinding extends UnlinkedBinding {
   public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
     return new LinkedOptionalBinding<>(dependencies[0]);
   }
+
+  @Override public String toString() {
+    return "@Optional[" + method.getDeclaringClass().getName() + '.' + method.getName() + "(…)]";
+  }
 }

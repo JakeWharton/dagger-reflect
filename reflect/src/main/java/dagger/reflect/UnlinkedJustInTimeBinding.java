@@ -49,4 +49,8 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
   @Override public LinkedBinding<T> link(LinkedBinding<?>[] dependencies) {
     return new LinkedJustInTimeBinding<>(constructor, dependencies);
   }
+
+  @Override public String toString() {
+    return "@Inject[" + cls.getName() + ".<init>(…)]";
+  }
 }
