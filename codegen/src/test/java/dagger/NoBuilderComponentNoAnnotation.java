@@ -15,6 +15,5 @@
  */
 package dagger;
 
-@Component
-interface NoBuilderComponent {
+interface NoBuilderComponentNoAnnotation {
 }
