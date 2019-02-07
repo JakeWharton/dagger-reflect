@@ -54,6 +54,7 @@ interface Binding {
   }
 
   abstract class LinkedBinding<T> implements Binding, Provider<T> {
+    @Override public abstract String toString();
   }
 
   final class Instance<T> extends LinkedBinding<T> {
@@ -65,6 +66,10 @@ interface Binding {
 
     @Override public T get() {
       return value;
+    }
+
+    @Override public String toString() {
+      return "@BindsInstance[" + value + ']';
     }
   }
 
@@ -119,17 +124,27 @@ interface Binding {
   }
 
   final class LinkedOptionalBinding<T> extends LinkedBinding<Optional<T>> {
-    private final @Nullable LinkedBinding<?> dependency;
+    private final @Nullable LinkedBinding<T> dependency;
 
-    LinkedOptionalBinding(@Nullable LinkedBinding<?> dependency) {
+    LinkedOptionalBinding(@Nullable LinkedBinding<T> dependency) {
       this.dependency = dependency;
     }
 
     @Override
     public Optional<T> get() {
-      return dependency == null
-          ? Optional.empty()
-          : Optional.of((T) dependency.get());
+      if (dependency == null) {
+        return Optional.empty();
+      }
+      T value = dependency.get();
+      if (value == null) {
+        throw new NullPointerException(
+            dependency + " returned null which is not allowed for optional bindings");
+      }
+      return Optional.of(value);
+    }
+
+    @Override public String toString() {
+      return "@BindsOptionalOf[" + dependency + ']';
     }
   }
 
@@ -177,6 +192,10 @@ interface Binding {
         arguments[i] = dependencies[i].get();
       }
       return (T) tryInvoke(instance, method, arguments);
+    }
+
+    @Override public String toString() {
+      return "@Provides[" + method.getDeclaringClass().getName() + '.' + method.getName() + "(…)]";
     }
   }
 
@@ -235,6 +254,10 @@ interface Binding {
         arguments[i] = dependencies[i].get();
       }
       return tryInstantiate(constructor, arguments);
+    }
+
+    @Override public String toString() {
+      return "@Inject[" + constructor.getDeclaringClass().getName() + ".<init>(…)]";
     }
   }
 }
