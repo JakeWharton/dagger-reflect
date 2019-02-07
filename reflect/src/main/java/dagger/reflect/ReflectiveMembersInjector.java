@@ -34,11 +34,9 @@ import static dagger.reflect.Reflection.trySet;
 
 final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
   static <T> MembersInjector<T> create(Class<T> cls, BindingGraph graph) {
-    // TODO throw if interface?
-
     Deque<ClassBindings> hierarchyBindings = new ArrayDeque<>();
     Class<?> target = cls;
-    while (target != Object.class) {
+    while (target != Object.class && target != null) {
       Map<Field, Provider<?>> fieldProviders = new LinkedHashMap<>();
       for (Field field : target.getDeclaredFields()) {
         if (field.getAnnotation(Inject.class) == null) {

@@ -176,11 +176,39 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void memberInjectionEmpty() {
+  @Test public void memberInjectionEmptyClass() {
     MemberInjectionEmpty component = backend.create(MemberInjectionEmpty.class);
     MemberInjectionEmpty.Target target = new MemberInjectionEmpty.Target();
     component.inject(target);
     // No state, nothing to verify, except it didn't throw.
+  }
+
+  @Test public void memberInjectionEmptyAbstractClass() {
+    MemberInjectionEmptyAbstract component = backend.create(MemberInjectionEmptyAbstract.class);
+    MemberInjectionEmptyAbstract.Target target = new MemberInjectionEmptyAbstract.Target() {};
+    component.inject(target);
+    // No state, nothing to verify, except it didn't throw.
+  }
+
+  @Test public void memberInjectionEmptyInterface() {
+    MemberInjectionEmptyInterface component = backend.create(MemberInjectionEmptyInterface.class);
+    MemberInjectionEmptyInterface.Target target = new MemberInjectionEmptyInterface.Target() {};
+    component.inject(target);
+    // No state, nothing to verify, except it didn't throw.
+  }
+
+  @Test public void memberInjectionInterface() {
+    MemberInjectionInterface component = backend.create(MemberInjectionInterface.class);
+    class Target implements MemberInjectionInterface.Target {
+      boolean called;
+      @Override public void method(String foo) {
+        called = true;
+      }
+    }
+    Target target = new Target();
+    component.inject(target);
+
+    assertThat(target.called).isFalse();
   }
 
   @Test public void memberInjectionReturnInstance() {
