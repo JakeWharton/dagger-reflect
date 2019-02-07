@@ -388,7 +388,7 @@ public final class IntegrationTest {
   }
 
   @Test public void moduleInterfaceHierarchy() {
-    ModuleInterface component = backend.create(ModuleInterface.class);
+    ModuleInterfaceHierarchy component = backend.create(ModuleInterfaceHierarchy.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 
