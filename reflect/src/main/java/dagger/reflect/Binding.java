@@ -31,35 +31,29 @@ import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.tryInstantiate;
 import static dagger.reflect.Reflection.tryInvoke;
 
-interface Binding<T> extends Provider<T> {
-  Key[] NO_DEPENDENCIES = new Key[0];
+interface Binding {
+  abstract class UnlinkedBinding implements Binding {
+    abstract LinkRequest request();
+    abstract LinkedBinding<?> link(LinkedBinding<?>[] dependencies);
+  }
 
-  boolean isLinked();
-  Key[] dependencies();
-  Binding<T> link(Binding<?>[] dependencies);
+  final class LinkRequest {
+    static final LinkRequest EMPTY = new LinkRequest(new Key[0]);
 
-  abstract class LinkedBinding<T> implements Binding<T> {
-    @Override public final boolean isLinked() {
-      return true;
+    final Key[] keys;
+    final boolean[] optionals;
+
+    LinkRequest(Key[] keys) {
+      this(keys, new boolean[keys.length]);
     }
 
-    @Override public final Key[] dependencies() {
-      throw new UnsupportedOperationException();
-    }
-
-    @Override public final Binding<T> link(Binding<?>[] dependencies) {
-      throw new UnsupportedOperationException();
+    LinkRequest(Key[] keys, boolean[] optionals) {
+      this.keys = keys;
+      this.optionals = optionals;
     }
   }
 
-  abstract class UnlinkedBinding<T> implements Binding<T> {
-    @Override public final boolean isLinked() {
-      return false;
-    }
-
-    @Override public final T get() {
-      throw new UnsupportedOperationException();
-    }
+  abstract class LinkedBinding<T> implements Binding, Provider<T> {
   }
 
   final class Instance<T> extends LinkedBinding<T> {
@@ -74,14 +68,14 @@ interface Binding<T> extends Provider<T> {
     }
   }
 
-  final class UnlinkedBinds<T> extends UnlinkedBinding<T> {
+  final class UnlinkedBinds extends UnlinkedBinding {
     private final Method method;
 
     UnlinkedBinds(Method method) {
       this.method = method;
     }
 
-    @Override public Key[] dependencies() {
+    @Override public LinkRequest request() {
       Type[] parameterTypes = method.getGenericParameterTypes();
       if (parameterTypes.length != 1) {
         throw new IllegalArgumentException(
@@ -89,15 +83,15 @@ interface Binding<T> extends Provider<T> {
       }
       Annotation[][] parameterAnnotations = method.getParameterAnnotations();
       Key dependency = Key.of(findQualifier(parameterAnnotations[0]), parameterTypes[0]);
-      return new Key[] { dependency };
+      return new LinkRequest(new Key[] { dependency });
     }
 
-    @Override public Binding<T> link(Binding<?>[] dependencies) {
-      return (Binding<T>) dependencies[0];
+    @Override public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
+      return dependencies[0];
     }
   }
 
-  final class UnlinkedOptionalBinding<T> extends UnlinkedBinding<Optional<T>> {
+  final class UnlinkedOptionalBinding extends UnlinkedBinding {
     private final Method method;
 
     UnlinkedOptionalBinding(Method method) {
@@ -105,7 +99,7 @@ interface Binding<T> extends Provider<T> {
     }
 
     @Override
-    public Key[] dependencies() {
+    public LinkRequest request() {
       Type[] parameterTypes = method.getGenericParameterTypes();
       if (parameterTypes.length != 0) {
         throw new IllegalArgumentException(
@@ -115,33 +109,31 @@ interface Binding<T> extends Provider<T> {
       Annotation[] methodAnnotations = method.getDeclaredAnnotations();
       Annotation qualifier = findQualifier(methodAnnotations);
       Key dependency = Key.of(qualifier, method.getReturnType());
-      return new Key[] { dependency };
+      return new LinkRequest(new Key[] { dependency }, new boolean[] { true });
     }
 
     @Override
-    public Binding<Optional<T>> link(Binding<?>[] dependencies) {
-      return new LinkedOptionalBinding<>(dependencies);
+    public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
+      return new LinkedOptionalBinding<>(dependencies[0]);
     }
   }
 
   final class LinkedOptionalBinding<T> extends LinkedBinding<Optional<T>> {
-    private final Binding<?>[] dependencies;
+    private final @Nullable LinkedBinding<?> dependency;
 
-    public LinkedOptionalBinding(Binding<?>[] dependencies) {
-      this.dependencies = dependencies;
+    LinkedOptionalBinding(@Nullable LinkedBinding<?> dependency) {
+      this.dependency = dependency;
     }
 
     @Override
     public Optional<T> get() {
-      Binding<?> dependency = dependencies[0];
-      if (dependency == null) {
-        return Optional.empty();
-      }
-      return Optional.of((T) dependency.get());
+      return dependency == null
+          ? Optional.empty()
+          : Optional.of((T) dependency.get());
     }
   }
 
-  final class UnlinkedProvides<T> extends UnlinkedBinding<T> {
+  final class UnlinkedProvides extends UnlinkedBinding {
     private final @Nullable Object instance;
     private final Method method;
 
@@ -150,20 +142,20 @@ interface Binding<T> extends Provider<T> {
       this.method = method;
     }
 
-    @Override public Key[] dependencies() {
+    @Override public LinkRequest request() {
       Type[] parameterTypes = method.getGenericParameterTypes();
       if (parameterTypes.length == 0) {
-        return NO_DEPENDENCIES;
+        return LinkRequest.EMPTY;
       }
       Annotation[][] parameterAnnotations = method.getParameterAnnotations();
       Key[] dependencies = new Key[parameterTypes.length];
       for (int i = 0; i < parameterTypes.length; i++) {
         dependencies[i] = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
       }
-      return dependencies;
+      return new LinkRequest(dependencies);
     }
 
-    @Override public Binding<T> link(Binding<?>[] dependencies) {
+    @Override public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
       return new LinkedProvides<>(instance, method, dependencies);
     }
   }
@@ -171,15 +163,15 @@ interface Binding<T> extends Provider<T> {
   final class LinkedProvides<T> extends LinkedBinding<T> {
     private final @Nullable Object instance;
     private final Method method;
-    private final Binding<?>[] dependencies;
+    private final LinkedBinding<?>[] dependencies;
 
-    LinkedProvides(@Nullable Object instance, Method method, Binding<?>[] dependencies) {
+    LinkedProvides(@Nullable Object instance, Method method, LinkedBinding<?>[] dependencies) {
       this.instance = instance;
       this.method = method;
       this.dependencies = dependencies;
     }
 
-    @Override public T get() {
+    @Override public @Nullable T get() {
       Object[] arguments = new Object[dependencies.length];
       for (int i = 0; i < arguments.length; i++) {
         arguments[i] = dependencies[i].get();
@@ -188,7 +180,7 @@ interface Binding<T> extends Provider<T> {
     }
   }
 
-  final class UnlinkedJustInTime<T> extends UnlinkedBinding<T> {
+  final class UnlinkedJustInTime<T> extends UnlinkedBinding {
     private final Class<T> cls;
     private final Constructor<T> constructor;
 
@@ -197,7 +189,7 @@ interface Binding<T> extends Provider<T> {
       this.constructor = constructor;
     }
 
-    @Override public Key[] dependencies() {
+    @Override public LinkRequest request() {
       // TODO field and method bindings? reuse some/all of reflective members injector somehow?
       Class<?> target = cls;
       while (target != Object.class) {
@@ -220,19 +212,19 @@ interface Binding<T> extends Provider<T> {
       for (int i = 0; i < parameterTypes.length; i++) {
         dependencies[i] = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
       }
-      return dependencies;
+      return new LinkRequest(dependencies);
     }
 
-    @Override public Binding<T> link(Binding<?>[] dependencies) {
+    @Override public LinkedBinding<T> link(LinkedBinding<?>[] dependencies) {
       return new LinkedJustInTime<>(constructor, dependencies);
     }
   }
 
   final class LinkedJustInTime<T> extends LinkedBinding<T> {
     private final Constructor<T> constructor;
-    private final Binding<?>[] dependencies;
+    private final LinkedBinding<?>[] dependencies;
 
-    LinkedJustInTime(Constructor<T> constructor, Binding<?>[] dependencies) {
+    LinkedJustInTime(Constructor<T> constructor, LinkedBinding<?>[] dependencies) {
       this.constructor = constructor;
       this.dependencies = dependencies;
     }

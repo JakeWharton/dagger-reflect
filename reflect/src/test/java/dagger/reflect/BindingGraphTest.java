@@ -22,7 +22,7 @@ import static dagger.reflect.Annotations.named;
 import static org.junit.Assert.fail;
 
 public final class BindingGraphTest {
-  static class DummyBinding extends Binding.UnlinkedBinding<Object> {
+  static class DummyBinding extends Binding.UnlinkedBinding {
     private final Object value;
     private final Key[] dependencies;
 
@@ -31,11 +31,11 @@ public final class BindingGraphTest {
       this.dependencies = dependencies;
     }
 
-    @Override public Key[] dependencies() {
-      return dependencies;
+    @Override public LinkRequest request() {
+      return new LinkRequest(dependencies);
     }
 
-    @Override public Binding<Object> link(Binding<?>[] dependencies) {
+    @Override public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
       return new Instance<>(value);
     }
 
@@ -54,7 +54,7 @@ public final class BindingGraphTest {
         .add(keyC, new DummyBinding("C", keyA))
         .build();
     try {
-      graph.getBinding(keyA);
+      graph.getProvider(keyA);
       fail();
     } catch (IllegalStateException e) {
       assertThat(e).hasMessageThat().isEqualTo("Dependency cycle detected!\n"

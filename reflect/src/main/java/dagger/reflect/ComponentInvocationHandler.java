@@ -22,6 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.DaggerReflect.notImplemented;
@@ -86,8 +87,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
       }
 
       Key key = Key.of(findQualifier(method.getDeclaredAnnotations()), returnType);
-      Binding<?> binding = graph.getBinding(key);
-      return new BindingMethodInvocationHandler(binding);
+      Provider<?> provider = graph.getProvider(key);
+      return new ProviderMethodInvocationHandler(provider);
     }
 
     throw new IllegalStateException(method.toString()); // TODO unsupported method shape
@@ -97,15 +98,15 @@ final class ComponentInvocationHandler implements InvocationHandler {
     @Nullable Object invoke(Object[] args);
   }
 
-  private static final class BindingMethodInvocationHandler implements MethodInvocationHandler {
-    private final Binding<?> binding;
+  private static final class ProviderMethodInvocationHandler implements MethodInvocationHandler {
+    private final Provider<?> provider;
 
-    BindingMethodInvocationHandler(Binding<?> binding) {
-      this.binding = binding;
+    ProviderMethodInvocationHandler(Provider<?> provider) {
+      this.provider = provider;
     }
 
     @Override public Object invoke(Object[] args) {
-      return binding.get();
+      return provider.get();
     }
   }
 

@@ -63,6 +63,7 @@ subprojects {
     options.errorprone {
       disableWarningsInGeneratedCode = true
       check("JavaxInjectOnAbstractMethod", CheckSeverity.OFF)
+      check("NullAway", CheckSeverity.ERROR)
       option("NullAway:AnnotatedPackages", "dagger.reflect")
     }
   }
