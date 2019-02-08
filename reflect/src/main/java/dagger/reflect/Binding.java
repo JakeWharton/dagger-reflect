@@ -191,7 +191,10 @@ interface Binding {
       for (int i = 0; i < arguments.length; i++) {
         arguments[i] = dependencies[i].get();
       }
-      return (T) tryInvoke(instance, method, arguments);
+      // The binding is associated with the return type of method as key.
+      @SuppressWarnings("unchecked")
+      T value = (T) tryInvoke(instance, method, arguments);
+      return value;
     }
 
     @Override public String toString() {

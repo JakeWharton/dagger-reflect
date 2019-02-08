@@ -37,8 +37,11 @@ public final class DaggerCodegen {
   private static <C> Class<? extends C> findImplementationClass(Class<C> componentClass) {
     String implementationName = deduceImplementationClassName(componentClass);
     try {
-      //noinspection unchecked Dagger compiler guarantees this cast to succeed.
-      return (Class<? extends C>) componentClass.getClassLoader().loadClass(implementationName);
+      // Dagger compiler guarantees this cast to succeed.
+      @SuppressWarnings("unchecked")
+      Class<? extends C> implementationClass = (Class<? extends C>)
+          componentClass.getClassLoader().loadClass(implementationName);
+      return implementationClass;
     } catch (ClassNotFoundException e) {
       throw new IllegalStateException("Unable to find generated component implementation "
           + implementationName

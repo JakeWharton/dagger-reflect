@@ -75,6 +75,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
             "Members injection methods may only return the injected type or void: " + method);
       }
 
+      // RedundantCast: see https://youtrack.jetbrains.com/issue/IDEA-206560
+      @SuppressWarnings({"unchecked", "RedundantCast"})
       MembersInjector<Object> injector =
           (MembersInjector<Object>) ReflectiveMembersInjector.create(parameterTypes[0], graph);
       return new MembersInjectorMethodInvocationHandler(injector, returnInstance);
