@@ -43,8 +43,6 @@ import static javax.tools.Diagnostic.Kind.ERROR;
 
 @AutoService(Processor.class)
 public final class DaggerReflectCompiler extends AbstractProcessor {
-  private static final ClassName DAGGER_REFLECT = ClassName.get(DaggerReflect.class);
-
   private Filer filer;
   private Messager messager;
 
@@ -106,13 +104,13 @@ public final class DaggerReflectCompiler extends AbstractProcessor {
         .addMethod(MethodSpec.methodBuilder("create")
             .addModifiers(PUBLIC, STATIC)
             .returns(component)
-            .addStatement("return $T.create($T.class)", DAGGER_REFLECT, component)
+            .addStatement("return $T.create($T.class)", DaggerReflect.class, component)
             .build());
     if (builder != null) {
       type.addMethod(MethodSpec.methodBuilder("builder")
           .addModifiers(PUBLIC, STATIC)
           .returns(builder)
-          .addStatement("return $T.builder($T.class)", DAGGER_REFLECT, builder)
+          .addStatement("return $T.builder($T.class)", DaggerReflect.class, builder)
           .build());
     }
     return type.build();
