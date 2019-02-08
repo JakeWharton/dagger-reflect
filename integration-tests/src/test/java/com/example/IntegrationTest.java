@@ -69,6 +69,20 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo(Optional.of("foo"));
   }
 
+  @Test public void optionalBindingNullable() {
+    ignoreCodegenBackend();
+
+    OptionalBindingNullable component = backend.create(OptionalBindingNullable.class);
+    try {
+      component.string();
+      fail();
+    } catch (NullPointerException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("@Provides[com.example.OptionalBindingNullable$Module1.foo(…)] "
+              + "returned null which is not allowed for optional bindings");
+    }
+  }
+
   @Test public void optionalBindingAbsent() {
     OptionalBindingAbsent component = backend.create(OptionalBindingAbsent.class);
     assertThat(component.string()).isEqualTo(Optional.empty());
@@ -434,5 +448,9 @@ public final class IntegrationTest {
 
   private void ignoreReflectionBackend() {
     assumeTrue("Not yet implemented for reflection backend", backend != Backend.REFLECT);
+  }
+
+  private void ignoreCodegenBackend() {
+    assumeTrue("Not supported for codegen backend", backend != Backend.CODEGEN);
   }
 }
