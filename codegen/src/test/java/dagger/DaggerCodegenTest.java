@@ -17,6 +17,7 @@ package dagger;
 
 import org.junit.Test;
 import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
 
 public final class DaggerCodegenTest {
   @Test public void create() {
@@ -24,8 +25,43 @@ public final class DaggerCodegenTest {
     assertThat(actual).isInstanceOf(DaggerNoBuilderComponent.class);
   }
 
+  @Test public void createNoAnnotation() {
+    try {
+      Dagger.create(NoBuilderComponentNoAnnotation.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("Unable to find generated component implementation "
+              + "dagger.DaggerNoBuilderComponentNoAnnotation for component "
+              + "dagger.NoBuilderComponentNoAnnotation");
+    }
+  }
+
   @Test public void builder() {
     BuilderComponent.Builder actual = Dagger.builder(BuilderComponent.Builder.class);
     assertThat(actual).isInstanceOf(DaggerBuilderComponent.builder().getClass());
+  }
+
+  @Test public void builderNoAnnotation() {
+    try {
+      Dagger.create(BuilderComponentNoAnnotation.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("Unable to find generated component implementation "
+              + "dagger.DaggerBuilderComponentNoAnnotation for component "
+              + "dagger.BuilderComponentNoAnnotation");
+    }
+  }
+
+  @Test public void builderNotNested() {
+    try {
+      Dagger.builder(BuilderNotNested.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo(
+              "dagger.BuilderNotNested is not a nested type inside of a component interface");
+    }
   }
 }
