@@ -446,6 +446,35 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("foo");
   }
 
+  @Test public void primitiveAutoBoxing() {
+    ignoreReflectionBackend();
+
+    PrimitiveAutoBoxing component = backend.create(PrimitiveAutoBoxing.class);
+    assertThat(component.getByte()).isEqualTo((byte) 8);
+    assertThat(component.getShort()).isEqualTo((short) 16);
+    assertThat(component.getInteger()).isEqualTo(32);
+    assertThat(component.getLong()).isEqualTo(64L);
+    assertThat(component.getFloat()).isEqualTo(-32.0f);
+    assertThat(component.getDouble()).isEqualTo(-64.0);
+    assertThat(component.getBoolean()).isEqualTo(true);
+    assertThat(component.getCharacter()).isEqualTo('\u221E');
+  }
+
+  @Test public void primitiveAutoUnboxing() {
+    ignoreReflectionBackend();
+
+    PrimitiveAutoUnboxing component = backend.create(PrimitiveAutoUnboxing.class);
+    assertThat(component.getByte()).isEqualTo((byte) 8);
+    assertThat(component.getShort()).isEqualTo((short) 16);
+    assertThat(component.getInt()).isEqualTo(32);
+    assertThat(component.getLong()).isEqualTo(64L);
+    assertThat(component.getFloat()).isEqualTo(-32.0f);
+    assertThat(component.getDouble()).isEqualTo(-64.0);
+    assertThat(component.getBoolean()).isEqualTo(true);
+    assertThat(component.getChar()).isEqualTo('\u221E');
+  }
+
+
   private void ignoreReflectionBackend() {
     assumeTrue("Not yet implemented for reflection backend", backend != Backend.REFLECT);
   }
