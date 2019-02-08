@@ -43,6 +43,6 @@ final class ReflectiveJustInTimeProvider implements BindingGraph.JustInTimeProvi
       return null; // Types without an @Inject constructor cannot be just-in-time satisfied.
     }
 
-    return new Binding.UnlinkedJustInTime<>(cls, target);
+    return new UnlinkedJustInTimeBinding<>(cls, target);
   }
 }

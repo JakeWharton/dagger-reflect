@@ -88,7 +88,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
           .justInTimeProvider(new ReflectiveJustInTimeProvider());
 
       for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
-        graphBuilder.add(entry.getKey(), new Binding.Instance<>(entry.getValue()));
+        graphBuilder.add(entry.getKey(), new LinkedInstanceBinding<>(entry.getValue()));
       }
       for (Map.Entry<Class<?>, Object> entry : moduleInstances.entrySet()) {
         ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), graphBuilder);
