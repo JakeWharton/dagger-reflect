@@ -48,18 +48,19 @@ public final class DaggerReflect {
       throw new IllegalArgumentException(builder.toString());
     }
 
-    Annotation scope = findScope(componentClass.getAnnotations());
-    if (scope != null) {
+    Annotation scopeAnnotation = findScope(componentClass.getAnnotations());
+    if (scopeAnnotation != null) {
       throw notImplemented("Scoped components");
     }
 
-    BindingGraph.Builder graphBuilder = new BindingGraph.Builder()
+    BindingMap.Builder bindingsBuilder = new BindingMap.Builder()
         .justInTimeProvider(new ReflectiveJustInTimeProvider());
 
     for (Class<?> module : component.modules()) {
-      ReflectiveModuleParser.parse(module, null, graphBuilder);
+      ReflectiveModuleParser.parse(module, null, bindingsBuilder);
     }
-    return ComponentInvocationHandler.create(componentClass, graphBuilder.build());
+    Scope scope = new Scope(bindingsBuilder.build());
+    return ComponentInvocationHandler.create(componentClass, scope);
   }
 
   public static <B> B builder(Class<B> builderClass) {

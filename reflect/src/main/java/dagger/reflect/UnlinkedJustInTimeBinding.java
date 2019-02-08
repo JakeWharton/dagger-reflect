@@ -20,7 +20,7 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
     this.constructor = constructor;
   }
 
-  @Override public LinkRequest request() {
+  @Override public LinkedBinding<?> link(Linker linker) {
     // TODO field and method bindings? reuse some/all of reflective members injector somehow?
     Class<?> target = cls;
     while (target != Object.class) {
@@ -39,15 +39,14 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
 
     Type[] parameterTypes = constructor.getGenericParameterTypes();
     Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
-    Key[] dependencies = new Key[parameterTypes.length];
-    for (int i = 0; i < parameterTypes.length; i++) {
-      dependencies[i] = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
-    }
-    return new LinkRequest(dependencies);
-  }
 
-  @Override public LinkedBinding<T> link(LinkedBinding<?>[] dependencies) {
-    return new LinkedJustInTimeBinding<>(constructor, dependencies);
+    LinkedBinding<?>[] bindings = new LinkedBinding<?>[parameterTypes.length];
+    for (int i = 0; i < parameterTypes.length; i++) {
+      Key key = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
+      bindings[i] = linker.get(key);
+    }
+
+    return new LinkedJustInTimeBinding<>(constructor, bindings);
   }
 
   @Override public String toString() {

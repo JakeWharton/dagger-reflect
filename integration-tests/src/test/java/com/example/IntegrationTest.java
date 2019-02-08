@@ -492,7 +492,7 @@ public final class IntegrationTest {
       component.string();
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat().isEqualTo("Dependency cycle detected!\n"
+      assertThat(e).hasMessageThat().isEqualTo("Dependency cycle for java.lang.String\n"
           + " * Requested: java.lang.String\n"
           + "     from @Provides[com.example.ProviderCycle$Module1.longToString(…)]\n"
           + " * Requested: java.lang.Long\n"

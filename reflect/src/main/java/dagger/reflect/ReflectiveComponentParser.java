@@ -15,8 +15,7 @@ import static dagger.reflect.Reflection.findQualifier;
 final class ReflectiveComponentParser {
   private static final LinkedBinding<?>[] NO_BINDINGS = new LinkedBinding<?>[0];
 
-  static void parse(Class<?> moduleClass, Object instance,
-      BindingGraph.Builder graphBuilder) {
+  static void parse(Class<?> moduleClass, Object instance, BindingMap.Builder bindingsBuilder) {
     Set<Class<?>> seen = new LinkedHashSet<>();
     Deque<Class<?>> queue = new ArrayDeque<>();
     queue.add(moduleClass);
@@ -37,7 +36,7 @@ final class ReflectiveComponentParser {
 
         Binding binding = new LinkedProvidesBinding<>(instance, method, NO_BINDINGS);
 
-        graphBuilder.add(key, binding);
+        bindingsBuilder.add(key, binding);
       }
 
       Class<?> superclass = target.getSuperclass();

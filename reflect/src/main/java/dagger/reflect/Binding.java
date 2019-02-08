@@ -18,29 +18,15 @@ package dagger.reflect;
 import javax.inject.Provider;
 
 interface Binding {
+  LinkedBinding<?> link(Linker linker);
+  @Override String toString();
+
   abstract class UnlinkedBinding implements Binding {
-    abstract LinkRequest request();
-    abstract LinkedBinding<?> link(LinkedBinding<?>[] dependencies);
-    @Override public abstract String toString();
-  }
-
-  final class LinkRequest {
-    static final LinkRequest EMPTY = new LinkRequest(new Key[0]);
-
-    final Key[] keys;
-    final boolean[] optionals;
-
-    LinkRequest(Key[] keys) {
-      this(keys, new boolean[keys.length]);
-    }
-
-    LinkRequest(Key[] keys, boolean[] optionals) {
-      this.keys = keys;
-      this.optionals = optionals;
-    }
   }
 
   abstract class LinkedBinding<T> implements Binding, Provider<T> {
-    @Override public abstract String toString();
+    @Override public final LinkedBinding<?> link(Linker linker) {
+      return this;
+    }
   }
 }

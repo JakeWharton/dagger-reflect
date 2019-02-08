@@ -14,8 +14,7 @@ public final class UnlinkedOptionalBinding extends UnlinkedBinding {
     this.method = method;
   }
 
-  @Override
-  public LinkRequest request() {
+  @Override public LinkedBinding<?> link(Linker linker) {
     Type[] parameterTypes = method.getGenericParameterTypes();
     if (parameterTypes.length != 0) {
       throw new IllegalArgumentException(
@@ -24,13 +23,10 @@ public final class UnlinkedOptionalBinding extends UnlinkedBinding {
 
     Annotation[] methodAnnotations = method.getDeclaredAnnotations();
     Annotation qualifier = findQualifier(methodAnnotations);
-    Key dependency = Key.of(qualifier, method.getReturnType());
-    return new LinkRequest(new Key[] { dependency }, new boolean[] { true });
-  }
+    Key key = Key.of(qualifier, method.getReturnType());
 
-  @Override
-  public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
-    return new LinkedOptionalBinding<>(dependencies[0]);
+    LinkedBinding<?> dependency = linker.find(key);
+    return new LinkedOptionalBinding<>(dependency);
   }
 
   @Override public String toString() {
