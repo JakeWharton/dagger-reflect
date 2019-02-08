@@ -28,6 +28,11 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("foo");
   }
 
+  @Test public void componentProviderNull() {
+    ComponentProviderNull component = backend.create(ComponentProviderNull.class);
+    assertThat(component.string()).isNull();
+  }
+
   @Test public void componentProviderQualified() {
     ComponentProviderQualified component = backend.create(ComponentProviderQualified.class);
     assertThat(component.string()).isEqualTo("foo");
@@ -41,6 +46,11 @@ public final class IntegrationTest {
   @Test public void bindsProvider() {
     BindsProvider component = backend.create(BindsProvider.class);
     assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void bindsProviderNull() {
+    BindsProviderNull component = backend.create(BindsProviderNull.class);
+    assertThat(component.string()).isNull();
   }
 
   @Test public void bindIntoSet() {
