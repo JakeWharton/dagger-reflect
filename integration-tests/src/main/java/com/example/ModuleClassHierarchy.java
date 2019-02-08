@@ -7,17 +7,17 @@ import dagger.Provides;
 
 @Component(modules = ModuleClassHierarchy.Module1.class)
 interface ModuleClassHierarchy {
-  CharSequence string();
+  Number number();
 
   @Module
   abstract class Module1 extends BaseModule {
-    @Provides static String string() {
-      return "foo";
+    @Provides static Integer integer() {
+      return 42;
     }
   }
 
   @Module
   abstract class BaseModule {
-    @Binds abstract CharSequence charSequence(String foo);
+    @Binds abstract Number number(Integer num);
   }
 }

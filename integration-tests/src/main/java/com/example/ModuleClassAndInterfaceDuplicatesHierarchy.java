@@ -7,7 +7,7 @@ import dagger.Provides;
 
 @Component(modules = ModuleClassAndInterfaceDuplicatesHierarchy.Module1.class)
 interface ModuleClassAndInterfaceDuplicatesHierarchy {
-  CharSequence string();
+  Number number();
 
   @Module
   abstract class Module1 extends BaseModule implements InterfaceModule {
@@ -15,13 +15,13 @@ interface ModuleClassAndInterfaceDuplicatesHierarchy {
 
   @Module
   abstract class BaseModule implements InterfaceModule {
-    @Provides static String string() {
-      return "foo";
+    @Provides static Integer integer() {
+      return 42;
     }
   }
 
   @Module
   interface InterfaceModule {
-    @Binds CharSequence charSequence(String foo);
+    @Binds Number number(Integer num);
   }
 }
