@@ -40,7 +40,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
           + " must be public in order to be reflectively created");
     }
     return builderClass.cast(
-        Proxy.newProxyInstance(builderClass.getClassLoader(), new Class[] { builderClass },
+        Proxy.newProxyInstance(builderClass.getClassLoader(), new Class<?>[] { builderClass },
             new ComponentBuilderInvocationHandler(componentClass, builderClass, modules,
                 dependencies)));
   }

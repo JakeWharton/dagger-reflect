@@ -30,7 +30,7 @@ import static dagger.reflect.Reflection.findQualifier;
 
 final class ComponentInvocationHandler implements InvocationHandler {
   static <T> T create(Class<T> cls, BindingGraph graph) {
-    return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class[] { cls },
+    return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls },
         new ComponentInvocationHandler(graph)));
   }
 
