@@ -7,13 +7,13 @@ import dagger.Provides;
 
 @Component(modules = BindsProvider.Module1.class)
 interface BindsProvider {
-  CharSequence string();
+  Number number();
 
   @Module
   abstract class Module1 {
-    @Provides static String string() {
-      return "foo";
+    @Provides static Integer integer() {
+      return 42;
     }
-    @Binds abstract CharSequence charSequence(String foo);
+    @Binds abstract Number number(Integer num);
   }
 }

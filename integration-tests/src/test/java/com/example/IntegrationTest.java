@@ -45,7 +45,7 @@ public final class IntegrationTest {
 
   @Test public void bindsProvider() {
     BindsProvider component = backend.create(BindsProvider.class);
-    assertThat(component.string()).isEqualTo("foo");
+    assertThat(component.number()).isEqualTo(42);
   }
 
   @Test public void bindsProviderNull() {
@@ -415,18 +415,18 @@ public final class IntegrationTest {
   @Test public void moduleClassAndInterfaceHierarchy() {
     ModuleClassAndInterfaceHierarchy component =
         backend.create(ModuleClassAndInterfaceHierarchy.class);
-    assertThat(component.string()).isEqualTo("foo");
+    assertThat(component.number()).isEqualTo(42);
   }
 
   @Test public void moduleClassAndInterfaceDuplicatesHierarchy() {
     ModuleClassAndInterfaceDuplicatesHierarchy component =
         backend.create(ModuleClassAndInterfaceDuplicatesHierarchy.class);
-    assertThat(component.string()).isEqualTo("foo");
+    assertThat(component.number()).isEqualTo(42);
   }
 
   @Test public void moduleClassHierarchy() {
     ModuleClassHierarchy component = backend.create(ModuleClassHierarchy.class);
-    assertThat(component.string()).isEqualTo("foo");
+    assertThat(component.number()).isEqualTo(42);
   }
 
   @Test public void moduleClassHierarchyStatics() {
@@ -436,12 +436,12 @@ public final class IntegrationTest {
 
   @Test public void moduleInterface() {
     ModuleInterface component = backend.create(ModuleInterface.class);
-    assertThat(component.string()).isEqualTo("foo");
+    assertThat(component.number()).isEqualTo(42);
   }
 
   @Test public void moduleInterfaceHierarchy() {
     ModuleInterfaceHierarchy component = backend.create(ModuleInterfaceHierarchy.class);
-    assertThat(component.string()).isEqualTo("foo");
+    assertThat(component.number()).isEqualTo(42);
   }
 
   @Test public void nestedComponent() {
