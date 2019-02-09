@@ -3,6 +3,7 @@ package dagger.reflect;
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import javax.inject.Inject;
 import org.jetbrains.annotations.Nullable;
@@ -18,10 +19,14 @@ final class ReflectiveJustInTimeProvider implements BindingGraph.JustInTimeProvi
     }
 
     Type type = key.type();
-    if (!(type instanceof Class<?>)) {
-      return null; // Parameterized/array types can't be just-in-time satisfied.
+    Class<Object> cls;
+    if (type instanceof ParameterizedType) {
+      cls = (Class<Object>) ((ParameterizedType) type).getRawType();
+    } else if (type instanceof Class<?>) {
+      cls = (Class<Object>) type;
+    } else {
+      return null; // Array types can't be just-in-time satisfied.
     }
-    Class<Object> cls = (Class<Object>) type;
 
     Annotation scope = findScope(cls.getAnnotations());
     if (scope != null) {
