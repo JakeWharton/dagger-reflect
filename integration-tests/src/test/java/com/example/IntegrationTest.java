@@ -54,8 +54,6 @@ public final class IntegrationTest {
   }
 
   @Test public void bindIntoSet() {
-    ignoreReflectionBackend();
-
     BindsIntoSet component = backend.create(BindsIntoSet.class);
     assertThat(component.strings()).containsExactly("foo");
   }
