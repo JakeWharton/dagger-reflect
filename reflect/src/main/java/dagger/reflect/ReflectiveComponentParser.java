@@ -27,7 +27,7 @@ final class ReflectiveComponentParser {
       }
 
       for (Method method : target.getDeclaredMethods()) {
-        if (method.getParameterCount() != 0 || method.getReturnType() == void.class) {
+        if (method.getParameterTypes().length != 0 || method.getReturnType() == void.class) {
           continue; // Not a provision method.
         }
 

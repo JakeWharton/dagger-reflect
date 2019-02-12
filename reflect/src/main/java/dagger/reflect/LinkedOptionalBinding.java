@@ -2,8 +2,10 @@ package dagger.reflect;
 
 import dagger.reflect.Binding.LinkedBinding;
 import java.util.Optional;
+import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jetbrains.annotations.Nullable;
 
+@IgnoreJRERequirement // Only linked when requested by user code referencing j.u.Optional.
 final class LinkedOptionalBinding<T> extends LinkedBinding<Optional<T>> {
   private final @Nullable LinkedBinding<T> dependency;
 

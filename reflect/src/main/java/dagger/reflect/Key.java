@@ -31,9 +31,30 @@ abstract class Key {
 
   @Override public final String toString() {
     Annotation qualifier = qualifier();
-    String type = type().getTypeName(); // TODO 1.8 method
+    String type = getTypeName(type());
     return qualifier != null
         ? qualifier.toString() + ' ' + type
         : type;
+  }
+
+  /** Backport of {@link Type#getTypeName()}. */
+  private static String getTypeName(Type type) {
+    if (type instanceof Class<?>) {
+      Class<?> cls = (Class<?>) type;
+      if (cls.isArray()) {
+        int cardinality = 0;
+        do {
+          cardinality++;
+          cls = cls.getComponentType();
+        } while (cls.isArray());
+        StringBuilder name = new StringBuilder(cls.getName());
+        for (int i = 0; i < cardinality; i++) {
+          name.append("[]");
+        }
+        return name.toString();
+      }
+      return cls.getName();
+    }
+    return type.toString();
   }
 }

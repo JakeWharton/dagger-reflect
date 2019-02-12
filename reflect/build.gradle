@@ -1,11 +1,19 @@
 apply plugin: 'java-library'
+apply plugin: 'ru.vyarus.animalsniffer'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
   implementation deps.dagger.runtime
   implementation deps.auto.value.annotations
   implementation deps.jetbrainsAnnotations
+  implementation deps.animalSnifferAnnotations
 
   annotationProcessor deps.auto.value.compiler
+
+  signature 'org.codehaus.mojo.signature:java18:1.0@signature'
+  signature 'net.sf.androidscents.signature:android-api-level-21:5.0.1_r2@signature'
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
