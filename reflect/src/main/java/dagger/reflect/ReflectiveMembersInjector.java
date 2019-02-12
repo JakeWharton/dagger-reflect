@@ -34,7 +34,7 @@ import static dagger.reflect.Reflection.trySet;
 
 final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
   static <T> MembersInjector<T> create(Class<T> cls, BindingGraph graph) {
-    Deque<ClassBindings> hierarchyBindings = new ArrayDeque<>();
+    Deque<ClassInjector<T>> classInjectors = new ArrayDeque<>();
     Class<?> target = cls;
     while (target != Object.class && target != null) {
       Map<Field, Provider<?>> fieldProviders = new LinkedHashMap<>();
@@ -87,43 +87,43 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
       }
 
       if (!fieldProviders.isEmpty() || !methodProviders.isEmpty()) {
-        // [@Inject] Fields and methods in superclasses are injected before those in subclasses.
-        // we are walking up (getSuperclass), but spec says @Inject should be walking down the hierarchy
-        hierarchyBindings.addFirst(new ClassBindings(fieldProviders, methodProviders));
+        // Per JSR 330, fields and methods in superclasses are injected before those in subclasses.
+        // We are traversing upward in the class hierarchy so each injector is prepended to the
+        // collection to ensure regular iteration will honor this contract.
+        classInjectors.addFirst(new ClassInjector<>(fieldProviders, methodProviders));
       }
 
       target = target.getSuperclass();
     }
 
-    return new ReflectiveMembersInjector<>(hierarchyBindings);
+    return new ReflectiveMembersInjector<>(classInjectors);
   }
 
-  private final Iterable<ClassBindings> classBindings;
+  private final Iterable<ClassInjector<T>> classInjectors;
 
-  private ReflectiveMembersInjector(Iterable<ClassBindings> classBindings) {
-    this.classBindings = classBindings;
+  private ReflectiveMembersInjector(Iterable<ClassInjector<T>> classInjectors) {
+    this.classInjectors = classInjectors;
   }
 
   @Override public void injectMembers(T instance) {
-    for (ClassBindings classBinding : classBindings) {
-      classBinding.injectMembers(instance);
+    for (ClassInjector<T> classInjector : classInjectors) {
+      classInjector.injectMembers(instance);
     }
   }
 
-  private static final class ClassBindings {
+  private static final class ClassInjector<T> implements MembersInjector<T> {
     final Map<Field, Provider<?>> fieldProviders;
     final Map<Method, Provider<?>[]> methodProviders;
 
-    ClassBindings(
+    ClassInjector(
         Map<Field, Provider<?>> fieldProviders,
         Map<Method, Provider<?>[]> methodProviders) {
       this.fieldProviders = fieldProviders;
       this.methodProviders = methodProviders;
     }
 
-    void injectMembers(Object instance) {
-      // [@Inject] Constructors are injected first, followed by fields, and then methods.
-      // Note: the constructor injection is in dagger.reflect.Binding.UnlinkedJustInTime.dependencies
+    @Override public void injectMembers(T instance) {
+      // Per JSR 330, fields are injected before methods.
       for (Map.Entry<Field, Provider<?>> fieldProvider : fieldProviders.entrySet()) {
         trySet(instance, fieldProvider.getKey(), fieldProvider.getValue().get());
       }
