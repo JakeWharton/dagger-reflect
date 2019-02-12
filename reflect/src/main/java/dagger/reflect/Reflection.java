@@ -61,7 +61,7 @@ final class Reflection {
     try {
       field.set(instance, value);
     } catch (IllegalAccessException e) {
-      throw new AssertionError("Unable to set " + value + " to " + field + " on " + instance, e);
+      throw new RuntimeException("Unable to set " + value + " to " + field + " on " + instance, e);
     }
   }
 
@@ -72,7 +72,7 @@ final class Reflection {
     try {
       return method.invoke(instance, arguments);
     } catch (IllegalAccessException e) {
-      throw new AssertionError("Unable to invoke " + method + " on " + instance, e);
+      throw new RuntimeException("Unable to invoke " + method + " on " + instance, e);
     } catch (InvocationTargetException e) {
       Throwable cause = e.getCause();
       if (cause instanceof RuntimeException) throw (RuntimeException) cause;
@@ -88,7 +88,7 @@ final class Reflection {
     try {
       return constructor.newInstance(arguments);
     } catch (InstantiationException | IllegalAccessException e) {
-      throw new AssertionError("Unable to invoke " + constructor, e);
+      throw new RuntimeException("Unable to invoke " + constructor, e);
     } catch (InvocationTargetException e) {
       Throwable cause = e.getCause();
       if (cause instanceof RuntimeException) throw (RuntimeException) cause;

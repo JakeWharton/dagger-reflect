@@ -25,6 +25,7 @@ buildscript {
       ],
       'jetbrainsAnnotations': 'org.jetbrains:annotations:16.0.3',
       'guava': 'com.google.guava:guava:27.0.1-jre',
+      'animalSnifferAnnotations': 'org.codehaus.mojo:animal-sniffer-annotations:1.16',
   ]
 
   repositories {
@@ -34,6 +35,7 @@ buildscript {
 
   dependencies {
     classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.7'
+    classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.4.6'
   }
 }
 
