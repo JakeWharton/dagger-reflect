@@ -36,7 +36,7 @@ public final class BindingGraphTest {
     }
 
     @Override public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
-      return new Instance<>(value);
+      return new LinkedInstanceBinding<>(value);
     }
 
     @Override public String toString() {

@@ -35,7 +35,7 @@ final class ReflectiveComponentParser {
         Type type = method.getGenericReturnType();
         Key key = Key.of(qualifier, type);
 
-        Binding binding = new Binding.LinkedProvides<>(instance, method, NO_BINDINGS);
+        Binding binding = new LinkedProvidesBinding<>(instance, method, NO_BINDINGS);
 
         graphBuilder.add(key, binding);
       }
