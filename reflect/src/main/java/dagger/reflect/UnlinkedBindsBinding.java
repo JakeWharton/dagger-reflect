@@ -28,4 +28,8 @@ final class UnlinkedBindsBinding extends UnlinkedBinding {
   @Override public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
     return dependencies[0];
   }
+
+  @Override public String toString() {
+    return "@Binds[" + method.getDeclaringClass().getName() + '.' + method.getName() + "(…)]";
+  }
 }

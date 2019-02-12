@@ -128,16 +128,16 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
               moduleInstances.put(parameterClass, args[0]);
             } else {
               throw new IllegalStateException(
-                  "@Component.Builder has setters for modules or components that aren't required: "
-                      + "[" + method + "]");
+                  "@Component.Builder has setters for modules that aren't required: "
+                      + method.getDeclaringClass().getName() + '.' + method.getName());
             }
           } else {
             if (dependencyInstances.containsKey(parameterClass)) {
               dependencyInstances.put(parameterClass, args[0]);
             } else {
               throw new IllegalStateException(
-                  "@Component.Builder has setters for modules or components that aren't required: "
-                      + "[" + method + "]");
+                  "@Component.Builder has setters for dependencies that aren't required: "
+                      + method.getDeclaringClass().getName() + '.' + method.getName());
             }
           }
         } else {

@@ -21,6 +21,7 @@ interface Binding {
   abstract class UnlinkedBinding implements Binding {
     abstract LinkRequest request();
     abstract LinkedBinding<?> link(LinkedBinding<?>[] dependencies);
+    @Override public abstract String toString();
   }
 
   final class LinkRequest {

@@ -6,11 +6,6 @@ dependencies {
   implementation deps.jetbrainsAnnotations
 
   annotationProcessor deps.auto.value.compiler
-
-  testImplementation deps.junit
-  testImplementation deps.truth
-
-  testAnnotationProcessor deps.auto.value.compiler
 }
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

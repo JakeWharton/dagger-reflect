@@ -484,6 +484,268 @@ public final class IntegrationTest {
     assertThat(component.getChar()).isEqualTo('\u221E');
   }
 
+  @Test public void providerCycle() {
+    ignoreCodegenBackend();
+
+    ProviderCycle component = backend.create(ProviderCycle.class);
+    try {
+      component.string();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().isEqualTo("Dependency cycle detected!\n"
+          + " * Requested: java.lang.String\n"
+          + "     from @Provides[com.example.ProviderCycle$Module1.longToString(…)]\n"
+          + " * Requested: java.lang.Long\n"
+          + "     from @Provides[com.example.ProviderCycle$Module1.intToLong(…)]\n"
+          + " * Requested: java.lang.Integer\n"
+          + "     from @Provides[com.example.ProviderCycle$Module1.stringToInteger(…)]\n"
+          + " * Requested: java.lang.String\n"
+          + "     which forms a cycle.");
+    }
+  }
+
+  @Test public void undeclaredModule() {
+    ignoreCodegenBackend();
+
+    UndeclaredModules.Builder builder = backend.builder(UndeclaredModules.Builder.class);
+    try {
+      builder.module(new UndeclaredModules.Module1());
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("@Component.Builder has setters for modules that aren't required: "
+              + "com.example.UndeclaredModules$Builder.module");
+    }
+  }
+  @Test public void undeclaredDependencies() {
+    ignoreCodegenBackend();
+
+    UndeclaredDependencies.Builder builder = backend.builder(UndeclaredDependencies.Builder.class);
+    try {
+      builder.dep("hey");
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("@Component.Builder has setters for dependencies that aren't required: "
+              + "com.example.UndeclaredDependencies$Builder.dep");
+    }
+  }
+
+  @Test public void membersInjectionWrongReturnType() {
+    ignoreCodegenBackend();
+
+    MembersInjectorWrongReturnType component = backend.create(MembersInjectorWrongReturnType.class);
+    MembersInjectorWrongReturnType.Target instance = new MembersInjectorWrongReturnType.Target();
+    try {
+      component.inject(instance);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("Members injection methods may only return the injected type or void: "
+              + "com.example.MembersInjectorWrongReturnType.inject");
+    }
+  }
+
+  @SuppressWarnings("OverridesJavaxInjectableMethod")
+  @Test public void membersInjectionAbstractMethod() {
+    ignoreCodegenBackend();
+
+    MembersInjectionAbstractMethod component = backend.create(MembersInjectionAbstractMethod.class);
+    MembersInjectionAbstractMethod.Target instance = new MembersInjectionAbstractMethod.Target() {
+      @Override public void abstractMethod(String one) {}
+    };
+    try {
+      component.inject(instance);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .startsWith("Methods with @Inject may not be abstract: "
+              + "com.example.MembersInjectionAbstractMethod.Target.abstractMethod");
+    }
+  }
+
+  @SuppressWarnings("OverridesJavaxInjectableMethod")
+  @Test public void membersInjectionInterfaceMethod() {
+    ignoreCodegenBackend();
+
+    MembersInjectionInterfaceMethod component =
+        backend.create(MembersInjectionInterfaceMethod.class);
+    MembersInjectionInterfaceMethod.Target instance = new MembersInjectionInterfaceMethod.Target() {
+      @Override public void interfaceMethod(String one) {}
+    };
+    try {
+      component.inject(instance);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .startsWith("Methods with @Inject may not be abstract: "
+              + "com.example.MembersInjectionInterfaceMethod.Target.interfaceMethod");
+    }
+  }
+
+  @Test public void membersInjectionPrivateField() {
+    ignoreCodegenBackend();
+
+    MembersInjectionPrivateField component = backend.create(MembersInjectionPrivateField.class);
+    MembersInjectionPrivateField.Target instance = new MembersInjectionPrivateField.Target();
+    try {
+      component.inject(instance);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .startsWith("Dagger does not support injection into private fields: "
+              + "com.example.MembersInjectionPrivateField.Target.privateField");
+    }
+  }
+
+  @Test public void membersInjectionStaticField() {
+    ignoreCodegenBackend();
+
+    MembersInjectionStaticField component = backend.create(MembersInjectionStaticField.class);
+    MembersInjectionStaticField.Target instance = new MembersInjectionStaticField.Target();
+    try {
+      component.inject(instance);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .startsWith("Dagger does not support injection into static fields: "
+              + "com.example.MembersInjectionStaticField.Target.staticField");
+    }
+  }
+
+  @Test public void membersInjectionPrivateMethod() {
+    ignoreCodegenBackend();
+
+    MembersInjectionPrivateMethod component = backend.create(MembersInjectionPrivateMethod.class);
+    MembersInjectionPrivateMethod.Target instance = new MembersInjectionPrivateMethod.Target();
+    try {
+      component.inject(instance);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .startsWith("Dagger does not support injection into private methods: "
+              + "com.example.MembersInjectionPrivateMethod.Target.privateMethod()");
+    }
+  }
+
+  @Test public void membersInjectionStaticMethod() {
+    ignoreCodegenBackend();
+
+    MembersInjectionStaticMethod component = backend.create(MembersInjectionStaticMethod.class);
+    MembersInjectionStaticMethod.Target instance = new MembersInjectionStaticMethod.Target();
+    try {
+      component.inject(instance);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .startsWith("Dagger does not support injection into static methods: "
+              + "com.example.MembersInjectionStaticMethod.Target.staticMethod()");
+    }
+  }
+
+  @Test public void abstractClassCreateFails() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.create(AbstractComponent.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.AbstractComponent is not an interface. "
+              + "Only interface components are supported.");
+    }
+  }
+
+  @Test public void abstractClassBuilderFails() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.builder(AbstractComponent.Builder.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.AbstractComponent is not an interface. "
+              + "Only interface components are supported.");
+    }
+  }
+
+  @Test public void noComponentAnnotationCreateFails() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.create(NoAnnotation.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.NoAnnotation lacks @Component annotation");
+    }
+  }
+
+  @Test public void noComponentAnnotationBuilderFails() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.builder(NoAnnotation.Builder.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.NoAnnotation lacks @Component annotation");
+    }
+  }
+
+  @Test public void packagePrivateComponentFails() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.builder(PackagePrivateComponent.Builder.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("Component interface com.example.PackagePrivateComponent "
+              + "must be public in order to be reflectively created");
+    }
+  }
+
+  @Test public void abstractBuilderClassFails() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.builder(AbstractBuilderClass.Builder.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.AbstractBuilderClass.Builder is not an interface. "
+              + "Only interface component builders are supported.");
+    }
+  }
+
+  @Test public void noComponentBuilderAnnotationFails() {
+    ignoreCodegenBackend();
+    ignoreReflectionBackend(); // @Component.Builder does not have runtime retention
+
+    try {
+      backend.builder(NoBuilderAnnotation.Builder.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.NoBuilderAnnotation.Builder lacks "
+              + "@Component.Builder annotation");
+    }
+  }
+
+  @Test public void componentWithDependenciesCreateFails() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.create(ComponentWithDependencies.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.ComponentWithDependencies "
+              + "declares dependencies [java.lang.String, java.lang.Runnable] "
+              + "and therefore must be created with a builder");
+    }
+  }
 
   private void ignoreReflectionBackend() {
     assumeTrue("Not yet implemented for reflection backend", backend != Backend.REFLECT);
