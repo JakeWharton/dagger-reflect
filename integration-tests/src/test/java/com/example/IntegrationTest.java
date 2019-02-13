@@ -457,8 +457,6 @@ public final class IntegrationTest {
   }
 
   @Test public void primitiveAutoBoxing() {
-    ignoreReflectionBackend();
-
     PrimitiveAutoBoxing component = backend.create(PrimitiveAutoBoxing.class);
     assertThat(component.getByte()).isEqualTo((byte) 8);
     assertThat(component.getShort()).isEqualTo((short) 16);
@@ -471,8 +469,6 @@ public final class IntegrationTest {
   }
 
   @Test public void primitiveAutoUnboxing() {
-    ignoreReflectionBackend();
-
     PrimitiveAutoUnboxing component = backend.create(PrimitiveAutoUnboxing.class);
     assertThat(component.getByte()).isEqualTo((byte) 8);
     assertThat(component.getShort()).isEqualTo((short) 16);

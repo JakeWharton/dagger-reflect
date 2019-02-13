@@ -23,6 +23,12 @@ import org.jetbrains.annotations.Nullable;
 @AutoValue
 abstract class Key {
   static Key of(@Nullable Annotation qualifier, Type type) {
+    if (type instanceof Class<?>) {
+      Class<?> cls = (Class<?>) type;
+      if (cls.isPrimitive()) {
+        type = box(cls);
+      }
+    }
     return new AutoValue_Key(qualifier, type);
   }
 
@@ -56,5 +62,18 @@ abstract class Key {
       return cls.getName();
     }
     return type.toString();
+  }
+
+  private static Class<?> box(Class<?> cls) {
+    if (cls == boolean.class) return Boolean.class;
+    if (cls == byte.class) return Byte.class;
+    if (cls == char.class) return Character.class;
+    if (cls == double.class) return Double.class;
+    if (cls == float.class) return Float.class;
+    if (cls == int.class) return Integer.class;
+    if (cls == long.class) return Long.class;
+    if (cls == short.class) return Short.class;
+    if (cls == void.class) return Void.class;
+    throw new IllegalArgumentException("Only primitive types can be boxed: " + cls.getName());
   }
 }
