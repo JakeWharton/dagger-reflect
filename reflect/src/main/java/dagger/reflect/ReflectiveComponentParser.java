@@ -4,11 +4,6 @@ import dagger.reflect.Binding.LinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.LinkedHashSet;
-import java.util.Set;
 
 import static dagger.reflect.Reflection.findQualifier;
 
@@ -16,15 +11,7 @@ final class ReflectiveComponentParser {
   private static final LinkedBinding<?>[] NO_BINDINGS = new LinkedBinding<?>[0];
 
   static void parse(Class<?> moduleClass, Object instance, BindingMap.Builder bindingsBuilder) {
-    Set<Class<?>> seen = new LinkedHashSet<>();
-    Deque<Class<?>> queue = new ArrayDeque<>();
-    queue.add(moduleClass);
-    while (!queue.isEmpty()) {
-      Class<?> target = queue.removeFirst();
-      if (!seen.add(target)) {
-        continue; // Duplicate type in hierarchy.
-      }
-
+    for (Class<?> target : Reflection.getDistinctTypeHierarchy(moduleClass)) {
       for (Method method : target.getDeclaredMethods()) {
         if (method.getParameterTypes().length != 0 || method.getReturnType() == void.class) {
           continue; // Not a provision method.
@@ -38,12 +25,6 @@ final class ReflectiveComponentParser {
 
         bindingsBuilder.add(key, binding);
       }
-
-      Class<?> superclass = target.getSuperclass();
-      if (superclass != Object.class && superclass != null) {
-        queue.add(superclass);
-      }
-      Collections.addAll(queue, target.getInterfaces());
     }
   }
 

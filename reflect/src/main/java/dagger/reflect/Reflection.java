@@ -21,6 +21,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import javax.inject.Qualifier;
 import javax.inject.Scope;
 import org.jetbrains.annotations.Nullable;
@@ -95,6 +98,16 @@ final class Reflection {
       if (cause instanceof Error) throw (Error) cause;
       throw new RuntimeException("Unable to invoke " + constructor, cause);
     }
+  }
+
+  static Set<Class<?>> getDistinctTypeHierarchy(Class<?> target) {
+    Set<Class<?>> types = new LinkedHashSet<>();
+    do {
+      types.add(target);
+      Collections.addAll(types, target.getInterfaces());
+      target = target.getSuperclass();
+    } while (target != null && target != Object.class);
+    return types;
   }
 
   private Reflection() {
