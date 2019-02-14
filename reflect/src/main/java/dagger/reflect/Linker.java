@@ -7,8 +7,8 @@ import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 final class Linker {
-  static LinkedBinding<?> getLinked(BindingMap bindings, Key key) {
-    return new Linker(bindings).get(key);
+  static LinkedBinding<?> link(BindingMap bindings, Key key, UnlinkedBinding unlinkedBinding) {
+    return new Linker(bindings).performLinking(key, unlinkedBinding);
   }
 
   private final BindingMap bindings;
@@ -34,15 +34,15 @@ final class Linker {
     return (LinkedBinding<?>) binding;
   }
 
-  private LinkedBinding<?> performLinking(Key key, UnlinkedBinding binding) {
+  private LinkedBinding<?> performLinking(Key key, UnlinkedBinding unlinkedBinding) {
     if (chain.containsKey(key)) {
       throw failure(key, "Dependency cycle", "forms a cycle");
     }
-    chain.put(key, binding);
-    LinkedBinding<?> linkedBinding = binding.link(this);
+    chain.put(key, unlinkedBinding);
+    LinkedBinding<?> linkedBinding = unlinkedBinding.link(this);
     chain.remove(key);
 
-    return bindings.replaceLinked(key, binding, linkedBinding);
+    return bindings.replaceLinked(key, unlinkedBinding, linkedBinding);
   }
 
   private RuntimeException failure(Key key, String reason, String cause) {
@@ -61,7 +61,7 @@ final class Linker {
         .append(key)
         .append("\n     which ")
         .append(cause)
-        .append(".");
+        .append('.');
     throw new IllegalStateException(builder.toString());
   }
 }
