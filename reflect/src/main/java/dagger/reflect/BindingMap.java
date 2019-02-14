@@ -17,8 +17,12 @@ package dagger.reflect;
 
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
+import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,6 +64,7 @@ final class BindingMap {
 
   static final class Builder {
     private final Map<Key, Binding> bindings = new LinkedHashMap<>();
+    private final Map<Key, List<Binding>> setBindings = new LinkedHashMap<>();
     private JustInTimeProvider jitProvider = JustInTimeProvider.NONE;
 
     Builder justInTimeProvider(JustInTimeProvider jitProvider) {
@@ -80,9 +85,37 @@ final class BindingMap {
       return this;
     }
 
+    Builder addIntoSet(Key key, Binding binding) {
+      if (key == null) throw new NullPointerException("key == null");
+      if (binding == null) throw new NullPointerException("binding == null");
+
+      List<Binding> bindings = setBindings.get(key);
+      if (bindings == null) {
+        bindings = new ArrayList<>();
+        setBindings.put(key, bindings);
+      }
+      bindings.add(binding);
+      return this;
+    }
+
     BindingMap build() {
-      // Take a defensive copy in case the builder is being used to create multiple instances.
       ConcurrentHashMap<Key, Binding> allBindings = new ConcurrentHashMap<>(bindings);
+
+      // Coalesce all of the bindings for each key into a single set binding.
+      for (Map.Entry<Key, List<Binding>> setBinding : setBindings.entrySet()) {
+        Key elementKey = setBinding.getKey();
+        Key setKey = Key.of(elementKey.qualifier(),
+            new ParameterizedTypeImpl(null, Set.class, elementKey.type()));
+
+        // Take a defensive copy in case the builder is being re-used.
+        List<Binding> elementBindings = new ArrayList<>(setBinding.getValue());
+
+        Binding replaced = allBindings.put(setKey, new UnlinkedSetBinding(elementBindings));
+        if (replaced != null) {
+          throw new IllegalStateException(); // TODO implicit set binding duplicates explicit one.
+        }
+      }
+
       return new BindingMap(allBindings, jitProvider);
     }
   }

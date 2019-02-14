@@ -6,6 +6,7 @@ import dagger.Provides;
 import dagger.multibindings.ElementsIntoSet;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.IntoSet;
+import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
@@ -28,13 +29,18 @@ final class ReflectiveModuleParser {
           throw new IllegalArgumentException("Private module methods are not allowed: " + method);
         }
 
+        Type returnType = method.getGenericReturnType();
+        Annotation[] annotations = method.getAnnotations();
+        Annotation qualifier = findQualifier(annotations);
+
+        Key key;
         Binding binding;
-        TypeWrapper wrapper = TypeWrapper.NONE;
         if ((method.getModifiers() & ABSTRACT) != 0) {
           if (method.getAnnotation(Binds.class) != null) {
+            key = Key.of(qualifier, returnType);
             binding = new UnlinkedBindsBinding(method);
           } else if (method.getAnnotation(BindsOptionalOf.class) != null) {
-            wrapper = TypeWrapper.OPTIONAL;
+            key = Key.of(qualifier, new ParameterizedTypeImpl(null, Optional.class, returnType));
             binding = new UnlinkedOptionalBinding(method);
           } else {
             continue;
@@ -45,40 +51,12 @@ final class ReflectiveModuleParser {
           }
 
           if (method.getAnnotation(Provides.class) != null) {
+            key = Key.of(qualifier, returnType);
             binding = new UnlinkedProvidesBinding(instance, method);
           } else {
             continue;
           }
         }
-
-        if (method.getAnnotation(IntoSet.class) != null) {
-          wrapper = TypeWrapper.SET;
-          throw notImplemented("@IntoSet");
-        }
-        if (method.getAnnotation(ElementsIntoSet.class) != null) {
-          wrapper = TypeWrapper.SET;
-          throw notImplemented("@ElementsIntoSet");
-        }
-        if (method.getAnnotation(IntoMap.class) != null) {
-          wrapper = TypeWrapper.MAP;
-          throw notImplemented("@IntoMap");
-        }
-
-        Annotation[] annotations = method.getAnnotations();
-        Type returnType;
-        switch (wrapper) {
-          case NONE:
-            returnType = method.getGenericReturnType();
-            break;
-          case OPTIONAL:
-            Type genericReturnType = method.getGenericReturnType();
-            returnType = new TypeUtil.ParameterizedTypeImpl(null, Optional.class,
-                genericReturnType);
-            break;
-          default:
-            throw notImplemented(wrapper.toString());
-        }
-        Key key = Key.of(findQualifier(annotations), returnType);
 
         Annotation scope = findScope(annotations);
         if (scope != null) {
@@ -86,12 +64,16 @@ final class ReflectiveModuleParser {
           throw notImplemented("Scoped bindings");
         }
 
-        bindingsBuilder.add(key, binding);
+        if (method.getAnnotation(IntoSet.class) != null) {
+          bindingsBuilder.addIntoSet(key, binding);
+        } else if (method.getAnnotation(ElementsIntoSet.class) != null) {
+          throw notImplemented("@ElementsIntoSet");
+        } else if (method.getAnnotation(IntoMap.class) != null) {
+          throw notImplemented("@IntoMap");
+        } else {
+          bindingsBuilder.add(key, binding);
+        }
       }
     }
-  }
-
-  enum TypeWrapper {
-    NONE, SET, MAP, OPTIONAL
   }
 }
