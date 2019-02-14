@@ -2,6 +2,7 @@ package dagger.reflect;
 
 import dagger.Binds;
 import dagger.BindsOptionalOf;
+import dagger.MapKey;
 import dagger.Provides;
 import dagger.multibindings.ElementsIntoSet;
 import dagger.multibindings.IntoMap;
@@ -10,10 +11,12 @@ import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.Map;
 import java.util.Optional;
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.DaggerReflect.notImplemented;
+import static dagger.reflect.Reflection.findMapKey;
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.findScope;
 import static java.lang.reflect.Modifier.ABSTRACT;
@@ -69,11 +72,45 @@ final class ReflectiveModuleParser {
         } else if (method.getAnnotation(ElementsIntoSet.class) != null) {
           throw notImplemented("@ElementsIntoSet");
         } else if (method.getAnnotation(IntoMap.class) != null) {
-          throw notImplemented("@IntoMap");
+          addMapBinding(bindingsBuilder, key, binding, annotations);
         } else {
           bindingsBuilder.add(key, binding);
         }
       }
     }
+  }
+
+  private static void addMapBinding(BindingMap.Builder bindingsBuilder, Key entryValueKey,
+      Binding entryValueBinding, Annotation[] annotations) {
+    Annotation entryKeyAnnotation = findMapKey(annotations);
+    if (entryKeyAnnotation == null) {
+      throw new IllegalStateException(); // TODO map key required
+    }
+    Class<? extends Annotation> entryKeyAnnotationType = entryKeyAnnotation.annotationType();
+    MapKey mapKeyAnnotation = entryKeyAnnotationType.getAnnotation(MapKey.class);
+
+    Class<?> entryKeyType;
+    Object entryKey;
+    if (mapKeyAnnotation.unwrapValue()) {
+      // Find the single declared method on the map key and gets its type and value.
+      Method[] methods = entryKeyAnnotationType.getDeclaredMethods();
+      if (methods.length != 1) {
+        throw new IllegalStateException(); // TODO key annotations can only have a single method
+      }
+      Method method = methods[0];
+
+      entryKeyType = method.getReturnType();
+      entryKey = Reflection.tryInvoke(entryKeyAnnotation, method);
+      if (entryKey == null) {
+        throw new AssertionError(); // Not allowed by the Java language specification.
+      }
+    } else {
+      entryKeyType = entryKeyAnnotationType;
+      entryKey = entryKeyAnnotation;
+    }
+
+    Key key = Key.of(entryValueKey.qualifier(),
+        new ParameterizedTypeImpl(null, Map.class, entryKeyType, entryValueKey.type()));
+    bindingsBuilder.addIntoMap(key, entryKey, entryValueBinding);
   }
 }

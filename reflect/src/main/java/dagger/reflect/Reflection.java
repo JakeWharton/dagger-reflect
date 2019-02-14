@@ -15,6 +15,7 @@
  */
 package dagger.reflect;
 
+import dagger.MapKey;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -55,6 +56,20 @@ final class Reflection {
       }
     }
     return scope;
+  }
+
+  static @Nullable Annotation findMapKey(Annotation[] annotations) {
+    Annotation key = null;
+    for (Annotation annotation : annotations) {
+      if (annotation.annotationType().getAnnotation(MapKey.class) != null) {
+        if (key != null) {
+          throw new IllegalArgumentException(
+              "Multiple key annotations: " + key + " and " + annotation);
+        }
+        key = annotation;
+      }
+    }
+    return key;
   }
 
   static void trySet(@Nullable Object instance, Field field, @Nullable Object value) {

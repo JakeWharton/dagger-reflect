@@ -65,6 +65,7 @@ final class BindingMap {
   static final class Builder {
     private final Map<Key, Binding> bindings = new LinkedHashMap<>();
     private final Map<Key, List<Binding>> setBindings = new LinkedHashMap<>();
+    private final Map<Key, Map<Object, Binding>> mapBindings = new LinkedHashMap<>();
     private JustInTimeProvider jitProvider = JustInTimeProvider.NONE;
 
     Builder justInTimeProvider(JustInTimeProvider jitProvider) {
@@ -98,6 +99,36 @@ final class BindingMap {
       return this;
     }
 
+    /**
+     * Adds a new entry into the map specified by {@code key}.
+     *
+     * @param key The key defining the map in which this entry will be added. The raw class of the
+     * {@linkplain Key#type() type} must be {@link Map Map.class}.
+     * @param entryKey The key of the new map entry. The argument must be an instance of the
+     * {@code K} type parameter of {@link Map} specified
+     * {@linkplain Key#type() in the <code>key</code>}.
+     * @param entryValueBinding The value binding of the new map entry. The instance produced by
+     * this binding must be an instance of the {@code V} type parameter of {@link Map} specified
+     * {@linkplain Key#type()} in the <code>key</code>}.
+     */
+    Builder addIntoMap(Key key, Object entryKey, Binding entryValueBinding) {
+      if (key == null) throw new NullPointerException("key == null");
+      // TODO sanity check raw type of key is Map?
+      if (entryKey == null) throw new NullPointerException("entryKey == null");
+      if (entryValueBinding == null) throw new NullPointerException("entryValueBinding == null");
+
+      Map<Object, Binding> mapBinding = mapBindings.get(key);
+      if (mapBinding == null) {
+        mapBinding = new LinkedHashMap<>();
+        mapBindings.put(key, mapBinding);
+      }
+      Binding replaced = mapBinding.put(entryKey, entryValueBinding);
+      if (replaced != null) {
+        throw new IllegalStateException(); // TODO duplicate keys
+      }
+      return this;
+    }
+
     BindingMap build() {
       ConcurrentHashMap<Key, Binding> allBindings = new ConcurrentHashMap<>(bindings);
 
@@ -113,6 +144,19 @@ final class BindingMap {
         Binding replaced = allBindings.put(setKey, new UnlinkedSetBinding(elementBindings));
         if (replaced != null) {
           throw new IllegalStateException(); // TODO implicit set binding duplicates explicit one.
+        }
+      }
+
+      // Coalesce all of the bindings for each key into a single map binding.
+      for (Map.Entry<Key, Map<Object, Binding>> mapBinding : mapBindings.entrySet()) {
+        Key key = mapBinding.getKey();
+
+        // Take a defensive copy in case the builder is being re-used.
+        Map<Object, Binding> entryBindings = new LinkedHashMap<>(mapBinding.getValue());
+
+        Binding replaced = allBindings.put(key, new UnlinkedMapBinding(entryBindings));
+        if (replaced != null) {
+          throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
         }
       }
 
