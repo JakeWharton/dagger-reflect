@@ -139,6 +139,11 @@ public final class IntegrationTest {
     assertThat(component.thing()).isNotNull();
   }
 
+  @Test public void justInTimeGeneric() {
+    JustInTimeGeneric component = backend.create(JustInTimeGeneric.class);
+    assertThat(component.thing()).isNotNull();
+  }
+
   @Test public void builderImplicitModules() {
     BuilderImplicitModules component = backend.builder(BuilderImplicitModules.Builder.class)
         .value(3L)
