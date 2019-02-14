@@ -16,20 +16,14 @@ final class UnlinkedProvidesBinding extends Binding.UnlinkedBinding {
     this.method = method;
   }
 
-  @Override public LinkRequest request() {
+  @Override public LinkedBinding<?> link(Linker linker) {
     Type[] parameterTypes = method.getGenericParameterTypes();
-    if (parameterTypes.length == 0) {
-      return LinkRequest.EMPTY;
-    }
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-    Key[] dependencies = new Key[parameterTypes.length];
+    LinkedBinding<?>[] dependencies = new LinkedBinding<?>[parameterTypes.length];
     for (int i = 0; i < parameterTypes.length; i++) {
-      dependencies[i] = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
+      Key key = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
+      dependencies[i] = linker.get(key);
     }
-    return new LinkRequest(dependencies);
-  }
-
-  @Override public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
     return new LinkedProvidesBinding<>(instance, method, dependencies);
   }
 

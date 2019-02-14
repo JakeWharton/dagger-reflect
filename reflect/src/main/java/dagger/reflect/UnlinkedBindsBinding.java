@@ -14,7 +14,7 @@ final class UnlinkedBindsBinding extends UnlinkedBinding {
     this.method = method;
   }
 
-  @Override public LinkRequest request() {
+  @Override public LinkedBinding<?> link(Linker linker) {
     Type[] parameterTypes = method.getGenericParameterTypes();
     if (parameterTypes.length != 1) {
       throw new IllegalArgumentException(
@@ -22,11 +22,8 @@ final class UnlinkedBindsBinding extends UnlinkedBinding {
     }
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
     Key dependency = Key.of(findQualifier(parameterAnnotations[0]), parameterTypes[0]);
-    return new LinkRequest(new Key[] { dependency });
-  }
 
-  @Override public LinkedBinding<?> link(LinkedBinding<?>[] dependencies) {
-    return dependencies[0];
+    return linker.get(dependency);
   }
 
   @Override public String toString() {

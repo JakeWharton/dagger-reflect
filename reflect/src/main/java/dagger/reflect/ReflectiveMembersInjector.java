@@ -33,7 +33,7 @@ import static dagger.reflect.Reflection.tryInvoke;
 import static dagger.reflect.Reflection.trySet;
 
 final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
-  static <T> MembersInjector<T> create(Class<T> cls, BindingGraph graph) {
+  static <T> MembersInjector<T> create(Class<T> cls, Scope scope) {
     Deque<ClassInjector<T>> classInjectors = new ArrayDeque<>();
     Class<?> target = cls;
     while (target != Object.class && target != null) {
@@ -52,7 +52,7 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
         }
 
         Key key = Key.of(findQualifier(field.getDeclaredAnnotations()), field.getGenericType());
-        Provider<?> provider = graph.getProvider(key);
+        Provider<?> provider = scope.getProvider(key);
 
         fieldProviders.put(field, provider);
       }
@@ -80,7 +80,7 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
         Provider<?>[] providers = new Provider<?>[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
           Key key = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
-          providers[i] = graph.getProvider(key);
+          providers[i] = scope.getProvider(key);
         }
 
         methodProviders.put(method, providers);

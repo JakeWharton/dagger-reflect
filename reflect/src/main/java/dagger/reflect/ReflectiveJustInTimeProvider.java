@@ -11,7 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findScope;
 
-final class ReflectiveJustInTimeProvider implements BindingGraph.JustInTimeProvider {
+final class ReflectiveJustInTimeProvider implements BindingMap.JustInTimeProvider {
   @Override public @Nullable UnlinkedBinding create(Key key) {
     Annotation qualifier = key.qualifier();
     if (qualifier != null) {

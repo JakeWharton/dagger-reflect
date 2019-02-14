@@ -84,14 +84,14 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         throw new IllegalStateException(); // TODO must be no-arg
       }
 
-      BindingGraph.Builder graphBuilder = new BindingGraph.Builder()
+      BindingMap.Builder bindingsBuilder = new BindingMap.Builder()
           .justInTimeProvider(new ReflectiveJustInTimeProvider());
 
       for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
-        graphBuilder.add(entry.getKey(), new LinkedInstanceBinding<>(entry.getValue()));
+        bindingsBuilder.add(entry.getKey(), new LinkedInstanceBinding<>(entry.getValue()));
       }
       for (Map.Entry<Class<?>, Object> entry : moduleInstances.entrySet()) {
-        ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), graphBuilder);
+        ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), bindingsBuilder);
       }
       for (Map.Entry<Class<?>, Object> entry : dependencyInstances.entrySet()) {
         Class<?> key = entry.getKey();
@@ -99,10 +99,11 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         if (value == null) {
           throw new IllegalStateException(key.getCanonicalName() + " must be set");
         }
-        ReflectiveComponentParser.parse(key, value, graphBuilder);
+        ReflectiveComponentParser.parse(key, value, bindingsBuilder);
       }
+      Scope scope = new Scope(bindingsBuilder.build());
 
-      return ComponentInvocationHandler.create(componentClass, graphBuilder.build());
+      return ComponentInvocationHandler.create(componentClass, scope);
     }
 
     // TODO these are allowed to be void or a supertype

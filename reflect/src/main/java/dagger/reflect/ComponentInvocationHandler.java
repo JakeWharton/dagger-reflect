@@ -29,17 +29,17 @@ import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findQualifier;
 
 final class ComponentInvocationHandler implements InvocationHandler {
-  static <T> T create(Class<T> cls, BindingGraph graph) {
+  static <T> T create(Class<T> cls, Scope scope) {
     return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls },
-        new ComponentInvocationHandler(graph)));
+        new ComponentInvocationHandler(scope)));
   }
 
-  private final BindingGraph graph;
+  private final Scope scope;
   private final ConcurrentHashMap<Method, MethodInvocationHandler> handlers =
       new ConcurrentHashMap<>();
 
-  private ComponentInvocationHandler(BindingGraph graph) {
-    this.graph = graph;
+  private ComponentInvocationHandler(Scope scope) {
+    this.scope = scope;
   }
 
   @Override public @Nullable Object invoke(Object proxy, Method method, Object[] args)
@@ -50,7 +50,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
 
     MethodInvocationHandler handler = handlers.get(method);
     if (handler == null) {
-      handler = createMethodInvocationHandler(method, args, graph);
+      handler = createMethodInvocationHandler(method, args, scope);
       MethodInvocationHandler replaced = handlers.putIfAbsent(method, handler);
       if (replaced != null) {
         handler = replaced;
@@ -60,7 +60,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
   }
 
   private static ComponentInvocationHandler.MethodInvocationHandler createMethodInvocationHandler(
-      Method method, Object[] args, BindingGraph graph) {
+      Method method, Object[] args, Scope scope) {
     Type returnType = method.getGenericReturnType();
     Class<?>[] parameterTypes = method.getParameterTypes();
 
@@ -81,7 +81,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
       // RedundantCast: see https://youtrack.jetbrains.com/issue/IDEA-206560
       @SuppressWarnings({"unchecked", "RedundantCast"})
       MembersInjector<Object> injector =
-          (MembersInjector<Object>) ReflectiveMembersInjector.create(parameterTypes[0], graph);
+          (MembersInjector<Object>) ReflectiveMembersInjector.create(parameterTypes[0], scope);
       return new MembersInjectorMethodInvocationHandler(injector, returnInstance);
     }
 
@@ -92,7 +92,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
       }
 
       Key key = Key.of(findQualifier(method.getDeclaredAnnotations()), returnType);
-      Provider<?> provider = graph.getProvider(key);
+      Provider<?> provider = scope.getProvider(key);
       return new ProviderMethodInvocationHandler(provider);
     }
 

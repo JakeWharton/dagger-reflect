@@ -27,7 +27,7 @@ import static java.lang.reflect.Modifier.STATIC;
 
 final class ReflectiveModuleParser {
   static void parse(Class<?> moduleClass, @Nullable Object instance,
-      BindingGraph.Builder graphBuilder) {
+      BindingMap.Builder bindingsBuilder) {
     Set<Class<?>> seen = new LinkedHashSet<>();
     Deque<Class<?>> queue = new ArrayDeque<>();
     queue.add(moduleClass);
@@ -96,11 +96,11 @@ final class ReflectiveModuleParser {
 
         Annotation scope = findScope(annotations);
         if (scope != null) {
-          // TODO check correct scope against BindingGraph.
+          // TODO check correct scope.
           throw notImplemented("Scoped bindings");
         }
 
-        graphBuilder.add(key, binding);
+        bindingsBuilder.add(key, binding);
       }
 
       Class<?> superclass = target.getSuperclass();
