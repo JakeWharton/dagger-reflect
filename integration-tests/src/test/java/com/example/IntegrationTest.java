@@ -347,8 +347,6 @@ public final class IntegrationTest {
   }
 
   @Test public void multibindingSet() {
-    ignoreReflectionBackend();
-
     MultibindingSet component = backend.create(MultibindingSet.class);
     assertThat(component.values()).containsExactly("one", "two");
   }
