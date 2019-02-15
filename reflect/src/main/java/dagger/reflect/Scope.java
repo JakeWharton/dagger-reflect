@@ -1,6 +1,7 @@
 package dagger.reflect;
 
 import dagger.reflect.Binding.LinkedBinding;
+import dagger.reflect.Binding.UnlinkedBinding;
 import javax.inject.Provider;
 
 final class Scope {
@@ -18,6 +19,6 @@ final class Scope {
     if (binding == null) {
       throw new IllegalArgumentException("No provider available for " + key);
     }
-    return Linker.getLinked(bindings, key);
+    return Linker.link(bindings, key, (UnlinkedBinding) binding);
   }
 }
