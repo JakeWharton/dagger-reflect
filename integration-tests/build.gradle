@@ -4,10 +4,14 @@ dependencies {
   implementation deps.dagger.runtime
   implementation deps.jetbrainsAnnotations
   implementation deps.guava
+  implementation deps.auto.value.annotations
   annotationProcessor deps.dagger.compiler
+  annotationProcessor deps.auto.value.annotations // TODO remove once Dagger releases fix
+  annotationProcessor deps.auto.value.compiler
 
   testImplementation deps.junit
   testImplementation deps.truth
   testImplementation project(':reflect')
   testImplementation project(':codegen')
+  testAnnotationProcessor deps.auto.value.compiler
 }
