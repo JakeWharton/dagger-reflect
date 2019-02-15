@@ -66,8 +66,6 @@ public final class IntegrationTest {
   }
 
   @Test public void bindIntoMap() {
-    ignoreReflectionBackend();
-
     BindsIntoMap component = backend.create(BindsIntoMap.class);
     assertThat(component.strings()).containsExactly("bar", "foo");
   }
@@ -373,8 +371,6 @@ public final class IntegrationTest {
   }
 
   @Test public void multibindingMap() {
-    ignoreReflectionBackend();
-
     MultibindingMap component = backend.create(MultibindingMap.class);
     assertThat(component.values()).containsExactly("1", "one", "2", "two");
   }

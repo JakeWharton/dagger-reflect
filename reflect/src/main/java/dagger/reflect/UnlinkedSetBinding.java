@@ -20,6 +20,6 @@ final class UnlinkedSetBinding extends UnlinkedBinding {
   }
 
   @Override public String toString() {
-    return "Set" + elementBindings;
+    return "Map" + elementBindings;
   }
 }
