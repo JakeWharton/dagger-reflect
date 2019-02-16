@@ -94,12 +94,12 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), bindingsBuilder);
       }
       for (Map.Entry<Class<?>, Object> entry : dependencyInstances.entrySet()) {
-        Class<?> key = entry.getKey();
-        Object value = entry.getValue();
-        if (value == null) {
-          throw new IllegalStateException(key.getCanonicalName() + " must be set");
+        Class<?> type = entry.getKey();
+        Object instance = entry.getValue();
+        if (instance == null) {
+          throw new IllegalStateException(type.getCanonicalName() + " must be set");
         }
-        ReflectiveComponentParser.parse(key, value, bindingsBuilder);
+        ReflectiveDependencyParser.parse(type, instance, bindingsBuilder);
       }
       Scope scope = new Scope(bindingsBuilder.build());
 
