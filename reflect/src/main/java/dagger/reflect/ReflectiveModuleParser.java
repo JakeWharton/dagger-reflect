@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.DaggerReflect.notImplemented;
@@ -68,9 +69,9 @@ final class ReflectiveModuleParser {
         }
 
         if (method.getAnnotation(IntoSet.class) != null) {
-          bindingsBuilder.addIntoSet(key, binding);
+          addSetBinding(bindingsBuilder, key, binding);
         } else if (method.getAnnotation(ElementsIntoSet.class) != null) {
-          throw notImplemented("@ElementsIntoSet");
+          addSetElementsBinding(bindingsBuilder, key, binding);
         } else if (method.getAnnotation(IntoMap.class) != null) {
           addMapBinding(bindingsBuilder, key, binding, annotations);
         } else {
@@ -78,6 +79,21 @@ final class ReflectiveModuleParser {
         }
       }
     }
+  }
+
+  private static void addSetBinding(BindingMap.Builder bindingsBuilder, Key elementKey,
+      Binding elementBinding) {
+    Key key = Key.of(elementKey.qualifier(),
+        new ParameterizedTypeImpl(null, Set.class, elementKey.type()));
+    bindingsBuilder.addIntoSet(key, elementBinding);
+  }
+
+  private static void addSetElementsBinding(BindingMap.Builder bindingsBuilder, Key setKey,
+      Binding elementsBinding) {
+    if (Types.getRawType(setKey.type()) != Set.class) {
+      throw new IllegalStateException(); // TODO must be set
+    }
+    bindingsBuilder.addElementsIntoSet(setKey, elementsBinding);
   }
 
   private static void addMapBinding(BindingMap.Builder bindingsBuilder, Key entryValueKey,

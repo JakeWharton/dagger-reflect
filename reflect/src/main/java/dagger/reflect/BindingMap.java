@@ -17,7 +17,6 @@ package dagger.reflect;
 
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
-import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -64,7 +63,7 @@ final class BindingMap {
 
   static final class Builder {
     private final Map<Key, Binding> bindings = new LinkedHashMap<>();
-    private final Map<Key, List<Binding>> setBindings = new LinkedHashMap<>();
+    private final Map<Key, SetBindings> setBindings = new LinkedHashMap<>();
     private final Map<Key, Map<Object, Binding>> mapBindings = new LinkedHashMap<>();
     private JustInTimeProvider jitProvider = JustInTimeProvider.NONE;
 
@@ -86,16 +85,54 @@ final class BindingMap {
       return this;
     }
 
-    Builder addIntoSet(Key key, Binding binding) {
+    /**
+     * Adds a new element into the set specified by {@code key}.
+     *
+     * @param key They key defining the set in which this element will be added. The raw class of
+     * the {@linkplain Key#type() type} must be {@link Set Set.class}.
+     * @param elementBinding The binding for the new element. The instance produced by this binding
+     * must be an instance of the {@code E} type parameter of {@link Set} specified
+     * {@linkplain Key#type() in the <code>key</code>}.
+     */
+    Builder addIntoSet(Key key, Binding elementBinding) {
       if (key == null) throw new NullPointerException("key == null");
-      if (binding == null) throw new NullPointerException("binding == null");
+      if (Types.getRawType(key.type()) != Set.class) {
+        throw new IllegalArgumentException("key.type() must be Set");
+      }
+      if (elementBinding == null) throw new NullPointerException("elementBinding == null");
 
-      List<Binding> bindings = setBindings.get(key);
+      SetBindings bindings = setBindings.get(key);
       if (bindings == null) {
-        bindings = new ArrayList<>();
+        bindings = new SetBindings();
         setBindings.put(key, bindings);
       }
-      bindings.add(binding);
+      bindings.elementBindings.add(elementBinding);
+
+      return this;
+    }
+
+    /**
+     * Adds a new element into the set specified by {@code key}.
+     *
+     * @param key They key defining the set in which this element will be added. The raw class of
+     * the {@linkplain Key#type() type} must be {@link Set Set.class}.
+     * @param elementsBinding The binding for the elements. The instance produced by this binding
+     * must be an instance of {@code Set<E>} matching {@link Key#type() key.type()}.
+     */
+    Builder addElementsIntoSet(Key key, Binding elementsBinding) {
+      if (key == null) throw new NullPointerException("key == null");
+      if (Types.getRawType(key.type()) != Set.class) {
+        throw new IllegalArgumentException("key.type() must be Set");
+      }
+      if (elementsBinding == null) throw new NullPointerException("elementsBinding == null");
+
+      SetBindings bindings = setBindings.get(key);
+      if (bindings == null) {
+        bindings = new SetBindings();
+        setBindings.put(key, bindings);
+      }
+      bindings.elementsBindings.add(elementsBinding);
+
       return this;
     }
 
@@ -113,7 +150,9 @@ final class BindingMap {
      */
     Builder addIntoMap(Key key, Object entryKey, Binding entryValueBinding) {
       if (key == null) throw new NullPointerException("key == null");
-      // TODO sanity check raw type of key is Map?
+      if (Types.getRawType(key.type()) != Map.class) {
+        throw new IllegalArgumentException("key.type() must be Map");
+      }
       if (entryKey == null) throw new NullPointerException("entryKey == null");
       if (entryValueBinding == null) throw new NullPointerException("entryValueBinding == null");
 
@@ -126,6 +165,7 @@ final class BindingMap {
       if (replaced != null) {
         throw new IllegalStateException(); // TODO duplicate keys
       }
+
       return this;
     }
 
@@ -133,15 +173,16 @@ final class BindingMap {
       ConcurrentHashMap<Key, Binding> allBindings = new ConcurrentHashMap<>(bindings);
 
       // Coalesce all of the bindings for each key into a single set binding.
-      for (Map.Entry<Key, List<Binding>> setBinding : setBindings.entrySet()) {
-        Key elementKey = setBinding.getKey();
-        Key setKey = Key.of(elementKey.qualifier(),
-            new ParameterizedTypeImpl(null, Set.class, elementKey.type()));
+      for (Map.Entry<Key, SetBindings> setBinding : setBindings.entrySet()) {
+        Key key = setBinding.getKey();
 
         // Take a defensive copy in case the builder is being re-used.
-        List<Binding> elementBindings = new ArrayList<>(setBinding.getValue());
+        SetBindings setBindings = setBinding.getValue();
+        List<Binding> elementBindings = new ArrayList<>(setBindings.elementBindings);
+        List<Binding> elementsBindings = new ArrayList<>(setBindings.elementsBindings);
 
-        Binding replaced = allBindings.put(setKey, new UnlinkedSetBinding(elementBindings));
+        Binding replaced =
+            allBindings.put(key, new UnlinkedSetBinding(elementBindings, elementsBindings));
         if (replaced != null) {
           throw new IllegalStateException(); // TODO implicit set binding duplicates explicit one.
         }
@@ -162,6 +203,13 @@ final class BindingMap {
 
       return new BindingMap(allBindings, jitProvider);
     }
+  }
+
+  static final class SetBindings {
+    /** Bindings which produce a single element for the target set. */
+    final List<Binding> elementBindings = new ArrayList<>();
+    /** Bindings which produce a set of elements for the target set. */
+    final List<Binding> elementsBindings = new ArrayList<>();
   }
 
   interface JustInTimeProvider {
