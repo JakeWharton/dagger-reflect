@@ -26,23 +26,32 @@ import java.lang.reflect.Type;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
+import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.Reflection.findQualifier;
 
 final class ComponentBuilderInvocationHandler implements InvocationHandler {
   static <T> T create(Class<?> componentClass, Class<T> builderClass, Set<Class<?>> modules,
-      Set<Class<?>> dependencies) {
+      Set<Class<?>> dependencies, @Nullable Scope parent) {
+    if (!componentClass.isInterface()) {
+      throw new IllegalArgumentException(componentClass.getCanonicalName()
+          + " is not an interface. Only interfaces are supported.");
+    }
     if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
       throw new IllegalArgumentException("Component interface "
-          + componentClass.getName()
+          + componentClass.getCanonicalName()
           + " must be public in order to be reflectively created");
+    }
+    if (!builderClass.isInterface()) {
+      throw new IllegalArgumentException(builderClass.getCanonicalName()
+          + " is not an interface. Only interface builders are supported.");
     }
     return builderClass.cast(
         Proxy.newProxyInstance(builderClass.getClassLoader(), new Class<?>[] { builderClass },
             new ComponentBuilderInvocationHandler(componentClass, builderClass, modules,
-                dependencies)));
+                dependencies, parent)));
   }
 
   private final Class<?> componentClass;
@@ -50,11 +59,13 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
   private final Map<Key, Object> boundInstances;
   private final Map<Class<?>, Object> moduleInstances;
   private final Map<Class<?>, Object> dependencyInstances;
+  private final @Nullable Scope parent;
 
   private ComponentBuilderInvocationHandler(Class<?> componentClass, Class<?> builderClass,
-      Set<Class<?>> componentModules, Set<Class<?>> componentDependencies) {
+      Set<Class<?>> componentModules, Set<Class<?>> componentDependencies, @Nullable Scope parent) {
     this.componentClass = componentClass;
     this.builderClass = builderClass;
+    this.parent = parent;
     this.boundInstances = new LinkedHashMap<>();
 
     // Start with all modules bound to null. Any remaining nulls will be assumed stateless.
@@ -101,7 +112,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         }
         ReflectiveDependencyParser.parse(type, instance, bindingsBuilder);
       }
-      Scope scope = new Scope(bindingsBuilder.build());
+      Scope scope = new Scope(bindingsBuilder.build(), parent);
 
       return ComponentInvocationHandler.create(componentClass, scope);
     }
