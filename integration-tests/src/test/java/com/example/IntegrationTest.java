@@ -375,6 +375,13 @@ public final class IntegrationTest {
     assertThat(component.values()).containsExactly("1", "one", "2", "two");
   }
 
+  @Test public void multibindingMapNoUnwrap() {
+    MultibindingMapNoUnwrap component = backend.create(MultibindingMapNoUnwrap.class);
+    assertThat(component.values()).containsExactly(
+        Annotations.tableKey(1, 1), "one",
+        Annotations.tableKey(2, 3), "two");
+  }
+
   @Test public void multibindingProviderMap() {
     ignoreReflectionBackend();
 

@@ -84,7 +84,7 @@ final class ReflectiveModuleParser {
       Binding entryValueBinding, Annotation[] annotations) {
     Annotation entryKeyAnnotation = findMapKey(annotations);
     if (entryKeyAnnotation == null) {
-      throw new IllegalStateException(); // TODO map key required
+      throw new IllegalStateException(); // TODO map key required. mention runtime retention.
     }
     Class<? extends Annotation> entryKeyAnnotationType = entryKeyAnnotation.annotationType();
     MapKey mapKeyAnnotation = entryKeyAnnotationType.getAnnotation(MapKey.class);
