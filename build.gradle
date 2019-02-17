@@ -26,16 +26,24 @@ buildscript {
       'jetbrainsAnnotations': 'org.jetbrains:annotations:16.0.3',
       'guava': 'com.google.guava:guava:27.0.1-jre',
       'animalSnifferAnnotations': 'org.codehaus.mojo:animal-sniffer-annotations:1.16',
+      'robolectric': 'org.robolectric:robolectric:4.2',
+      'androidx': [
+          'test': [
+              'core': 'androidx.test:core:1.1.0',
+          ],
+      ],
   ]
 
   repositories {
     mavenCentral()
+    google()
     gradlePluginPortal()
   }
 
   dependencies {
     classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.7'
     classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.4.6'
+    classpath 'com.android.tools.build:gradle:3.3.1'
   }
 }
 
@@ -47,6 +55,13 @@ subprojects {
 
   repositories {
     mavenCentral()
+    google()
+    jcenter {
+      // Required for a dependency of Android lint.
+      content {
+        includeGroup 'org.jetbrains.trove4j'
+      }
+    }
   }
 
   tasks.withType(Test) {
@@ -64,6 +79,7 @@ subprojects {
   tasks.withType(JavaCompile).configureEach {
     options.errorprone {
       disableWarningsInGeneratedCode = true
+      excludedPaths = ".*/build/generated/.*"
       check("JavaxInjectOnAbstractMethod", CheckSeverity.OFF)
       check("NullAway", CheckSeverity.ERROR)
       option("NullAway:AnnotatedPackages", "dagger.reflect")
