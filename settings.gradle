@@ -1,4 +1,5 @@
 include ':codegen'
 include ':integration-tests'
+include ':integration-tests:android'
 include ':reflect'
 include ':reflect-compiler'

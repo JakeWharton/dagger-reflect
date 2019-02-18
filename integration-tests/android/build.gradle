@@ -1,0 +1,60 @@
+apply plugin: 'com.android.application'
+
+android {
+  compileSdkVersion 28
+
+  defaultConfig {
+    applicationId 'com.example'
+
+    minSdkVersion 21
+    targetSdkVersion 28
+
+    versionCode 1
+    versionName '1'
+  }
+
+  compileOptions {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+  }
+
+  productFlavors {
+    flavorDimensions 'backend'
+
+    reflect {
+      dimension 'backend'
+    }
+    codegen {
+      dimension 'backend'
+    }
+  }
+
+  variantFilter {
+    // Behavior is varied by flavor so a second build type is useless.
+    setIgnore(it.buildType.name == 'release')
+  }
+
+  testOptions {
+    unitTests {
+      // Required for Robolectric.
+      includeAndroidResources = true
+    }
+  }
+}
+
+dependencies {
+  implementation deps.dagger.runtime
+  implementation deps.dagger.androidRuntime
+
+  reflectImplementation project(':reflect')
+  reflectAnnotationProcessor project(':reflect-compiler')
+
+  codegenImplementation project(':codegen')
+  codegenAnnotationProcessor deps.dagger.compiler
+  codegenAnnotationProcessor deps.dagger.androidCompiler
+
+  testImplementation deps.junit
+  testImplementation deps.truth
+  testImplementation deps.robolectric
+  testImplementation deps.androidx.test.core
+}
