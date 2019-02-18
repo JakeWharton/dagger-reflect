@@ -7,11 +7,11 @@ import java.lang.reflect.Type;
 
 import static dagger.reflect.Reflection.findQualifier;
 
-final class ReflectiveComponentParser {
+final class ReflectiveDependencyParser {
   private static final LinkedBinding<?>[] NO_BINDINGS = new LinkedBinding<?>[0];
 
-  static void parse(Class<?> moduleClass, Object instance, BindingMap.Builder bindingsBuilder) {
-    for (Class<?> target : Reflection.getDistinctTypeHierarchy(moduleClass)) {
+  static void parse(Class<?> cls, Object instance, BindingMap.Builder bindingsBuilder) {
+    for (Class<?> target : Reflection.getDistinctTypeHierarchy(cls)) {
       for (Method method : target.getDeclaredMethods()) {
         if (method.getParameterTypes().length != 0 || method.getReturnType() == void.class) {
           continue; // Not a provision method.
@@ -28,7 +28,7 @@ final class ReflectiveComponentParser {
     }
   }
 
-  private ReflectiveComponentParser() {
+  private ReflectiveDependencyParser() {
     throw new AssertionError();
   }
 }
