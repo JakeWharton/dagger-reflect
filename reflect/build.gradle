@@ -10,6 +10,8 @@ dependencies {
   implementation deps.jetbrainsAnnotations
   implementation deps.animalSnifferAnnotations
 
+  compileOnly deps.guava
+
   annotationProcessor deps.auto.value.compiler
 
   signature 'org.codehaus.mojo.signature:java18:1.0@signature'

@@ -72,6 +72,16 @@ final class Reflection {
     return key;
   }
 
+  static @Nullable <T extends Annotation> T findAnnotation(Annotation[] annotations,
+      Class<T> annotationType) {
+    for (Annotation annotation : annotations) {
+      if (annotation.annotationType() == annotationType) {
+        return annotationType.cast(annotation);
+      }
+    }
+    return null;
+  }
+
   static void trySet(@Nullable Object instance, Field field, @Nullable Object value) {
     if ((field.getModifiers() & Modifier.PUBLIC) == 0) {
       field.setAccessible(true);

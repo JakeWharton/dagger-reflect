@@ -6,10 +6,10 @@ import org.codehaus.mojo.animal_sniffer.IgnoreJRERequirement;
 import org.jetbrains.annotations.Nullable;
 
 @IgnoreJRERequirement // Only linked when requested by user code referencing j.u.Optional.
-final class LinkedOptionalBinding<T> extends LinkedBinding<Optional<T>> {
+final class LinkedJavaOptionalBinding<T> extends LinkedBinding<Optional<T>> {
   private final @Nullable LinkedBinding<T> dependency;
 
-  LinkedOptionalBinding(@Nullable LinkedBinding<T> dependency) {
+  LinkedJavaOptionalBinding(@Nullable LinkedBinding<T> dependency) {
     this.dependency = dependency;
   }
 

@@ -17,6 +17,7 @@ import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.DaggerReflect.notImplemented;
+import static dagger.reflect.Reflection.findAnnotation;
 import static dagger.reflect.Reflection.findMapKey;
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.findScope;
@@ -37,17 +38,27 @@ final class ReflectiveModuleParser {
         Annotation[] annotations = method.getAnnotations();
         Annotation qualifier = findQualifier(annotations);
 
-        Key key;
-        Binding binding;
         if ((method.getModifiers() & ABSTRACT) != 0) {
           if (method.getAnnotation(Binds.class) != null) {
-            key = Key.of(qualifier, returnType);
-            binding = new UnlinkedBindsBinding(method);
+            Key key = Key.of(qualifier, returnType);
+            Binding binding = new UnlinkedBindsBinding(method);
+            addBinding(bindingsBuilder, key, binding, annotations);
           } else if (method.getAnnotation(BindsOptionalOf.class) != null) {
-            key = Key.of(qualifier, new ParameterizedTypeImpl(null, Optional.class, returnType));
-            binding = new UnlinkedOptionalBinding(method);
-          } else {
-            continue;
+            try {
+              Key key =
+                  Key.of(qualifier, new ParameterizedTypeImpl(null, Optional.class, returnType));
+              Binding binding = new UnlinkedJavaOptionalBinding(method);
+              addBinding(bindingsBuilder, key, binding, annotations);
+            } catch (NoClassDefFoundError ignored) {
+            }
+            try {
+              Key key = Key.of(qualifier,
+                  new ParameterizedTypeImpl(null, com.google.common.base.Optional.class,
+                      returnType));
+              Binding binding = new UnlinkedGuavaOptionalBinding(method);
+              addBinding(bindingsBuilder, key, binding, annotations);
+            } catch (NoClassDefFoundError ignored) {
+            }
           }
         } else {
           if ((method.getModifiers() & STATIC) == 0 && instance == null) {
@@ -55,29 +66,31 @@ final class ReflectiveModuleParser {
           }
 
           if (method.getAnnotation(Provides.class) != null) {
-            key = Key.of(qualifier, returnType);
-            binding = new UnlinkedProvidesBinding(instance, method);
-          } else {
-            continue;
+            Key key = Key.of(qualifier, returnType);
+            Binding binding = new UnlinkedProvidesBinding(instance, method);
+            addBinding(bindingsBuilder, key, binding, annotations);
           }
         }
-
-        Annotation scope = findScope(annotations);
-        if (scope != null) {
-          // TODO check correct scope.
-          throw notImplemented("Scoped bindings");
-        }
-
-        if (method.getAnnotation(IntoSet.class) != null) {
-          addSetBinding(bindingsBuilder, key, binding);
-        } else if (method.getAnnotation(ElementsIntoSet.class) != null) {
-          addSetElementsBinding(bindingsBuilder, key, binding);
-        } else if (method.getAnnotation(IntoMap.class) != null) {
-          addMapBinding(bindingsBuilder, key, binding, annotations);
-        } else {
-          bindingsBuilder.add(key, binding);
-        }
       }
+    }
+  }
+
+  private static void addBinding(BindingMap.Builder bindingsBuilder, Key key, Binding binding,
+      Annotation[] annotations) {
+    Annotation scope = findScope(annotations);
+    if (scope != null) {
+      // TODO check correct scope.
+      throw notImplemented("Scoped bindings");
+    }
+
+    if (findAnnotation(annotations, IntoSet.class) != null) {
+      addSetBinding(bindingsBuilder, key, binding);
+    } else if (findAnnotation(annotations, ElementsIntoSet.class) != null) {
+      addSetElementsBinding(bindingsBuilder, key, binding);
+    } else if (findAnnotation(annotations, IntoMap.class) != null) {
+      addMapBinding(bindingsBuilder, key, binding, annotations);
+    } else {
+      bindingsBuilder.add(key, binding);
     }
   }
 

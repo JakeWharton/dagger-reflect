@@ -7,10 +7,10 @@ import java.lang.reflect.Type;
 
 import static dagger.reflect.Reflection.findQualifier;
 
-public final class UnlinkedOptionalBinding extends UnlinkedBinding {
+public final class UnlinkedGuavaOptionalBinding extends UnlinkedBinding {
   private final Method method;
 
-  UnlinkedOptionalBinding(Method method) {
+  UnlinkedGuavaOptionalBinding(Method method) {
     this.method = method;
   }
 
@@ -26,7 +26,7 @@ public final class UnlinkedOptionalBinding extends UnlinkedBinding {
     Key key = Key.of(qualifier, method.getReturnType());
 
     LinkedBinding<?> dependency = linker.find(key);
-    return new LinkedOptionalBinding<>(dependency);
+    return new LinkedGuavaOptionalBinding<>(dependency);
   }
 
   @Override public String toString() {

@@ -93,15 +93,11 @@ public final class IntegrationTest {
   }
 
   @Test public void optionalGuavaBinding() {
-    ignoreReflectionBackend();
-
     OptionalGuavaBinding component = backend.create(OptionalGuavaBinding.class);
     assertThat(component.string()).isEqualTo(com.google.common.base.Optional.of("foo"));
   }
 
   @Test public void optionalGuavaBindingAbsent() {
-    ignoreReflectionBackend();
-
     OptionalGuavaBindingAbsent component = backend.create(OptionalGuavaBindingAbsent.class);
     assertThat(component.string()).isEqualTo(com.google.common.base.Optional.absent());
   }
