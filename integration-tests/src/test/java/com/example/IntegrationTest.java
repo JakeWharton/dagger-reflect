@@ -159,6 +159,14 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("4");
   }
 
+  @Test public void implicitModules() {
+    ignoreReflectionBackend();
+
+    ImplicitFinalModules component = backend.create(ImplicitFinalModules.class);
+
+    assertThat(component.string()).isEqualTo(ImplicitFinalModules.Module1.VALUE);
+  }
+
   @Test public void builderExplicitModulesOmitted() {
     try {
       backend.builder(BuilderExplicitModules.Builder.class).build();
