@@ -721,7 +721,6 @@ public final class IntegrationTest {
 
   @Test public void noComponentBuilderAnnotationFails() {
     ignoreCodegenBackend();
-    ignoreReflectionBackend(); // @Component.Builder does not have runtime retention
 
     try {
       backend.builder(NoBuilderAnnotation.Builder.class);

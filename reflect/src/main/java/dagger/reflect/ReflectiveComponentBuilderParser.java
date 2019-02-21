@@ -11,12 +11,10 @@ final class ReflectiveComponentBuilderParser {
   private static final Class<?>[] NO_DEPENDENCIES = new Class<?>[0];
 
   static <B> B parse(Class<B> cls) {
-    // TODO file a bug to get this retained for reflective access? Or maybe we don't care...
-    //Component.Builder builder = cls.getAnnotation(Component.Builder.class);
-    //if (builder == null) {
-    //  throw new IllegalArgumentException(
-    //      cls.getName() + " lacks @Component.Builder annotation");
-    //}
+    if (cls.getAnnotation(Component.Builder.class) == null) {
+      throw new IllegalArgumentException(
+          cls.getCanonicalName() + " lacks @Component.Builder annotation");
+    }
 
     Class<?> componentClass = cls.getEnclosingClass();
     if (componentClass == null) {
