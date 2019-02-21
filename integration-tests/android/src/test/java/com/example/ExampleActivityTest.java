@@ -8,13 +8,10 @@ import org.robolectric.RobolectricTestRunner;
 import static androidx.lifecycle.Lifecycle.State.CREATED;
 import static androidx.test.core.app.ActivityScenario.launch;
 import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assume.assumeFalse;
 
 @RunWith(RobolectricTestRunner.class) //
 public final class ExampleActivityTest {
   @Test public void string() {
-    assumeFalse(BuildConfig.FLAVOR.equals("reflect"));
-
     try (ActivityScenario<ExampleActivity> scenario = launch(ExampleActivity.class)) {
       scenario.moveToState(CREATED);
       scenario.onActivity(activity -> {

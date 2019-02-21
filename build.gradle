@@ -11,6 +11,7 @@ buildscript {
           'runtime': "com.google.dagger:dagger:${versions.dagger}",
           'compiler': "com.google.dagger:dagger-compiler:${versions.dagger}",
           'androidRuntime': "com.google.dagger:dagger-android:${versions.dagger}",
+          'androidRuntimeJar': "com.google.dagger:dagger-android-jarimpl:${versions.dagger}",
           'androidCompiler': "com.google.dagger:dagger-android-processor:${versions.dagger}",
       ],
       'junit': 'junit:junit:4.13-beta-3',

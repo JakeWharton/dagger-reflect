@@ -4,10 +4,13 @@ import dagger.Binds;
 import dagger.BindsOptionalOf;
 import dagger.MapKey;
 import dagger.Provides;
+import dagger.android.AndroidInjector;
+import dagger.android.ContributesAndroidInjector;
 import dagger.multibindings.ElementsIntoSet;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.IntoSet;
 import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -22,6 +25,7 @@ import static dagger.reflect.Reflection.findAnnotation;
 import static dagger.reflect.Reflection.findMapKey;
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.findScope;
+import static dagger.reflect.Reflection.findScopes;
 import static dagger.reflect.Reflection.maybeInstantiate;
 import static dagger.reflect.Reflection.requireAnnotation;
 
@@ -53,6 +57,16 @@ final class ReflectiveModuleParser {
               Binding binding = new UnlinkedGuavaOptionalBinding(method);
               addBinding(scopeBuilder, key, binding, annotations);
             } catch (NoClassDefFoundError ignored) {
+            }
+          } else {
+            ContributesAndroidInjector contributesAndroidInjector =
+                method.getAnnotation(ContributesAndroidInjector.class);
+            if (contributesAndroidInjector != null) {
+              // TODO check return type is a supported type? not parameterized? something else?
+              Class<?>[] modules = contributesAndroidInjector.modules();
+              Class<?> androidType = (Class<?>) returnType;
+              Binding.UnlinkedBinding binding = new UnlinkedAndroidInjectorFactoryBinding(modules, androidType, findScopes(annotations));
+              addAndroidMapBinding(scopeBuilder, returnType, binding);
             }
           }
         } else {
@@ -110,6 +124,20 @@ final class ReflectiveModuleParser {
       throw new IllegalStateException(); // TODO must be set
     }
     scopeBuilder.addBindingElementsIntoSet(setKey, elementsBinding);
+  }
+
+  private static void addAndroidMapBinding(Scope.Builder scopeBuilder,
+                                           Type returnType, Binding entryValueBinding) {
+    TypeUtil.WildcardTypeImpl wildcardType = new TypeUtil.WildcardTypeImpl(new Type[]{Object.class}, null);
+    Type classType = new ParameterizedTypeImpl(null, Class.class, wildcardType);
+    Type injectorFactoryType = new ParameterizedTypeImpl(AndroidInjector.class, AndroidInjector.Factory.class, wildcardType);
+
+    Key key = Key.of(null,
+            new ParameterizedTypeImpl(null, Map.class, classType, injectorFactoryType));
+    Key string = Key.of(null,
+            new ParameterizedTypeImpl(null, Map.class, String.class, injectorFactoryType));
+    scopeBuilder.addBindingIntoMap(key, returnType, entryValueBinding);
+    scopeBuilder.addBindingIntoMap(string, returnType, entryValueBinding);
   }
 
   private static void addMapBinding(Scope.Builder scopeBuilder, Key entryValueKey,
