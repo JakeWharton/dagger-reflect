@@ -25,11 +25,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
 
-import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findQualifier;
 
 final class ComponentInvocationHandler implements InvocationHandler {
   static <T> T create(Class<T> cls, Scope scope) {
+    if (!cls.isInterface()) {
+      throw new IllegalArgumentException(cls.getCanonicalName()
+          + " is not an interface. Only interfaces are supported.");
+    }
     return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls },
         new ComponentInvocationHandler(scope)));
   }
@@ -86,9 +89,18 @@ final class ComponentInvocationHandler implements InvocationHandler {
     }
 
     if (args == null || args.length == 0) {
-      if (returnType instanceof Class<?>
-          && ((Class<?>) returnType).getAnnotation(Subcomponent.class) != null) {
-        throw notImplemented("Subcomponents");
+      if (returnType instanceof Class<?>) {
+        Class<?> returnClass = (Class<?>) returnType;
+        if (returnClass.getAnnotation(Subcomponent.class) != null) {
+          return new SubcomponentMethodInvocationHandler(returnClass, scope);
+        }
+        // TODO if (returnClass.getAnnotation(Subcomponent.Builder.class) != null) {
+        // Until @Subcomponent.Builder has runtime retention, check whether this return type belongs
+        // to a subcomponent builder by looking for an enclosing class annotated with @Subcomponent.
+        if (returnClass.getEnclosingClass() != null
+            && returnClass.getEnclosingClass().getAnnotation(Subcomponent.class) != null) {
+          return new SubcomponentBuilderMethodInvocationhandler(returnClass, scope);
+        }
       }
 
       Key key = Key.of(findQualifier(method.getDeclaredAnnotations()), returnType);
@@ -131,6 +143,36 @@ final class ComponentInvocationHandler implements InvocationHandler {
       Object instance = args[0];
       membersInjector.injectMembers(instance);
       return returnInstance ? instance : null;
+    }
+  }
+
+  private static final class SubcomponentMethodInvocationHandler
+      implements MethodInvocationHandler {
+    private final Class<?> cls;
+    private final Scope scope;
+
+    SubcomponentMethodInvocationHandler(Class<?> cls, Scope scope) {
+      this.cls = cls;
+      this.scope = scope;
+    }
+
+    @Override public Object invoke(Object[] args) {
+      return ReflectiveComponentParser.parse(cls, scope);
+    }
+  }
+
+  private static final class SubcomponentBuilderMethodInvocationhandler
+      implements MethodInvocationHandler {
+    private final Class<?> cls;
+    private final Scope scope;
+
+    SubcomponentBuilderMethodInvocationhandler(Class<?> cls, Scope scope) {
+      this.cls = cls;
+      this.scope = scope;
+    }
+
+    @Override public Object invoke(Object[] args) {
+      return ReflectiveComponentBuilderParser.parse(cls, scope);
     }
   }
 }

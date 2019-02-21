@@ -15,89 +15,13 @@
  */
 package dagger.reflect;
 
-import dagger.Component;
-import java.lang.annotation.Annotation;
-import java.util.Collections;
-import java.util.LinkedHashSet;
-import java.util.Set;
-
-import static dagger.reflect.Reflection.findScope;
-
 public final class DaggerReflect {
   public static <C> C create(Class<C> componentClass) {
-    if (!componentClass.isInterface()) {
-      throw new IllegalArgumentException(componentClass.getCanonicalName() + " is not an interface. "
-          + "Only interface components are supported.");
-    }
-
-    Component component = componentClass.getAnnotation(Component.class);
-    if (component == null) {
-      throw new IllegalArgumentException(
-          componentClass.getCanonicalName() + " lacks @Component annotation");
-    }
-
-    Class<?>[] dependencies = component.dependencies();
-    if (dependencies.length > 0) {
-      StringBuilder builder = new StringBuilder(componentClass.getCanonicalName())
-          .append(" declares dependencies [");
-      for (int i = 0; i < dependencies.length; i++) {
-        if (i > 0) builder.append(", ");
-        builder.append(dependencies[i].getCanonicalName());
-      }
-      builder.append("] and therefore must be created with a builder");
-      throw new IllegalArgumentException(builder.toString());
-    }
-
-    Annotation scopeAnnotation = findScope(componentClass.getAnnotations());
-    if (scopeAnnotation != null) {
-      throw notImplemented("Scoped components");
-    }
-
-    BindingMap.Builder bindingsBuilder = new BindingMap.Builder()
-        .justInTimeProvider(new ReflectiveJustInTimeProvider());
-
-    for (Class<?> module : component.modules()) {
-      ReflectiveModuleParser.parse(module, null, bindingsBuilder);
-    }
-    Scope scope = new Scope(bindingsBuilder.build());
-    return ComponentInvocationHandler.create(componentClass, scope);
+    return ReflectiveComponentParser.parse(componentClass);
   }
 
   public static <B> B builder(Class<B> builderClass) {
-    if (!builderClass.isInterface()) {
-      throw new IllegalArgumentException(builderClass.getCanonicalName()
-          + " is not an interface. Only interface component builders are supported.");
-    }
-    Class<?> componentClass = builderClass.getEnclosingClass();
-    if (componentClass == null) {
-      throw new IllegalArgumentException(builderClass.getCanonicalName()
-          + " is not a nested type inside of a component interface.");
-    }
-    if (!componentClass.isInterface()) {
-      throw new IllegalArgumentException(componentClass.getCanonicalName()
-          + " is not an interface. Only interface components are supported.");
-    }
-
-    Component component = componentClass.getAnnotation(Component.class);
-    if (component == null) {
-      throw new IllegalArgumentException(
-          componentClass.getCanonicalName() + " lacks @Component annotation");
-    }
-    // TODO file a bug to get this retained for reflective access? Or maybe we don't care...
-    //Component.Builder builder = builderClass.getAnnotation(Component.Builder.class);
-    //if (builder == null) {
-    //  throw new IllegalArgumentException(
-    //      builderClass.getName() + " lacks @Component.Builder annotation");
-    //}
-
-    Set<Class<?>> modules = new LinkedHashSet<>();
-    Collections.addAll(modules, component.modules());
-
-    Set<Class<?>> dependencies = new LinkedHashSet<>();
-    Collections.addAll(dependencies, component.dependencies());
-
-    return ComponentBuilderInvocationHandler.create(componentClass, builderClass, modules,
-        dependencies);
+    return ReflectiveComponentBuilderParser.parse(builderClass);
   }
 
   static RuntimeException notImplemented(String feature) {

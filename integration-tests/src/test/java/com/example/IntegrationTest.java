@@ -652,7 +652,7 @@ public final class IntegrationTest {
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat()
           .isEqualTo("com.example.AbstractComponent is not an interface. "
-              + "Only interface components are supported.");
+              + "Only interfaces are supported.");
     }
   }
 
@@ -665,7 +665,7 @@ public final class IntegrationTest {
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat()
           .isEqualTo("com.example.AbstractComponent is not an interface. "
-              + "Only interface components are supported.");
+              + "Only interfaces are supported.");
     }
   }
 
@@ -715,7 +715,7 @@ public final class IntegrationTest {
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat()
           .isEqualTo("com.example.AbstractBuilderClass.Builder is not an interface. "
-              + "Only interface component builders are supported.");
+              + "Only interface builders are supported.");
     }
   }
 
@@ -745,6 +745,21 @@ public final class IntegrationTest {
               + "declares dependencies [java.lang.String, java.lang.Runnable] "
               + "and therefore must be created with a builder");
     }
+  }
+
+  @Test public void subcomponentProvision() {
+    SubcomponentProvision.Nested nested = backend.create(SubcomponentProvision.class).nested();
+    assertThat(nested.one()).isEqualTo("one");
+    assertThat(nested.two()).isEqualTo(2L);
+  }
+
+  @Test public void subcomponentBuilderProvision() {
+    SubcomponentBuilderProvision.Nested nested = backend.create(SubcomponentBuilderProvision.class)
+        .nestedBuilder()
+        .module2(new SubcomponentBuilderProvision.Nested.Module2(2L))
+        .build();
+    assertThat(nested.one()).isEqualTo("one");
+    assertThat(nested.two()).isEqualTo(2L);
   }
 
   private void ignoreReflectionBackend() {
