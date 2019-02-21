@@ -6,7 +6,6 @@ dependencies {
   implementation deps.guava
   implementation deps.auto.value.annotations
   annotationProcessor deps.dagger.compiler
-  annotationProcessor deps.auto.value.annotations // TODO remove once Dagger releases fix
   annotationProcessor deps.auto.value.compiler
 
   testImplementation deps.junit
