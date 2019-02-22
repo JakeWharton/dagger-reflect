@@ -94,11 +94,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
         if (returnClass.getAnnotation(Subcomponent.class) != null) {
           return new SubcomponentMethodInvocationHandler(returnClass, scope);
         }
-        // TODO if (returnClass.getAnnotation(Subcomponent.Builder.class) != null) {
-        // Until @Subcomponent.Builder has runtime retention, check whether this return type belongs
-        // to a subcomponent builder by looking for an enclosing class annotated with @Subcomponent.
-        if (returnClass.getEnclosingClass() != null
-            && returnClass.getEnclosingClass().getAnnotation(Subcomponent.class) != null) {
+        if (returnClass.getAnnotation(Subcomponent.Builder.class) != null) {
           return new SubcomponentBuilderMethodInvocationhandler(returnClass, scope);
         }
       }

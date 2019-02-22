@@ -2,7 +2,7 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 
 buildscript {
   ext.versions = [
-      'dagger': '2.21',
+      'dagger': 'HEAD-SNAPSHOT', // TODO update to 2.22 or newer once released
   ]
 
   ext.deps = [
@@ -61,6 +61,9 @@ subprojects {
       content {
         includeGroup 'org.jetbrains.trove4j'
       }
+    }
+    maven {
+      url 'https://oss.sonatype.org/content/repositories/snapshots/'
     }
   }
 
