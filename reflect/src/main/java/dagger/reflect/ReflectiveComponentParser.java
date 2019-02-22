@@ -52,8 +52,8 @@ final class ReflectiveComponentParser {
       ReflectiveModuleParser.parse(module, null, bindingsBuilder);
     }
 
-    JustInTimeBindingFactory jitBindingFactory = new ReflectiveJustInTimeBindingFactory();
-    Scope scope = new Scope(bindingsBuilder.build(), jitBindingFactory, parent);
+    JustInTimeLookup.Factory jitLookupFactory = new ReflectiveJustInTimeLookupFactory();
+    Scope scope = new Scope(bindingsBuilder.build(), jitLookupFactory, parent);
 
     return ComponentInvocationHandler.create(cls, scope);
   }

@@ -112,8 +112,8 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         ReflectiveDependencyParser.parse(type, instance, bindingsBuilder);
       }
 
-      JustInTimeBindingFactory jitBindingFactory = new ReflectiveJustInTimeBindingFactory();
-      Scope scope = new Scope(bindingsBuilder.build(), jitBindingFactory, parent);
+      JustInTimeLookup.Factory jitLookupFactory = new ReflectiveJustInTimeLookupFactory();
+      Scope scope = new Scope(bindingsBuilder.build(), jitLookupFactory, parent);
 
       return ComponentInvocationHandler.create(componentClass, scope);
     }
