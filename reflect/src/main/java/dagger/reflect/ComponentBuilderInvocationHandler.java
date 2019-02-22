@@ -95,8 +95,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         throw new IllegalStateException(); // TODO must be no-arg
       }
 
-      BindingMap.Builder bindingsBuilder = new BindingMap.Builder()
-          .justInTimeProvider(new ReflectiveJustInTimeProvider());
+      BindingMap.Builder bindingsBuilder = new BindingMap.Builder();
 
       for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
         bindingsBuilder.add(entry.getKey(), new LinkedInstanceBinding<>(entry.getValue()));
@@ -112,7 +111,9 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         }
         ReflectiveDependencyParser.parse(type, instance, bindingsBuilder);
       }
-      Scope scope = new Scope(bindingsBuilder.build(), parent);
+
+      JustInTimeBindingFactory jitBindingFactory = new ReflectiveJustInTimeBindingFactory();
+      Scope scope = new Scope(bindingsBuilder.build(), jitBindingFactory, parent);
 
       return ComponentInvocationHandler.create(componentClass, scope);
     }
