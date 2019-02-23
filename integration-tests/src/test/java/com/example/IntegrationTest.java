@@ -761,6 +761,74 @@ public final class IntegrationTest {
     assertThat(nested.two()).isEqualTo(2L);
   }
 
+  @Test public void componentScopeCycle() {
+    ignoreCodegenBackend();
+    ignoreReflectionBackend(); // TODO
+
+    try {
+      backend.create(ComponentScopeCycle.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().isEqualTo("TODO");
+    }
+  }
+
+  @Test public void componentAndSubcomponentScopeCycle() {
+    ignoreCodegenBackend();
+    ignoreReflectionBackend(); // TODO
+
+    ComponentAndSubcomponentScopeCycle component =
+        backend.create(ComponentAndSubcomponentScopeCycle.class);
+    try {
+      component.singleton();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().isEqualTo("TODO");
+    }
+  }
+
+  @Test public void componentScopeDependsOnUnscoped() {
+    ignoreCodegenBackend();
+    ignoreReflectionBackend(); // TODO
+
+    try {
+      backend.create(ComponentScopedDependsOnUnscoped.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().isEqualTo("TODO");
+    }
+  }
+
+  @Test public void subcomponentScopeCycle() {
+    ignoreCodegenBackend();
+
+    SubcomponentScopeCycle.RequestComponent requestComponent =
+        backend.create(SubcomponentScopeCycle.class).request();
+    try {
+      requestComponent.singleton();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().isEqualTo("Detected scope annotation cycle:\n"
+          + "  * @javax.inject.Singleton()\n"
+          + "  * @com.example.SubcomponentScopeCycle$Request()\n"
+          + "  * @javax.inject.Singleton()");
+    }
+  }
+
+  @Test public void subcomponentScopeDependsOnUnscoped() {
+    ignoreCodegenBackend();
+
+    SubcomponentScopedDependsOnUnscoped unscoped =
+        backend.create(SubcomponentScopedDependsOnUnscoped.class);
+    try {
+      unscoped.scoped();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("Scope @javax.inject.Singleton() may not depend on unscoped");
+    }
+  }
+
   private void ignoreReflectionBackend() {
     assumeTrue("Not yet implemented for reflection backend", backend != Backend.REFLECT);
   }

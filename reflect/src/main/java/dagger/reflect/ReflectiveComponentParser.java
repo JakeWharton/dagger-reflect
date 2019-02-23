@@ -5,7 +5,6 @@ import dagger.Subcomponent;
 import java.lang.annotation.Annotation;
 import org.jetbrains.annotations.Nullable;
 
-import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findScope;
 
 final class ReflectiveComponentParser {
@@ -41,10 +40,7 @@ final class ReflectiveComponentParser {
       throw new IllegalArgumentException(builder.toString());
     }
 
-    Annotation scopeAnnotation = findScope(cls.getAnnotations());
-    if (scopeAnnotation != null) {
-      throw notImplemented("Scoped components");
-    }
+    Annotation scopeAnnotation = findScope(cls.getDeclaredAnnotations());
 
     BindingMap.Builder bindingsBuilder = new BindingMap.Builder();
 
@@ -53,7 +49,7 @@ final class ReflectiveComponentParser {
     }
 
     JustInTimeLookup.Factory jitLookupFactory = new ReflectiveJustInTimeLookupFactory();
-    Scope scope = new Scope(bindingsBuilder.build(), jitLookupFactory, parent);
+    Scope scope = new Scope(bindingsBuilder.build(), jitLookupFactory, scopeAnnotation, parent);
 
     return ComponentInvocationHandler.create(cls, scope);
   }
