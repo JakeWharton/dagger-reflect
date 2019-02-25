@@ -46,13 +46,15 @@ final class ReflectiveComponentParser {
       throw notImplemented("Scoped components");
     }
 
-    BindingMap.Builder bindingsBuilder = new BindingMap.Builder()
-        .justInTimeProvider(new ReflectiveJustInTimeProvider());
+    BindingMap.Builder bindingsBuilder = new BindingMap.Builder();
 
     for (Class<?> module : modules) {
       ReflectiveModuleParser.parse(module, null, bindingsBuilder);
     }
-    Scope scope = new Scope(bindingsBuilder.build(), parent);
+
+    JustInTimeBindingFactory jitBindingFactory = new ReflectiveJustInTimeBindingFactory();
+    Scope scope = new Scope(bindingsBuilder.build(), jitBindingFactory, parent);
+
     return ComponentInvocationHandler.create(cls, scope);
   }
 }

@@ -42,7 +42,7 @@ final class Linker {
     LinkedBinding<?> linkedBinding = unlinkedBinding.link(this);
     chain.remove(key);
 
-    return bindings.replaceLinked(key, unlinkedBinding, linkedBinding);
+    return bindings.replace(key, unlinkedBinding, linkedBinding);
   }
 
   private RuntimeException failure(Key key, String reason, String cause) {

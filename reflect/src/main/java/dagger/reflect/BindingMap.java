@@ -25,33 +25,43 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
+/**
+ * A specialized map for {@linkplain Key keys} to {@linkplain Binding bindings}. This map
+ * intentionally offers a limited API in order to enforce a certain lifecycle of its entries.
+ */
 final class BindingMap {
   private final ConcurrentHashMap<Key, Binding> bindings;
-  private final JustInTimeProvider jitProvider;
 
-  private BindingMap(ConcurrentHashMap<Key, Binding> bindings, JustInTimeProvider jitProvider) {
+  private BindingMap(ConcurrentHashMap<Key, Binding> bindings) {
     this.bindings = bindings;
-    this.jitProvider = jitProvider;
   }
 
   @Nullable Binding get(Key key) {
-    Binding binding = bindings.get(key);
-    if (binding != null) {
-      return binding;
-    }
-
-    Binding jitBinding = jitProvider.create(key);
-    if (jitBinding != null) {
-      Binding replaced = bindings.putIfAbsent(key, jitBinding);
-      return replaced != null
-          ? replaced // We raced another thread and lost.
-          : jitBinding;
-    }
-
-    return null;
+    return bindings.get(key);
   }
 
-  LinkedBinding<?> replaceLinked(Key key, UnlinkedBinding unlinked, LinkedBinding<?> linked) {
+  /**
+   * Try to add an entry for {@code key} mapped to {@code binding}. This operation should only be
+   * performed immediately after {@link #get(Key)} returns null.
+   *
+   * @return The binding now associated with {@code key}. This may not be the same instance as
+   * {@code binding} if two threads concurrently perform the {@code get}/{@code putIfAbsent} dance.
+   */
+  Binding putIfAbsent(Key key, Binding binding) {
+    Binding replaced = bindings.putIfAbsent(key, binding);
+    return replaced != null
+        ? replaced // You raced another thread and lost.
+        : binding;
+  }
+
+  /**
+   * Replace the {@linkplain UnlinkedBinding <code>unlinked<code> binding} mapped from {@code key}
+   * with the {@linkplain LinkedBinding <code>linked</code> binding}.
+   *
+   * @return The linked binding now associated with {@code key}. This may not be the same instance
+   * as {@code linked} if two threads concurrently invoke this method.
+   */
+  LinkedBinding<?> replace(Key key, UnlinkedBinding unlinked, LinkedBinding<?> linked) {
     if (!bindings.replace(key, unlinked, linked)) {
       // If replace() returned false we raced another thread and lost. Return the winner.
       LinkedBinding<?> race = (LinkedBinding<?>) bindings.get(key);
@@ -65,13 +75,6 @@ final class BindingMap {
     private final Map<Key, Binding> bindings = new LinkedHashMap<>();
     private final Map<Key, SetBindings> setBindings = new LinkedHashMap<>();
     private final Map<Key, Map<Object, Binding>> mapBindings = new LinkedHashMap<>();
-    private JustInTimeProvider jitProvider = JustInTimeProvider.NONE;
-
-    Builder justInTimeProvider(JustInTimeProvider jitProvider) {
-      if (jitProvider == null) throw new NullPointerException("jitProvider == null");
-      this.jitProvider = jitProvider;
-      return this;
-    }
 
     Builder add(Key key, Binding binding) {
       if (key == null) throw new NullPointerException("key == null");
@@ -201,7 +204,7 @@ final class BindingMap {
         }
       }
 
-      return new BindingMap(allBindings, jitProvider);
+      return new BindingMap(allBindings);
     }
   }
 
@@ -210,11 +213,5 @@ final class BindingMap {
     final List<Binding> elementBindings = new ArrayList<>();
     /** Bindings which produce a set of elements for the target set. */
     final List<Binding> elementsBindings = new ArrayList<>();
-  }
-
-  interface JustInTimeProvider {
-    @Nullable UnlinkedBinding create(Key key);
-
-    JustInTimeProvider NONE = key -> null;
   }
 }
