@@ -392,11 +392,21 @@ public final class IntegrationTest {
   }
 
   @Test public void scoped() {
-    ignoreReflectionBackend();
-
     Scoped component = backend.create(Scoped.class);
-    assertThat(component.value()).isEqualTo(1);
-    assertThat(component.value()).isEqualTo(1);
+    Object value1 = component.value();
+    Object value2 = component.value();
+    assertThat(value1).isSameAs(value2);
+  }
+
+  @Test public void scopedWrong() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.create(ScopedWrong.class);
+      fail();
+    } catch (IllegalStateException e) {
+      // TODO some message indicating wrong scope
+    }
   }
 
   @Test public void multibindingSet() {

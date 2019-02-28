@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -77,9 +76,6 @@ final class BindingMap {
     private final Map<Key, Map<Object, Binding>> mapBindings = new LinkedHashMap<>();
 
     Builder add(Key key, Binding binding) {
-      if (key == null) throw new NullPointerException("key == null");
-      if (binding == null) throw new NullPointerException("binding == null");
-
       Binding replaced = bindings.put(key, binding);
       if (replaced != null) {
         throw new IllegalStateException(
@@ -88,22 +84,7 @@ final class BindingMap {
       return this;
     }
 
-    /**
-     * Adds a new element into the set specified by {@code key}.
-     *
-     * @param key They key defining the set in which this element will be added. The raw class of
-     * the {@linkplain Key#type() type} must be {@link Set Set.class}.
-     * @param elementBinding The binding for the new element. The instance produced by this binding
-     * must be an instance of the {@code E} type parameter of {@link Set} specified
-     * {@linkplain Key#type() in the <code>key</code>}.
-     */
     Builder addIntoSet(Key key, Binding elementBinding) {
-      if (key == null) throw new NullPointerException("key == null");
-      if (Types.getRawType(key.type()) != Set.class) {
-        throw new IllegalArgumentException("key.type() must be Set");
-      }
-      if (elementBinding == null) throw new NullPointerException("elementBinding == null");
-
       SetBindings bindings = setBindings.get(key);
       if (bindings == null) {
         bindings = new SetBindings();
@@ -114,21 +95,7 @@ final class BindingMap {
       return this;
     }
 
-    /**
-     * Adds a new element into the set specified by {@code key}.
-     *
-     * @param key They key defining the set in which this element will be added. The raw class of
-     * the {@linkplain Key#type() type} must be {@link Set Set.class}.
-     * @param elementsBinding The binding for the elements. The instance produced by this binding
-     * must be an instance of {@code Set<E>} matching {@link Key#type() key.type()}.
-     */
     Builder addElementsIntoSet(Key key, Binding elementsBinding) {
-      if (key == null) throw new NullPointerException("key == null");
-      if (Types.getRawType(key.type()) != Set.class) {
-        throw new IllegalArgumentException("key.type() must be Set");
-      }
-      if (elementsBinding == null) throw new NullPointerException("elementsBinding == null");
-
       SetBindings bindings = setBindings.get(key);
       if (bindings == null) {
         bindings = new SetBindings();
@@ -139,26 +106,7 @@ final class BindingMap {
       return this;
     }
 
-    /**
-     * Adds a new entry into the map specified by {@code key}.
-     *
-     * @param key The key defining the map in which this entry will be added. The raw class of the
-     * {@linkplain Key#type() type} must be {@link Map Map.class}.
-     * @param entryKey The key of the new map entry. The argument must be an instance of the
-     * {@code K} type parameter of {@link Map} specified
-     * {@linkplain Key#type() in the <code>key</code>}.
-     * @param entryValueBinding The value binding of the new map entry. The instance produced by
-     * this binding must be an instance of the {@code V} type parameter of {@link Map} specified
-     * {@linkplain Key#type()} in the <code>key</code>}.
-     */
     Builder addIntoMap(Key key, Object entryKey, Binding entryValueBinding) {
-      if (key == null) throw new NullPointerException("key == null");
-      if (Types.getRawType(key.type()) != Map.class) {
-        throw new IllegalArgumentException("key.type() must be Map");
-      }
-      if (entryKey == null) throw new NullPointerException("entryKey == null");
-      if (entryValueBinding == null) throw new NullPointerException("entryValueBinding == null");
-
       Map<Object, Binding> mapBinding = mapBindings.get(key);
       if (mapBinding == null) {
         mapBinding = new LinkedHashMap<>();

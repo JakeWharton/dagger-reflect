@@ -16,7 +16,6 @@ import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
-import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findAnnotation;
 import static dagger.reflect.Reflection.findMapKey;
 import static dagger.reflect.Reflection.findQualifier;
@@ -26,8 +25,7 @@ import static java.lang.reflect.Modifier.PRIVATE;
 import static java.lang.reflect.Modifier.STATIC;
 
 final class ReflectiveModuleParser {
-  static void parse(Class<?> moduleClass, @Nullable Object instance,
-      BindingMap.Builder bindingsBuilder) {
+  static void parse(Class<?> moduleClass, @Nullable Object instance, Scope.Builder scopeBuilder) {
     for (Class<?> target : Reflection.getDistinctTypeHierarchy(moduleClass)) {
       for (Method method : target.getDeclaredMethods()) {
         if ((method.getModifiers() & PRIVATE) != 0) {
@@ -42,13 +40,13 @@ final class ReflectiveModuleParser {
           if (method.getAnnotation(Binds.class) != null) {
             Key key = Key.of(qualifier, returnType);
             Binding binding = new UnlinkedBindsBinding(method);
-            addBinding(bindingsBuilder, key, binding, annotations);
+            addBinding(scopeBuilder, key, binding, annotations);
           } else if (method.getAnnotation(BindsOptionalOf.class) != null) {
             try {
               Key key =
                   Key.of(qualifier, new ParameterizedTypeImpl(null, Optional.class, returnType));
               Binding binding = new UnlinkedJavaOptionalBinding(method);
-              addBinding(bindingsBuilder, key, binding, annotations);
+              addBinding(scopeBuilder, key, binding, annotations);
             } catch (NoClassDefFoundError ignored) {
             }
             try {
@@ -56,7 +54,7 @@ final class ReflectiveModuleParser {
                   new ParameterizedTypeImpl(null, com.google.common.base.Optional.class,
                       returnType));
               Binding binding = new UnlinkedGuavaOptionalBinding(method);
-              addBinding(bindingsBuilder, key, binding, annotations);
+              addBinding(scopeBuilder, key, binding, annotations);
             } catch (NoClassDefFoundError ignored) {
             }
           }
@@ -68,48 +66,50 @@ final class ReflectiveModuleParser {
           if (method.getAnnotation(Provides.class) != null) {
             Key key = Key.of(qualifier, returnType);
             Binding binding = new UnlinkedProvidesBinding(instance, method);
-            addBinding(bindingsBuilder, key, binding, annotations);
+            addBinding(scopeBuilder, key, binding, annotations);
           }
         }
       }
     }
   }
 
-  private static void addBinding(BindingMap.Builder bindingsBuilder, Key key, Binding binding,
+  private static void addBinding(Scope.Builder scopeBuilder, Key key, Binding binding,
       Annotation[] annotations) {
     Annotation scope = findScope(annotations);
     if (scope != null) {
-      // TODO check correct scope.
-      throw notImplemented("Scoped bindings");
+      if (!scope.equals(scopeBuilder.annotation)) {
+        throw new IllegalStateException(); // TODO wrong scope
+      }
+      binding = binding.asScoped();
     }
 
     if (findAnnotation(annotations, IntoSet.class) != null) {
-      addSetBinding(bindingsBuilder, key, binding);
+      addSetBinding(scopeBuilder, key, binding);
     } else if (findAnnotation(annotations, ElementsIntoSet.class) != null) {
-      addSetElementsBinding(bindingsBuilder, key, binding);
+      addSetElementsBinding(scopeBuilder, key, binding);
     } else if (findAnnotation(annotations, IntoMap.class) != null) {
-      addMapBinding(bindingsBuilder, key, binding, annotations);
+      addMapBinding(scopeBuilder, key, binding, annotations);
     } else {
-      bindingsBuilder.add(key, binding);
+      scopeBuilder.addBinding(key, binding);
     }
   }
 
-  private static void addSetBinding(BindingMap.Builder bindingsBuilder, Key elementKey,
+  private static void addSetBinding(Scope.Builder scopeBuilder, Key elementKey,
       Binding elementBinding) {
     Key key = Key.of(elementKey.qualifier(),
         new ParameterizedTypeImpl(null, Set.class, elementKey.type()));
-    bindingsBuilder.addIntoSet(key, elementBinding);
+    scopeBuilder.addBindingIntoSet(key, elementBinding);
   }
 
-  private static void addSetElementsBinding(BindingMap.Builder bindingsBuilder, Key setKey,
+  private static void addSetElementsBinding(Scope.Builder scopeBuilder, Key setKey,
       Binding elementsBinding) {
     if (Types.getRawType(setKey.type()) != Set.class) {
       throw new IllegalStateException(); // TODO must be set
     }
-    bindingsBuilder.addElementsIntoSet(setKey, elementsBinding);
+    scopeBuilder.addBindingElementsIntoSet(setKey, elementsBinding);
   }
 
-  private static void addMapBinding(BindingMap.Builder bindingsBuilder, Key entryValueKey,
+  private static void addMapBinding(Scope.Builder scopeBuilder, Key entryValueKey,
       Binding entryValueBinding, Annotation[] annotations) {
     Annotation entryKeyAnnotation = findMapKey(annotations);
     if (entryKeyAnnotation == null) {
@@ -140,6 +140,6 @@ final class ReflectiveModuleParser {
 
     Key key = Key.of(entryValueKey.qualifier(),
         new ParameterizedTypeImpl(null, Map.class, entryKeyType, entryValueKey.type()));
-    bindingsBuilder.addIntoMap(key, entryKey, entryValueBinding);
+    scopeBuilder.addBindingIntoMap(key, entryKey, entryValueBinding);
   }
 }
