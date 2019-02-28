@@ -134,6 +134,59 @@ public final class IntegrationTest {
     assertThat(component.thing()).isNotNull();
   }
 
+  @Test public void justInTimeScoped() {
+    JustInTimeScoped component = backend.create(JustInTimeScoped.class);
+    JustInTimeScoped.Thing thing1 = component.thing();
+    JustInTimeScoped.Thing thing2 = component.thing();
+    assertThat(thing1).isSameAs(thing2);
+  }
+
+  @Test public void justInTimeScopedInParent() {
+    JustInTimeScopedInParent component = backend.create(JustInTimeScopedInParent.class);
+    JustInTimeScopedInParent.ChildComponent child1 = component.child();
+    JustInTimeScopedInParent.Thing thing1 = child1.thing();
+    JustInTimeScopedInParent.ChildComponent child2 = component.child();
+    JustInTimeScopedInParent.Thing thing2 = child2.thing();
+    assertThat(thing1).isSameAs(thing2);
+  }
+
+  @Test public void justInTimeWrongScope() {
+    ignoreCodegenBackend();
+
+    JustInTimeWrongScope component = backend.create(JustInTimeWrongScope.class);
+    try {
+      component.thing();
+      fail();
+    } catch (IllegalStateException e) {
+      // TODO assert some message
+    }
+  }
+
+  @Test public void justInTimeScopedIntoUnscoped() {
+    ignoreCodegenBackend();
+
+    JustInTimeScopedIntoUnscoped component = backend.create(JustInTimeScopedIntoUnscoped.class);
+    try {
+      component.thing();
+      fail();
+    } catch (IllegalStateException e) {
+      // TODO assert some message
+    }
+  }
+
+  @Test public void justInTimeNotScopedInAncestry() {
+    ignoreCodegenBackend();
+
+    JustInTimeNotScopedInAncestry.ChildComponent child =
+        backend.create(JustInTimeNotScopedInAncestry.class).child();
+    try {
+      child.thing();
+      fail();
+    } catch (IllegalStateException e) {
+      // TODO assert some message
+    }
+  }
+
   @Test public void builderImplicitModules() {
     BuilderImplicitModules component = backend.builder(BuilderImplicitModules.Builder.class)
         .value(3L)
