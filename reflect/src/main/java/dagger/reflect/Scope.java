@@ -5,14 +5,16 @@ import dagger.reflect.Binding.UnlinkedBinding;
 import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
 
+import static dagger.reflect.DaggerReflect.notImplemented;
+
 final class Scope {
   private final BindingMap bindings;
-  private final JustInTimeBindingFactory jitBindingFactory;
+  private final JustInTimeLookup.Factory jitLookupFactory;
   private final @Nullable Scope parent;
 
-  Scope(BindingMap bindings, JustInTimeBindingFactory jitBindingFactory, @Nullable Scope parent) {
+  Scope(BindingMap bindings, JustInTimeLookup.Factory jitLookupFactory, @Nullable Scope parent) {
     this.bindings = bindings;
-    this.jitBindingFactory = jitBindingFactory;
+    this.jitLookupFactory = jitLookupFactory;
     this.parent = parent;
   }
 
@@ -39,11 +41,14 @@ final class Scope {
       return binding;
     }
 
-    Binding jitBinding = jitBindingFactory.create(key);
-    if (jitBinding != null) {
-      // TODO figure out if scoped and walk up hierarchy looking for a matching scope.
+    JustInTimeLookup jitLookup = jitLookupFactory.create(key);
+    if (jitLookup != null) {
+      if (jitLookup.scope != null) {
+        // TODO walk up hierarchy looking for a matching scope.
+        throw notImplemented("Just-in-time scoped bindings");
+      }
 
-      jitBinding = bindings.putIfAbsent(key, jitBinding);
+      Binding jitBinding = bindings.putIfAbsent(key, jitLookup.binding);
       return jitBinding instanceof LinkedBinding<?>
           ? (LinkedBinding<?>) jitBinding
           : Linker.link(bindings, key, (UnlinkedBinding) jitBinding);

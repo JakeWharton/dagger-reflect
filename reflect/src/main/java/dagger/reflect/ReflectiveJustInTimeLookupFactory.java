@@ -1,6 +1,5 @@
 package dagger.reflect;
 
-import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
@@ -8,13 +7,11 @@ import java.lang.reflect.Type;
 import javax.inject.Inject;
 import org.jetbrains.annotations.Nullable;
 
-import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findScope;
 
-final class ReflectiveJustInTimeBindingFactory implements JustInTimeBindingFactory {
-  @Override public @Nullable UnlinkedBinding create(Key key) {
-    Annotation qualifier = key.qualifier();
-    if (qualifier != null) {
+final class ReflectiveJustInTimeLookupFactory implements JustInTimeLookup.Factory {
+  @Override public @Nullable JustInTimeLookup create(Key key) {
+    if (key.qualifier() != null) {
       return null; // Qualified types can't be just-in-time satisfied.
     }
 
@@ -26,11 +23,6 @@ final class ReflectiveJustInTimeBindingFactory implements JustInTimeBindingFacto
       cls = (Class<Object>) type;
     } else {
       return null; // Array types can't be just-in-time satisfied.
-    }
-
-    Annotation scope = findScope(cls.getAnnotations());
-    if (scope != null) {
-      throw notImplemented("Just-in-time scoped bindings");
     }
 
     Constructor<?>[] constructors = cls.getDeclaredConstructors();
@@ -48,6 +40,8 @@ final class ReflectiveJustInTimeBindingFactory implements JustInTimeBindingFacto
       return null; // Types without an @Inject constructor cannot be just-in-time satisfied.
     }
 
-    return new UnlinkedJustInTimeBinding<>(cls, target);
+    Annotation scope = findScope(cls.getAnnotations());
+    Binding binding = new UnlinkedJustInTimeBinding<>(cls, target);
+    return new JustInTimeLookup(scope, binding);
   }
 }
