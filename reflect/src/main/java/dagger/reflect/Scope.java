@@ -13,34 +13,12 @@ final class Scope {
   private final @Nullable Annotation annotation;
   private final @Nullable Scope parent;
 
-  Scope(BindingMap bindings, JustInTimeLookup.Factory jitLookupFactory,
+  private Scope(BindingMap bindings, JustInTimeLookup.Factory jitLookupFactory,
       @Nullable Annotation annotation, @Nullable Scope parent) {
     this.bindings = bindings;
     this.jitLookupFactory = jitLookupFactory;
     this.annotation = annotation;
     this.parent = parent;
-
-    if (annotation != null && parent != null) {
-      if (parent.annotation == null) {
-        throw new IllegalStateException("Scope " + annotation + " may not depend on unscoped");
-      }
-
-      // Traverse ancestry chain looking for a duplicate annotation declaration.
-      for (Scope ancestor = parent; ancestor != null; ancestor = ancestor.parent) {
-        if (annotation.equals(ancestor.annotation)) {
-          StringBuilder message = new StringBuilder("Detected scope annotation cycle:\n  * ")
-              .append(annotation)
-              .append('\n');
-          // Re-traverse the ancestry from our parent up to the offending ancestor for the chain.
-          for (Scope visit = parent; visit != ancestor; visit = visit.parent) {
-            if (visit == null) throw new AssertionError(); // Checked by outer loop.
-            message.append("  * ").append(visit.annotation).append('\n');
-          }
-          message.append("  * ").append(ancestor.annotation);
-          throw new IllegalStateException(message.toString());
-        }
-      }
-    }
   }
 
   /**
@@ -104,5 +82,63 @@ final class Scope {
     }
 
     throw new IllegalArgumentException("No provider available for " + key);
+  }
+
+  static final class Builder {
+    private final @Nullable Scope parent;
+    private final @Nullable Annotation annotation;
+    private final BindingMap.Builder bindings = new BindingMap.Builder();
+    private JustInTimeLookup.Factory jitLookupFactory = JustInTimeLookup.Factory.NONE;
+
+    Builder(@Nullable Scope parent, @Nullable Annotation annotation) {
+      if (annotation != null && parent != null) {
+        if (parent.annotation == null) {
+          throw new IllegalStateException("Scope " + annotation + " may not depend on unscoped");
+        }
+
+        // Traverse ancestry chain looking for a duplicate annotation declaration.
+        for (Scope ancestor = parent; ancestor != null; ancestor = ancestor.parent) {
+          if (annotation.equals(ancestor.annotation)) {
+            StringBuilder message = new StringBuilder("Detected scope annotation cycle:\n  * ")
+                .append(annotation)
+                .append('\n');
+            // Re-traverse the ancestry from our parent up to the offending ancestor for the chain.
+            for (Scope visit = parent; visit != ancestor; visit = visit.parent) {
+              if (visit == null) throw new AssertionError(); // Checked by outer loop.
+              message.append("  * ").append(visit.annotation).append('\n');
+            }
+            message.append("  * ").append(ancestor.annotation);
+            throw new IllegalStateException(message.toString());
+          }
+        }
+      }
+      this.parent = parent;
+      this.annotation = annotation;
+    }
+
+    Builder justInTimeLookupFactory(JustInTimeLookup.Factory jitLookupFactory) {
+      if (jitLookupFactory == null) throw new NullPointerException("jitLookupFactory == null");
+      this.jitLookupFactory = jitLookupFactory;
+      return this;
+    }
+
+    Builder addInstance(Key key, @Nullable Object instance) {
+      bindings.add(key, new LinkedInstanceBinding<>(instance));
+      return this;
+    }
+
+    Builder addModule(Class<?> cls, @Nullable Object instance) {
+      ReflectiveModuleParser.parse(cls, instance, bindings);
+      return this;
+    }
+
+    Builder addDependency(Class<?> cls, Object instance) {
+      ReflectiveDependencyParser.parse(cls, instance, bindings);
+      return this;
+    }
+
+    Scope build() {
+      return new Scope(bindings.build(), jitLookupFactory, annotation, parent);
+    }
   }
 }
