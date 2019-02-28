@@ -29,6 +29,7 @@ import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.Reflection.findQualifier;
+import static dagger.reflect.Reflection.findScope;
 
 final class ComponentBuilderInvocationHandler implements InvocationHandler {
   static <T> T create(Class<?> componentClass, Class<T> builderClass, Set<Class<?>> modules,
@@ -95,6 +96,8 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         throw new IllegalStateException(); // TODO must be no-arg
       }
 
+      Annotation scopeAnnotation = findScope(componentClass.getDeclaredAnnotations());
+
       BindingMap.Builder bindingsBuilder = new BindingMap.Builder();
 
       for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
@@ -113,7 +116,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
       }
 
       JustInTimeLookup.Factory jitLookupFactory = new ReflectiveJustInTimeLookupFactory();
-      Scope scope = new Scope(bindingsBuilder.build(), jitLookupFactory, parent);
+      Scope scope = new Scope(bindingsBuilder.build(), jitLookupFactory, scopeAnnotation, parent);
 
       return ComponentInvocationHandler.create(componentClass, scope);
     }
