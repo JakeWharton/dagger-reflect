@@ -14,5 +14,7 @@ final class JustInTimeLookup {
 
   interface Factory {
     @Nullable JustInTimeLookup create(Key key);
+
+    Factory NONE = key -> null;
   }
 }

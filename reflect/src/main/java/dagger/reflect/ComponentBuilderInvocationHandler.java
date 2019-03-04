@@ -97,14 +97,14 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
       }
 
       Annotation scopeAnnotation = findScope(componentClass.getDeclaredAnnotations());
-
-      BindingMap.Builder bindingsBuilder = new BindingMap.Builder();
+      Scope.Builder scopeBuilder = new Scope.Builder(parent, scopeAnnotation)
+          .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
 
       for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
-        bindingsBuilder.add(entry.getKey(), new LinkedInstanceBinding<>(entry.getValue()));
+        scopeBuilder.addInstance(entry.getKey(), entry.getValue());
       }
       for (Map.Entry<Class<?>, Object> entry : moduleInstances.entrySet()) {
-        ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), bindingsBuilder);
+        scopeBuilder.addModule(entry.getKey(), entry.getValue());
       }
       for (Map.Entry<Class<?>, Object> entry : dependencyInstances.entrySet()) {
         Class<?> type = entry.getKey();
@@ -112,13 +112,10 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         if (instance == null) {
           throw new IllegalStateException(type.getCanonicalName() + " must be set");
         }
-        ReflectiveDependencyParser.parse(type, instance, bindingsBuilder);
+        scopeBuilder.addDependency(type, instance);
       }
 
-      JustInTimeLookup.Factory jitLookupFactory = new ReflectiveJustInTimeLookupFactory();
-      Scope scope = new Scope(bindingsBuilder.build(), jitLookupFactory, scopeAnnotation, parent);
-
-      return ComponentInvocationHandler.create(componentClass, scope);
+      return ComponentInvocationHandler.create(componentClass, scopeBuilder.build());
     }
 
     // TODO these are allowed to be void or a supertype

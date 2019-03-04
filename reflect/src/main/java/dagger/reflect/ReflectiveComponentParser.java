@@ -42,15 +42,13 @@ final class ReflectiveComponentParser {
 
     Annotation scopeAnnotation = findScope(cls.getDeclaredAnnotations());
 
-    BindingMap.Builder bindingsBuilder = new BindingMap.Builder();
+    Scope.Builder scopeBuilder = new Scope.Builder(parent, scopeAnnotation)
+        .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
 
     for (Class<?> module : modules) {
-      ReflectiveModuleParser.parse(module, null, bindingsBuilder);
+      scopeBuilder.addModule(module, null);
     }
 
-    JustInTimeLookup.Factory jitLookupFactory = new ReflectiveJustInTimeLookupFactory();
-    Scope scope = new Scope(bindingsBuilder.build(), jitLookupFactory, scopeAnnotation, parent);
-
-    return ComponentInvocationHandler.create(cls, scope);
+    return ComponentInvocationHandler.create(cls, scopeBuilder.build());
   }
 }

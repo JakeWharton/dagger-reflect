@@ -1,15 +1,16 @@
 package dagger.reflect;
 
 import dagger.reflect.Binding.LinkedBinding;
+import org.jetbrains.annotations.Nullable;
 
 final class LinkedInstanceBinding<T> extends LinkedBinding<T> {
-  private final T value;
+  private final @Nullable T value;
 
-  LinkedInstanceBinding(T value) {
+  LinkedInstanceBinding(@Nullable T value) {
     this.value = value;
   }
 
-  @Override public T get() {
+  @Override public @Nullable T get() {
     return value;
   }
 
