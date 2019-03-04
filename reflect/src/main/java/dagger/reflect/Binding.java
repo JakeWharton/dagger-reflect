@@ -19,14 +19,22 @@ import javax.inject.Provider;
 
 interface Binding {
   LinkedBinding<?> link(Linker linker);
+  Binding asScoped();
   @Override String toString();
 
   abstract class UnlinkedBinding implements Binding {
+    @Override public final Binding asScoped() {
+      return new UnlinkedScopedBinding(this);
+    }
   }
 
   abstract class LinkedBinding<T> implements Binding, Provider<T> {
     @Override public final LinkedBinding<?> link(Linker linker) {
       return this;
+    }
+
+    @Override public final Binding asScoped() {
+      return new LinkedScopedBinding<>(this);
     }
   }
 }

@@ -6,8 +6,6 @@ import java.lang.annotation.Annotation;
 import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
 
-import static dagger.reflect.DaggerReflect.notImplemented;
-
 final class Scope {
   private final BindingMap bindings;
   private final JustInTimeLookup.Factory jitLookupFactory;
@@ -62,6 +60,34 @@ final class Scope {
         : null;
   }
 
+  /**
+   * Attempt to insert a binding for {@code key} as a result of a just-in-time lookup.
+   * <p>
+   * If {@code lookup} does not contain a scoping annotation or it contains a scoping annotation
+   * which matches the one for this scope, the binding will be inserted, linked, and returned.
+   * Otherwise, the parent scope (if any) will be recursively checked. If no matching scope
+   * annotation is found by traversing the parents null will be returned.
+   */
+  private @Nullable LinkedBinding<?> putJitBinding(Key key, JustInTimeLookup lookup) {
+    Binding jitBinding = lookup.binding;
+
+    Annotation scope = lookup.scope;
+    if (scope != null) {
+      if (!scope.equals(annotation)) {
+        return parent != null
+            ? parent.putJitBinding(key, lookup)
+            : null;
+      }
+
+      jitBinding = jitBinding.asScoped();
+    }
+
+    Binding binding = bindings.putIfAbsent(key, jitBinding);
+    return binding instanceof LinkedBinding<?>
+        ? (LinkedBinding<?>) binding
+        : Linker.link(bindings, key, (UnlinkedBinding) binding);
+  }
+
   Provider<?> getProvider(Key key) {
     LinkedBinding<?> binding = findBinding(key);
     if (binding != null) {
@@ -70,15 +96,11 @@ final class Scope {
 
     JustInTimeLookup jitLookup = jitLookupFactory.create(key);
     if (jitLookup != null) {
-      if (jitLookup.scope != null) {
-        // TODO walk up hierarchy looking for a matching scope.
-        throw notImplemented("Just-in-time scoped bindings");
+      LinkedBinding<?> jitBinding = putJitBinding(key, jitLookup);
+      if (jitBinding == null) {
+        throw new IllegalStateException(); // TODO nice error message with scope chain
       }
-
-      Binding jitBinding = bindings.putIfAbsent(key, jitLookup.binding);
-      return jitBinding instanceof LinkedBinding<?>
-          ? (LinkedBinding<?>) jitBinding
-          : Linker.link(bindings, key, (UnlinkedBinding) jitBinding);
+      return jitBinding;
     }
 
     throw new IllegalArgumentException("No provider available for " + key);
