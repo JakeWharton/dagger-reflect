@@ -213,8 +213,6 @@ public final class IntegrationTest {
   }
 
   @Test public void implicitModules() {
-    ignoreReflectionBackend();
-
     ImplicitFinalModules component = backend.create(ImplicitFinalModules.class);
 
     assertThat(component.string()).isEqualTo(ImplicitFinalModules.Module1.VALUE);

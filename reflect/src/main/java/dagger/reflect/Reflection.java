@@ -109,7 +109,7 @@ final class Reflection {
     }
   }
 
-  static <T> T tryInstantiate(Constructor<T> constructor, Object[] arguments) {
+  static <T> T tryInstantiate(Constructor<T> constructor, Object... arguments) {
     if ((constructor.getModifiers() & Modifier.PUBLIC) == 0) {
       constructor.setAccessible(true);
     }
@@ -123,6 +123,20 @@ final class Reflection {
       if (cause instanceof Error) throw (Error) cause;
       throw new RuntimeException("Unable to invoke " + constructor, cause);
     }
+  }
+
+  /**
+   * Try to create an instance of {@code cls} using a default constructor. Returns null if no
+   * default constructor found.
+   */
+  @SuppressWarnings("unchecked") // Casts implied by cls generic type.
+  static <T> @Nullable T maybeInstantiate(Class<T> cls) {
+    for (Constructor<?> constructor : cls.getDeclaredConstructors()) {
+      if (constructor.getParameterTypes().length == 0) {
+        return (T) tryInstantiate(constructor);
+      }
+    }
+    return null;
   }
 
   static Set<Class<?>> getDistinctTypeHierarchy(Class<?> target) {
