@@ -3,6 +3,8 @@ package dagger.reflect;
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
+import java.util.Map;
+import java.util.Set;
 import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
 
@@ -86,7 +88,7 @@ final class Scope {
 
   static final class Builder {
     private final @Nullable Scope parent;
-    private final @Nullable Annotation annotation;
+    final @Nullable Annotation annotation;
     private final BindingMap.Builder bindings = new BindingMap.Builder();
     private JustInTimeLookup.Factory jitLookupFactory = JustInTimeLookup.Factory.NONE;
 
@@ -122,18 +124,88 @@ final class Scope {
       return this;
     }
 
-    Builder addInstance(Key key, @Nullable Object instance) {
-      bindings.add(key, new LinkedInstanceBinding<>(instance));
+    Builder addBinding(Key key, Binding binding) {
+      if (key == null) throw new NullPointerException("key == null");
+      if (binding == null) throw new NullPointerException("binding == null");
+
+      bindings.add(key, binding);
       return this;
     }
 
+    /**
+     * Adds a new element into the set specified by {@code key}.
+     *
+     * @param key The key defining the set into which this element will be added. The raw class of
+     * the {@linkplain Key#type() type} must be {@link Set Set.class}.
+     * @param elementBinding The binding for the new element. The instance produced by this binding
+     * must be an instance of the {@code E} type parameter of {@link Set} specified
+     * {@linkplain Key#type() in <code>key</code>}.
+     */
+    Builder addBindingIntoSet(Key key, Binding elementBinding) {
+      if (key == null) throw new NullPointerException("key == null");
+      if (elementBinding == null) throw new NullPointerException("elementBinding == null");
+      if (Types.getRawType(key.type()) != Set.class) {
+        throw new IllegalArgumentException("key.type() must be Set");
+      }
+
+      bindings.addIntoSet(key, elementBinding);
+      return this;
+    }
+
+    /**
+     * Adds a new element into the set specified by {@code key}.
+     *
+     * @param key The key defining the set into which this element will be added. The raw class of
+     * the {@linkplain Key#type() type} must be {@link Set Set.class}.
+     * @param elementsBinding The binding for the elements. The instance produced by this binding
+     * must be an instance of {@code Set<E>} matching {@link Key#type() key.type()}.
+     */
+    Builder addBindingElementsIntoSet(Key key, Binding elementsBinding) {
+      if (key == null) throw new NullPointerException("key == null");
+      if (elementsBinding == null) throw new NullPointerException("elementsBinding == null");
+      if (Types.getRawType(key.type()) != Set.class) {
+        throw new IllegalArgumentException("key.type() must be Set");
+      }
+
+      bindings.addElementsIntoSet(key, elementsBinding);
+      return this;
+    }
+
+    /**
+     * Adds a new entry into the map specified by {@code key}.
+     *
+     * @param key The key defining the map in which this entry will be added. The raw class of the
+     * {@linkplain Key#type() type} must be {@link Map Map.class}.
+     * @param entryKey The key of the new map entry. The argument must be an instance of the
+     * {@code K} type parameter of {@link Map} specified
+     * {@linkplain Key#type() in the <code>key</code>}.
+     * @param entryValueBinding The value binding of the new map entry. The instance produced by
+     * this binding must be an instance of the {@code V} type parameter of {@link Map} specified
+     * {@linkplain Key#type()} in the <code>key</code>}.
+     */
+    Builder addBindingIntoMap(Key key, Object entryKey, Binding entryValueBinding) {
+      if (key == null) throw new NullPointerException("key == null");
+      if (entryKey == null) throw new NullPointerException("entryKey == null");
+      if (entryValueBinding == null) throw new NullPointerException("entryValueBinding == null");
+      if (Types.getRawType(key.type()) != Map.class) {
+        throw new IllegalArgumentException("key.type() must be Map");
+      }
+
+      bindings.addIntoMap(key, entryKey, entryValueBinding);
+      return this;
+    }
+
+    Builder addInstance(Key key, @Nullable Object instance) {
+      return addBinding(key, new LinkedInstanceBinding<>(instance));
+    }
+
     Builder addModule(Class<?> cls, @Nullable Object instance) {
-      ReflectiveModuleParser.parse(cls, instance, bindings);
+      ReflectiveModuleParser.parse(cls, instance, this);
       return this;
     }
 
     Builder addDependency(Class<?> cls, Object instance) {
-      ReflectiveDependencyParser.parse(cls, instance, bindings);
+      ReflectiveDependencyParser.parse(cls, instance, this);
       return this;
     }
 

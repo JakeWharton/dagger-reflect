@@ -10,7 +10,7 @@ import static dagger.reflect.Reflection.findQualifier;
 final class ReflectiveDependencyParser {
   private static final LinkedBinding<?>[] NO_BINDINGS = new LinkedBinding<?>[0];
 
-  static void parse(Class<?> cls, Object instance, BindingMap.Builder bindingsBuilder) {
+  static void parse(Class<?> cls, Object instance, Scope.Builder scopeBuilder) {
     for (Class<?> target : Reflection.getDistinctTypeHierarchy(cls)) {
       for (Method method : target.getDeclaredMethods()) {
         if (method.getParameterTypes().length != 0 || method.getReturnType() == void.class) {
@@ -23,7 +23,7 @@ final class ReflectiveDependencyParser {
 
         Binding binding = new LinkedProvidesBinding<>(instance, method, NO_BINDINGS);
 
-        bindingsBuilder.add(key, binding);
+        scopeBuilder.addBinding(key, binding);
       }
     }
   }
