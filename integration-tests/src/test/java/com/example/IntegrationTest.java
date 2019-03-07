@@ -150,6 +150,15 @@ public final class IntegrationTest {
     assertThat(thing1).isSameAs(thing2);
   }
 
+  @Test public void justInTimeUnscopedIntoJustInTimeScoped() {
+    ignoreReflectionBackend();
+
+    JustInTimeDependsOnJustInTime component = backend.create(JustInTimeDependsOnJustInTime.class);
+    JustInTimeDependsOnJustInTime.Foo foo1 = component.thing();
+    JustInTimeDependsOnJustInTime.Foo foo2 = component.thing();
+    assertThat(foo1).isNotSameAs(foo2);
+  }
+
   @Test public void justInTimeWrongScope() {
     ignoreCodegenBackend();
 
