@@ -29,10 +29,6 @@ final class ReflectiveModuleParser {
   static void parse(Class<?> moduleClass, @Nullable Object instance, Scope.Builder scopeBuilder) {
     for (Class<?> target : Reflection.getDistinctTypeHierarchy(moduleClass)) {
       for (Method method : target.getDeclaredMethods()) {
-        if ((method.getModifiers() & PRIVATE) != 0) {
-          throw new IllegalArgumentException("Private module methods are not allowed: " + method);
-        }
-
         Type returnType = method.getGenericReturnType();
         Annotation[] annotations = method.getAnnotations();
         Annotation qualifier = findQualifier(annotations);
@@ -69,6 +65,7 @@ final class ReflectiveModuleParser {
           }
 
           if (method.getAnnotation(Provides.class) != null) {
+            ensureNotPrivate(method);
             Key key = Key.of(qualifier, returnType);
             Binding binding = new UnlinkedProvidesBinding(instance, method);
             addBinding(scopeBuilder, key, binding, annotations);
@@ -146,5 +143,11 @@ final class ReflectiveModuleParser {
     Key key = Key.of(entryValueKey.qualifier(),
         new ParameterizedTypeImpl(null, Map.class, entryKeyType, entryValueKey.type()));
     scopeBuilder.addBindingIntoMap(key, entryKey, entryValueBinding);
+  }
+
+  private static void ensureNotPrivate(Method method) {
+    if ((method.getModifiers() & PRIVATE) != 0) {
+      throw new IllegalArgumentException("Provides methods may not be private: " + method);
+    }
   }
 }
