@@ -509,6 +509,11 @@ public final class IntegrationTest {
     assertThat(component.number()).isEqualTo(42);
   }
 
+  @Test public void modulePrivateMethod() {
+    ModulePrivateMethod component = backend.create(ModulePrivateMethod.class);
+    assertThat(component.integer()).isEqualTo(42);
+  }
+
   @Test public void nestedComponent() {
     NestedComponent.MoreNesting.AndMore.TheComponent component =
         backend.create(NestedComponent.MoreNesting.AndMore.TheComponent.class);

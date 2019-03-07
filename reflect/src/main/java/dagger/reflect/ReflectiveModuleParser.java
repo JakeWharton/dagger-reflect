@@ -29,12 +29,12 @@ final class ReflectiveModuleParser {
   static void parse(Class<?> moduleClass, @Nullable Object instance, Scope.Builder scopeBuilder) {
     for (Class<?> target : Reflection.getDistinctTypeHierarchy(moduleClass)) {
       for (Method method : target.getDeclaredMethods()) {
-        if ((method.getModifiers() & PRIVATE) != 0) {
-          throw new IllegalArgumentException("Private module methods are not allowed: " + method);
+        Annotation[] annotations = method.getAnnotations();
+        if ((method.getModifiers() & PRIVATE) != 0 && (annotations == null)) {
+          throw new IllegalArgumentException("Private module methods with annotations are not allowed: " + method);
         }
 
         Type returnType = method.getGenericReturnType();
-        Annotation[] annotations = method.getAnnotations();
         Annotation qualifier = findQualifier(annotations);
 
         if ((method.getModifiers() & ABSTRACT) != 0) {
