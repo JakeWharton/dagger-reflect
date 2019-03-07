@@ -20,6 +20,7 @@ import static dagger.reflect.Reflection.findAnnotation;
 import static dagger.reflect.Reflection.findMapKey;
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.findScope;
+import static dagger.reflect.Reflection.maybeInstantiate;
 import static java.lang.reflect.Modifier.ABSTRACT;
 import static java.lang.reflect.Modifier.PRIVATE;
 import static java.lang.reflect.Modifier.STATIC;
@@ -60,7 +61,11 @@ final class ReflectiveModuleParser {
           }
         } else {
           if ((method.getModifiers() & STATIC) == 0 && instance == null) {
-            throw new IllegalStateException(moduleClass.getCanonicalName() + " must be set");
+            // Try to just-in-time create an instance of the module using a default constructor.
+            instance = maybeInstantiate(moduleClass);
+            if (instance == null) {
+              throw new IllegalStateException(moduleClass.getCanonicalName() + " must be set");
+            }
           }
 
           if (method.getAnnotation(Provides.class) != null) {
