@@ -33,6 +33,7 @@ import javax.annotation.processing.RoundEnvironment;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
+import net.ltgt.gradle.incap.IncrementalAnnotationProcessor;
 
 import static java.util.Collections.singleton;
 import static javax.lang.model.element.Modifier.FINAL;
@@ -40,7 +41,9 @@ import static javax.lang.model.element.Modifier.PRIVATE;
 import static javax.lang.model.element.Modifier.PUBLIC;
 import static javax.lang.model.element.Modifier.STATIC;
 import static javax.tools.Diagnostic.Kind.ERROR;
+import static net.ltgt.gradle.incap.IncrementalAnnotationProcessorType.ISOLATING;
 
+@IncrementalAnnotationProcessor(ISOLATING)
 @AutoService(Processor.class)
 public final class DaggerReflectCompiler extends AbstractProcessor {
   private Filer filer;
