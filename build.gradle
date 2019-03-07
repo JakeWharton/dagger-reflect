@@ -3,6 +3,7 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 buildscript {
   ext.versions = [
       'dagger': 'HEAD-SNAPSHOT', // TODO update to 2.22 or newer once released
+      'incap' : '0.2'
   ]
 
   ext.deps = [
@@ -32,6 +33,10 @@ buildscript {
               'core': 'androidx.test:core:1.1.0',
           ],
       ],
+      'incap': [
+          'runtime': "net.ltgt.gradle.incap:incap:${versions.incap}",
+          'processor': "net.ltgt.gradle.incap:incap-processor:${versions.incap}",
+      ]
   ]
 
   repositories {
