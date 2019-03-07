@@ -5,7 +5,6 @@ import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
-import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
 
 final class Scope {
@@ -21,6 +20,24 @@ final class Scope {
     this.jitLookupFactory = jitLookupFactory;
     this.annotation = annotation;
     this.parent = parent;
+  }
+
+  LinkedBinding<?> getBinding(Key key) {
+    LinkedBinding<?> binding = findBinding(key);
+    if (binding != null) {
+      return binding;
+    }
+
+    JustInTimeLookup jitLookup = jitLookupFactory.create(key);
+    if (jitLookup != null) {
+      LinkedBinding<?> jitBinding = putJitBinding(key, jitLookup);
+      if (jitBinding == null) {
+        throw new IllegalStateException(); // TODO nice error message with scope chain
+      }
+      return jitBinding;
+    }
+
+    throw new IllegalArgumentException("No provider available for " + key);
   }
 
   /**
@@ -66,24 +83,6 @@ final class Scope {
     return binding instanceof LinkedBinding<?>
         ? (LinkedBinding<?>) binding
         : Linker.link(bindings, key, (UnlinkedBinding) binding);
-  }
-
-  Provider<?> getProvider(Key key) {
-    LinkedBinding<?> binding = findBinding(key);
-    if (binding != null) {
-      return binding;
-    }
-
-    JustInTimeLookup jitLookup = jitLookupFactory.create(key);
-    if (jitLookup != null) {
-      LinkedBinding<?> jitBinding = putJitBinding(key, jitLookup);
-      if (jitBinding == null) {
-        throw new IllegalStateException(); // TODO nice error message with scope chain
-      }
-      return jitBinding;
-    }
-
-    throw new IllegalArgumentException("No provider available for " + key);
   }
 
   static final class Builder {

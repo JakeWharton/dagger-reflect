@@ -17,12 +17,12 @@ package dagger.reflect;
 
 import dagger.MembersInjector;
 import dagger.Subcomponent;
+import dagger.reflect.Binding.LinkedBinding;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.Reflection.findQualifier;
@@ -95,13 +95,13 @@ final class ComponentInvocationHandler implements InvocationHandler {
           return new SubcomponentMethodInvocationHandler(returnClass, scope);
         }
         if (returnClass.getAnnotation(Subcomponent.Builder.class) != null) {
-          return new SubcomponentBuilderMethodInvocationhandler(returnClass, scope);
+          return new SubcomponentBuilderMethodInvocationHandler(returnClass, scope);
         }
       }
 
       Key key = Key.of(findQualifier(method.getDeclaredAnnotations()), returnType);
-      Provider<?> provider = scope.getProvider(key);
-      return new ProviderMethodInvocationHandler(provider);
+      LinkedBinding<?> binding = scope.getBinding(key);
+      return new ProvisionMethodInvocationHandler(binding);
     }
 
     throw new IllegalStateException(method.toString()); // TODO unsupported method shape
@@ -111,15 +111,15 @@ final class ComponentInvocationHandler implements InvocationHandler {
     @Nullable Object invoke(Object[] args);
   }
 
-  private static final class ProviderMethodInvocationHandler implements MethodInvocationHandler {
-    private final Provider<?> provider;
+  private static final class ProvisionMethodInvocationHandler implements MethodInvocationHandler {
+    private final LinkedBinding<?> binding;
 
-    ProviderMethodInvocationHandler(Provider<?> provider) {
-      this.provider = provider;
+    ProvisionMethodInvocationHandler(LinkedBinding<?> binding) {
+      this.binding = binding;
     }
 
-    @Override public Object invoke(Object[] args) {
-      return provider.get();
+    @Override public @Nullable Object invoke(Object[] args) {
+      return binding.get();
     }
   }
 
@@ -157,12 +157,12 @@ final class ComponentInvocationHandler implements InvocationHandler {
     }
   }
 
-  private static final class SubcomponentBuilderMethodInvocationhandler
+  private static final class SubcomponentBuilderMethodInvocationHandler
       implements MethodInvocationHandler {
     private final Class<?> cls;
     private final Scope scope;
 
-    SubcomponentBuilderMethodInvocationhandler(Class<?> cls, Scope scope) {
+    SubcomponentBuilderMethodInvocationHandler(Class<?> cls, Scope scope) {
       this.cls = cls;
       this.scope = scope;
     }

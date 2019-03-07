@@ -16,6 +16,7 @@
 package dagger.reflect;
 
 import dagger.MembersInjector;
+import dagger.reflect.Binding.LinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -26,7 +27,6 @@ import java.util.Deque;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.inject.Inject;
-import javax.inject.Provider;
 
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.tryInvoke;
@@ -37,7 +37,7 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
     Deque<ClassInjector<T>> classInjectors = new ArrayDeque<>();
     Class<?> target = cls;
     while (target != Object.class && target != null) {
-      Map<Field, Provider<?>> fieldProviders = new LinkedHashMap<>();
+      Map<Field, LinkedBinding<?>> fieldBindings = new LinkedHashMap<>();
       for (Field field : target.getDeclaredFields()) {
         if (field.getAnnotation(Inject.class) == null) {
           continue;
@@ -52,12 +52,12 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
         }
 
         Key key = Key.of(findQualifier(field.getDeclaredAnnotations()), field.getGenericType());
-        Provider<?> provider = scope.getProvider(key);
+        LinkedBinding<?> binding = scope.getBinding(key);
 
-        fieldProviders.put(field, provider);
+        fieldBindings.put(field, binding);
       }
 
-      Map<Method, Provider<?>[]> methodProviders = new LinkedHashMap<>();
+      Map<Method, LinkedBinding<?>[]> methodBindings = new LinkedHashMap<>();
       for (Method method : target.getDeclaredMethods()) {
         if (method.getAnnotation(Inject.class) == null) {
           continue;
@@ -77,20 +77,20 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
 
         Type[] parameterTypes = method.getGenericParameterTypes();
         Annotation[][] parameterAnnotations = method.getParameterAnnotations();
-        Provider<?>[] providers = new Provider<?>[parameterTypes.length];
+        LinkedBinding<?>[] bindings = new LinkedBinding<?>[parameterTypes.length];
         for (int i = 0; i < parameterTypes.length; i++) {
           Key key = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
-          providers[i] = scope.getProvider(key);
+          bindings[i] = scope.getBinding(key);
         }
 
-        methodProviders.put(method, providers);
+        methodBindings.put(method, bindings);
       }
 
-      if (!fieldProviders.isEmpty() || !methodProviders.isEmpty()) {
+      if (!fieldBindings.isEmpty() || !methodBindings.isEmpty()) {
         // Per JSR 330, fields and methods in superclasses are injected before those in subclasses.
         // We are traversing upward in the class hierarchy so each injector is prepended to the
         // collection to ensure regular iteration will honor this contract.
-        classInjectors.addFirst(new ClassInjector<>(fieldProviders, methodProviders));
+        classInjectors.addFirst(new ClassInjector<>(fieldBindings, methodBindings));
       }
 
       target = target.getSuperclass();
@@ -112,28 +112,28 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
   }
 
   private static final class ClassInjector<T> implements MembersInjector<T> {
-    final Map<Field, Provider<?>> fieldProviders;
-    final Map<Method, Provider<?>[]> methodProviders;
+    final Map<Field, LinkedBinding<?>> fieldBindings;
+    final Map<Method, LinkedBinding<?>[]> methodBindings;
 
     ClassInjector(
-        Map<Field, Provider<?>> fieldProviders,
-        Map<Method, Provider<?>[]> methodProviders) {
-      this.fieldProviders = fieldProviders;
-      this.methodProviders = methodProviders;
+        Map<Field, LinkedBinding<?>> fieldBindings,
+        Map<Method, LinkedBinding<?>[]> methodBindings) {
+      this.fieldBindings = fieldBindings;
+      this.methodBindings = methodBindings;
     }
 
     @Override public void injectMembers(T instance) {
       // Per JSR 330, fields are injected before methods.
-      for (Map.Entry<Field, Provider<?>> fieldProvider : fieldProviders.entrySet()) {
-        trySet(instance, fieldProvider.getKey(), fieldProvider.getValue().get());
+      for (Map.Entry<Field, LinkedBinding<?>> fieldBinding : fieldBindings.entrySet()) {
+        trySet(instance, fieldBinding.getKey(), fieldBinding.getValue().get());
       }
-      for (Map.Entry<Method, Provider<?>[]> methodProvider : methodProviders.entrySet()) {
-        Provider<?>[] providers = methodProvider.getValue();
-        Object[] arguments = new Object[providers.length];
-        for (int i = 0; i < providers.length; i++) {
-          arguments[i] = providers[i].get();
+      for (Map.Entry<Method, LinkedBinding<?>[]> methodBinding : methodBindings.entrySet()) {
+        LinkedBinding<?>[] bindings = methodBinding.getValue();
+        Object[] arguments = new Object[bindings.length];
+        for (int i = 0; i < bindings.length; i++) {
+          arguments[i] = bindings[i].get();
         }
-        tryInvoke(instance, methodProvider.getKey(), arguments);
+        tryInvoke(instance, methodBinding.getKey(), arguments);
       }
     }
   }
