@@ -27,7 +27,7 @@ buildscript {
       'jetbrainsAnnotations': 'org.jetbrains:annotations:17.0.0',
       'guava': 'com.google.guava:guava:27.0.1-jre',
       'animalSnifferAnnotations': 'org.codehaus.mojo:animal-sniffer-annotations:1.17',
-      'robolectric': 'org.robolectric:robolectric:4.3-SNAPSHOT',
+      'robolectric': 'org.robolectric:robolectric:4.3-alpha-1',
       'androidx': [
           'test': [
               'core': 'androidx.test:core:1.1.0',
