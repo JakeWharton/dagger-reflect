@@ -5,12 +5,12 @@ import dagger.Component;
 import org.jetbrains.annotations.Nullable;
 
 @Component
-public interface InstanceBindingNull {
+public interface BuilderBindsInstanceNull {
   @Nullable String string();
 
   @Component.Builder
   interface Builder {
     @BindsInstance Builder string(@Nullable String one);
-    InstanceBindingNull build();
+    BuilderBindsInstanceNull build();
   }
 }
