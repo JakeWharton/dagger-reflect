@@ -1,6 +1,7 @@
 package com.example;
 
 import dagger.Component;
+import dagger.Module;
 import dagger.Provides;
 import javax.inject.Inject;
 
@@ -12,6 +13,7 @@ public interface MembersInjectionPrivateMethod {
     @Inject private void privateMethod(String one) {}
   }
 
+  @Module
   abstract class Module1 {
     @Provides static String one() {
       return "one";
