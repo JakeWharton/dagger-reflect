@@ -24,6 +24,10 @@ public final class DaggerReflect {
     return ReflectiveComponentBuilderParser.parse(builderClass);
   }
 
+  public static <F> F factory(Class<F> factoryClass) {
+    return ReflectiveComponentFactoryParser.parse(factoryClass);
+  }
+
   static RuntimeException notImplemented(String feature) {
     return new UnsupportedOperationException(feature + " does not work yet, sorry!");
   }

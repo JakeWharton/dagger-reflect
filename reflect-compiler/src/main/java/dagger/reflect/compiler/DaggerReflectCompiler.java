@@ -71,8 +71,10 @@ public final class DaggerReflectCompiler extends AbstractProcessor {
       ClassName componentName = ClassName.get(component);
       TypeElement builder = findBuilder(component);
       ClassName builderName = builder != null ? ClassName.get(builder) : null;
+      TypeElement factory = findFactory(component);
+      ClassName factoryName = factory != null ? ClassName.get(factory) : null;
 
-      TypeSpec type = createComponent(componentName, builderName)
+      TypeSpec type = createComponent(componentName, builderName, factoryName)
           .toBuilder()
           .addOriginatingElement(component)
           .build();
@@ -97,7 +99,17 @@ public final class DaggerReflectCompiler extends AbstractProcessor {
     return null;
   }
 
-  private static TypeSpec createComponent(ClassName component, @Nullable ClassName builder) {
+  private static @Nullable TypeElement findFactory(TypeElement component) {
+    for (Element enclosed : component.getEnclosedElements()) {
+      if (enclosed.getAnnotation(Component.Factory.class) != null) {
+        return (TypeElement) enclosed;
+      }
+    }
+    return null;
+  }
+
+  private static TypeSpec createComponent(ClassName component, @Nullable ClassName builder,
+      @Nullable ClassName factory) {
     TypeSpec.Builder type = TypeSpec.classBuilder("Dagger" + component.simpleName())
         .addModifiers(PUBLIC, FINAL)
         .addMethod(MethodSpec.constructorBuilder()
@@ -114,6 +126,13 @@ public final class DaggerReflectCompiler extends AbstractProcessor {
           .addModifiers(PUBLIC, STATIC)
           .returns(builder)
           .addStatement("return $T.builder($T.class)", DaggerReflect.class, builder)
+          .build());
+    }
+    if (factory != null) {
+      type.addMethod(MethodSpec.methodBuilder("factory")
+          .addModifiers(PUBLIC, STATIC)
+          .returns(factory)
+          .addStatement("return $T.factory($T.class)", DaggerReflect.class, factory)
           .build());
     }
     return type.build();

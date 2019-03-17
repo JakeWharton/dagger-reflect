@@ -12,6 +12,10 @@ enum Backend {
     @Override <B> B builder(Class<B> builderClass) {
       return DaggerReflect.builder(builderClass);
     }
+
+    @Override <F> F factory(Class<F> factoryClass) {
+      return DaggerReflect.factory(factoryClass);
+    }
   },
   CODEGEN {
     @Override <C> C create(Class<C> componentClass) {
@@ -21,8 +25,13 @@ enum Backend {
     @Override <B> B builder(Class<B> builderClass) {
       return DaggerCodegen.builder(builderClass);
     }
+
+    @Override <F> F factory(Class<F> factoryClass) {
+      return DaggerCodegen.factory(factoryClass);
+    }
   };
 
   abstract <C> C create(Class<C> componentClass);
   abstract <B> B builder(Class<B> builderClass);
+  abstract <F> F factory(Class<F> factoryClass);
 }

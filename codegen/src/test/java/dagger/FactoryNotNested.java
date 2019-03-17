@@ -1,0 +1,4 @@
+package dagger;
+
+interface FactoryNotNested {
+}

@@ -21,19 +21,19 @@ import static org.junit.Assert.fail;
 
 public final class DaggerCodegenTest {
   @Test public void create() {
-    NoBuilderComponent actual = Dagger.create(NoBuilderComponent.class);
-    assertThat(actual).isInstanceOf(DaggerNoBuilderComponent.class);
+    JustComponent actual = Dagger.create(JustComponent.class);
+    assertThat(actual).isInstanceOf(JustComponent.class);
   }
 
   @Test public void createNoAnnotation() {
     try {
-      Dagger.create(NoBuilderComponentNoAnnotation.class);
+      Dagger.create(JustComponentNoAnnotation.class);
       fail();
     } catch (IllegalStateException e) {
       assertThat(e).hasMessageThat()
           .isEqualTo("Unable to find generated component implementation "
-              + "dagger.DaggerNoBuilderComponentNoAnnotation for component "
-              + "dagger.NoBuilderComponentNoAnnotation");
+              + "dagger.DaggerJustComponentNoAnnotation for component "
+              + "dagger.JustComponentNoAnnotation");
     }
   }
 
@@ -44,7 +44,7 @@ public final class DaggerCodegenTest {
 
   @Test public void builderNoAnnotation() {
     try {
-      Dagger.create(BuilderComponentNoAnnotation.class);
+      Dagger.builder(BuilderComponentNoAnnotation.Builder.class);
       fail();
     } catch (IllegalStateException e) {
       assertThat(e).hasMessageThat()
@@ -62,6 +62,34 @@ public final class DaggerCodegenTest {
       assertThat(e).hasMessageThat()
           .isEqualTo(
               "dagger.BuilderNotNested is not a nested type inside of a component interface");
+    }
+  }
+
+  @Test public void factory() {
+    FactoryComponent.Factory actual = Dagger.factory(FactoryComponent.Factory.class);
+    assertThat(actual).isInstanceOf(DaggerFactoryComponent.factory().getClass());
+  }
+
+  @Test public void factoryNoAnnotation() {
+    try {
+      Dagger.factory(FactoryComponentNoAnnotation.Factory.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("Unable to find generated component implementation "
+              + "dagger.DaggerFactoryComponentNoAnnotation for component "
+              + "dagger.FactoryComponentNoAnnotation");
+    }
+  }
+
+  @Test public void factoryNotNested() {
+    try {
+      Dagger.factory(FactoryNotNested.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo(
+              "dagger.FactoryNotNested is not a nested type inside of a component interface");
     }
   }
 }

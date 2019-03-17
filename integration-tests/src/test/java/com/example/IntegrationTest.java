@@ -102,28 +102,6 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo(com.google.common.base.Optional.absent());
   }
 
-  @Test public void bindsInstance() {
-    InstanceBinding component = backend.builder(InstanceBinding.Builder.class)
-        .string("foo")
-        .build();
-    assertThat(component.string()).isEqualTo("foo");
-  }
-
-  @Test public void bindsInstanceCalledTwice() {
-    InstanceBinding component = backend.builder(InstanceBinding.Builder.class)
-        .string("foo")
-        .string("bar")
-        .build();
-    assertThat(component.string()).isEqualTo("bar");
-  }
-
-  @Test public void bindsInstanceNull() {
-    InstanceBindingNull component = backend.builder(InstanceBindingNull.Builder.class)
-        .string(null)
-        .build();
-    assertThat(component.string()).isNull();
-  }
-
   @Test public void justInTimeConstructor() {
     JustInTimeConstructor component = backend.create(JustInTimeConstructor.class);
     assertThat(component.thing()).isNotNull();
@@ -196,6 +174,34 @@ public final class IntegrationTest {
     }
   }
 
+  @Test public void implicitModuleInstance() {
+    ImplicitModuleInstance component = backend.create(ImplicitModuleInstance.class);
+
+    assertThat(component.string()).isEqualTo("one");
+  }
+
+  @Test public void builderBindsInstance() {
+    BuilderBindsInstance component = backend.builder(BuilderBindsInstance.Builder.class)
+        .string("foo")
+        .build();
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void builderBindsInstanceCalledTwice() {
+    BuilderBindsInstance component = backend.builder(BuilderBindsInstance.Builder.class)
+        .string("foo")
+        .string("bar")
+        .build();
+    assertThat(component.string()).isEqualTo("bar");
+  }
+
+  @Test public void builderBindsInstanceNull() {
+    BuilderBindsInstanceNull component = backend.builder(BuilderBindsInstanceNull.Builder.class)
+        .string(null)
+        .build();
+    assertThat(component.string()).isNull();
+  }
+
   @Test public void builderImplicitModules() {
     BuilderImplicitModules component = backend.builder(BuilderImplicitModules.Builder.class)
         .value(3L)
@@ -219,12 +225,6 @@ public final class IntegrationTest {
         .build();
 
     assertThat(component.string()).isEqualTo("4");
-  }
-
-  @Test public void implicitModules() {
-    ImplicitFinalModules component = backend.create(ImplicitFinalModules.class);
-
-    assertThat(component.string()).isEqualTo(ImplicitFinalModules.Module1.VALUE);
   }
 
   @Test public void builderExplicitModulesOmitted() {
@@ -261,6 +261,41 @@ public final class IntegrationTest {
     } catch (IllegalStateException e) {
       assertThat(e).hasMessageThat().isEqualTo("com.example.BuilderDependency.Other must be set");
     }
+  }
+
+  @Test public void factoryBindsInstance() {
+    FactoryBindsInstance component = backend.factory(FactoryBindsInstance.Factory.class)
+        .create("hey");
+
+    assertThat(component.string()).isEqualTo("hey");
+  }
+
+  @Test public void factoryBindsInstanceNull() {
+    FactoryBindsInstanceNull component = backend.factory(FactoryBindsInstanceNull.Factory.class)
+        .create(null);
+
+    assertThat(component.string()).isNull();
+  }
+
+  @Test public void factoryDependency() {
+    FactoryDependency component = backend.factory(FactoryDependency.Factory.class)
+        .create(new FactoryDependency.Other("hey"));
+
+    assertThat(component.string()).isEqualTo("hey");
+  }
+
+  @Test public void factoryExplicitModules() {
+    FactoryExplicitModules component = backend.factory(FactoryExplicitModules.Factory.class)
+        .create(new FactoryExplicitModules.Module1("hey"));
+
+    assertThat(component.string()).isEqualTo("hey");
+  }
+
+  @Test public void factoryImplicitModules() {
+    FactoryImplicitModules component = backend.factory(FactoryImplicitModules.Factory.class)
+        .create(3L);
+
+    assertThat(component.string()).isEqualTo("3");
   }
 
   @Test public void memberInjectionEmptyClass() {

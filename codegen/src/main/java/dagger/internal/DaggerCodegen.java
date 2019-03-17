@@ -34,6 +34,15 @@ public final class DaggerCodegen {
     return invokeStatic(findImplementationClass(componentClass), "builder", builderClass);
   }
 
+  public static <F> F factory(Class<F> factoryClass) {
+    Class<?> componentClass = factoryClass.getEnclosingClass();
+    if (componentClass == null) {
+      throw new IllegalArgumentException(factoryClass.getCanonicalName()
+          + " is not a nested type inside of a component interface");
+    }
+    return invokeStatic(findImplementationClass(componentClass), "factory", factoryClass);
+  }
+
   private static <C> Class<? extends C> findImplementationClass(Class<C> componentClass) {
     String implementationName = deduceImplementationClassName(componentClass);
     try {

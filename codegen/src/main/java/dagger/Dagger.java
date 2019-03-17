@@ -26,6 +26,10 @@ public final class Dagger {
     return DaggerCodegen.builder(builderClass);
   }
 
+  public static <F> F factory(Class<F> factoryClass) {
+    return DaggerCodegen.factory(factoryClass);
+  }
+
   private Dagger() {
     throw new AssertionError();
   }
