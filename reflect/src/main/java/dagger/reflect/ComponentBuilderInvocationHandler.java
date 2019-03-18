@@ -16,27 +16,29 @@
 package dagger.reflect;
 
 import dagger.BindsInstance;
+import dagger.Component;
 import dagger.Module;
+import dagger.Subcomponent;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Set;
-import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.Reflection.findQualifier;
-import static dagger.reflect.Reflection.findScope;
+import static dagger.reflect.Reflection.newProxy;
 
 final class ComponentBuilderInvocationHandler implements InvocationHandler {
-  static <T> T create(Class<?> componentClass, Class<T> builderClass, Set<Class<?>> modules,
-      Set<Class<?>> dependencies, @Nullable Scope parent) {
-    if (!componentClass.isInterface()) {
-      throw new IllegalArgumentException(componentClass.getCanonicalName()
-          + " is not an interface. Only interfaces are supported.");
+  static <B> B forComponentBuilder(Class<B> builderClass) {
+    if (builderClass.getAnnotation(Component.Builder.class) == null) {
+      throw new IllegalArgumentException(
+          builderClass.getCanonicalName() + " lacks @Component.Builder annotation");
+    }
+
+    Class<?> componentClass = builderClass.getEnclosingClass();
+    if (componentClass == null) {
+      throw new IllegalArgumentException(builderClass.getCanonicalName()
+          + " is not a nested type inside of a component interface.");
     }
     if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
       // Instances of proxies cannot create another proxy instance where the second interface is
@@ -45,41 +47,47 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
           + componentClass.getCanonicalName()
           + " must be public in order to be reflectively created");
     }
-    if (!builderClass.isInterface()) {
-      throw new IllegalArgumentException(builderClass.getCanonicalName()
-          + " is not an interface. Only interface builders are supported.");
+
+    ComponentScopeBuilder scopeBuilder =
+        ComponentScopeBuilder.buildComponent(componentClass);
+    return newProxy(builderClass,
+        new ComponentBuilderInvocationHandler(componentClass, builderClass, scopeBuilder));
+  }
+
+  static <B> B forSubcomponentBuilder(Class<B> builderClass, Scope parent) {
+    if (builderClass.getAnnotation(Subcomponent.Builder.class) == null) {
+      throw new IllegalArgumentException(
+          builderClass.getCanonicalName() + " lacks @Subcomponent.Builder annotation");
     }
-    return builderClass.cast(
-        Proxy.newProxyInstance(builderClass.getClassLoader(), new Class<?>[] { builderClass },
-            new ComponentBuilderInvocationHandler(componentClass, builderClass, modules,
-                dependencies, parent)));
+
+    Class<?> subcomponentClass = builderClass.getEnclosingClass();
+    if (subcomponentClass == null) {
+      throw new IllegalArgumentException(builderClass.getCanonicalName()
+          + " is not a nested type inside of a subcomponent interface.");
+    }
+    if ((subcomponentClass.getModifiers() & Modifier.PUBLIC) == 0) {
+      // Instances of proxies cannot create another proxy instance where the second interface is
+      // not public. This prevents proxies of builders from creating proxies of the component.
+      throw new IllegalArgumentException("Subcomponent interface "
+          + subcomponentClass.getCanonicalName()
+          + " must be public in order to be reflectively created");
+    }
+
+    ComponentScopeBuilder scopeBuilder =
+        ComponentScopeBuilder.buildSubcomponent(subcomponentClass, parent);
+    return newProxy(builderClass,
+        new ComponentBuilderInvocationHandler(subcomponentClass, builderClass, scopeBuilder));
   }
 
   private final Class<?> componentClass;
   private final Class<?> builderClass;
-  private final Map<Key, Object> boundInstances;
-  private final Map<Class<?>, Object> moduleInstances;
-  private final Map<Class<?>, Object> dependencyInstances;
-  private final @Nullable Scope parent;
+  private final ComponentScopeBuilder scopeBuilder;
 
   private ComponentBuilderInvocationHandler(Class<?> componentClass, Class<?> builderClass,
-      Set<Class<?>> componentModules, Set<Class<?>> componentDependencies, @Nullable Scope parent) {
+      ComponentScopeBuilder scopeBuilder) {
     this.componentClass = componentClass;
     this.builderClass = builderClass;
-    this.parent = parent;
-    this.boundInstances = new LinkedHashMap<>();
-
-    // Start with all modules bound to null. Any remaining nulls will be assumed stateless.
-    moduleInstances = new LinkedHashMap<>();
-    for (Class<?> componentModule : componentModules) {
-      moduleInstances.put(componentModule, null);
-    }
-
-    // Start with all dependencies as null. Any remaining nulls at creation time is an error.
-    dependencyInstances = new LinkedHashMap<>();
-    for (Class<?> componentDependency : componentDependencies) {
-      dependencyInstances.put(componentDependency, null);
-    }
+    this.scopeBuilder = scopeBuilder;
   }
 
   @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -95,26 +103,6 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
       if (parameterTypes.length != 0) {
         throw new IllegalStateException(); // TODO must be no-arg
       }
-
-      Annotation scopeAnnotation = findScope(componentClass.getDeclaredAnnotations());
-      Scope.Builder scopeBuilder = new Scope.Builder(parent, scopeAnnotation)
-          .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
-
-      for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
-        scopeBuilder.addInstance(entry.getKey(), entry.getValue());
-      }
-      for (Map.Entry<Class<?>, Object> entry : moduleInstances.entrySet()) {
-        scopeBuilder.addModule(entry.getKey(), entry.getValue());
-      }
-      for (Map.Entry<Class<?>, Object> entry : dependencyInstances.entrySet()) {
-        Class<?> type = entry.getKey();
-        Object instance = entry.getValue();
-        if (instance == null) {
-          throw new IllegalStateException(type.getCanonicalName() + " must be set");
-        }
-        scopeBuilder.addDependency(type, instance);
-      }
-
       return ComponentInvocationHandler.create(componentClass, scopeBuilder.build());
     }
 
@@ -123,34 +111,38 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
       if (parameterTypes.length != 1) {
         throw new IllegalStateException(); // TODO must be single arg
       }
+      Object argument = args[0];
 
       if (method.getAnnotation(BindsInstance.class) != null) {
         Key key = Key.of(findQualifier(parameterAnnotations[0]), parameterTypes[0]);
-        Object instance = args[0];
         // TODO most nullable annotations don't have runtime retention. so maybe just always allow?
-        //if (instance == null && !hasNullable(parameterAnnotations[0])) {
+        //if (argument == null && !hasNullable(parameterAnnotations[0])) {
         //  throw new NullPointerException(); // TODO message
         //}
-        boundInstances.put(key, instance);
+        scopeBuilder.putBoundInstance(key, argument);
       } else {
         Type parameterType = parameterTypes[0];
         if (parameterType instanceof Class<?>) {
           Class<?> parameterClass = (Class<?>) parameterType;
+          if (argument == null) {
+            throw new NullPointerException(
+                "@Component.Builder parameter " + parameterClass.getName() + " was null");
+          }
           if (parameterClass.getAnnotation(Module.class) != null) {
-            if (moduleInstances.containsKey(parameterClass)) {
-              moduleInstances.put(parameterClass, args[0]);
-            } else {
+            try {
+              scopeBuilder.setModule(parameterClass, argument);
+            } catch (IllegalArgumentException e) {
               throw new IllegalStateException(
                   "@Component.Builder has setters for modules that aren't required: "
-                      + method.getDeclaringClass().getName() + '.' + method.getName());
+                      + method.getDeclaringClass().getName() + '.' + method.getName(), e);
             }
           } else {
-            if (dependencyInstances.containsKey(parameterClass)) {
-              dependencyInstances.put(parameterClass, args[0]);
-            } else {
+            try {
+              scopeBuilder.setDependency(parameterClass, argument);
+            } catch (IllegalArgumentException e) {
               throw new IllegalStateException(
                   "@Component.Builder has setters for dependencies that aren't required: "
-                      + method.getDeclaringClass().getName() + '.' + method.getName());
+                      + method.getDeclaringClass().getName() + '.' + method.getName(), e);
             }
           }
         } else {

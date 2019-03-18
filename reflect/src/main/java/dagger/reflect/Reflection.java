@@ -19,9 +19,11 @@ import dagger.MapKey;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -80,6 +82,10 @@ final class Reflection {
       }
     }
     return null;
+  }
+
+  static boolean hasAnnotation(Annotation[] annotations, Class<? extends Annotation> annotation) {
+    return findAnnotation(annotations, annotation) != null;
   }
 
   static void trySet(@Nullable Object instance, Field field, @Nullable Object value) {
@@ -147,6 +153,14 @@ final class Reflection {
       target = target.getSuperclass();
     } while (target != null && target != Object.class);
     return types;
+  }
+
+  static <T> T newProxy(Class<T> cls, InvocationHandler handler) {
+    if (!cls.isInterface()) {
+      throw new IllegalArgumentException(cls.getCanonicalName()
+          + " is not an interface. Only interfaces are supported.");
+    }
+    return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls }, handler));
   }
 
   private Reflection() {

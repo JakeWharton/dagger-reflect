@@ -20,21 +20,26 @@ import dagger.Subcomponent;
 import dagger.reflect.Binding.LinkedBinding;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
+import static dagger.reflect.Reflection.newProxy;
 import static dagger.reflect.Reflection.findQualifier;
 
 final class ComponentInvocationHandler implements InvocationHandler {
-  static <T> T create(Class<T> cls, Scope scope) {
-    if (!cls.isInterface()) {
-      throw new IllegalArgumentException(cls.getCanonicalName()
-          + " is not an interface. Only interfaces are supported.");
-    }
-    return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls },
-        new ComponentInvocationHandler(scope)));
+  static <C> C forComponent(Class<C> cls) {
+    Scope scope = ComponentScopeBuilder.buildComponent(cls).build();
+    return create(cls, scope);
+  }
+
+  static <C> C forSubcomponent(Class<C> cls, Scope parent) {
+    Scope scope = ComponentScopeBuilder.buildSubcomponent(cls, parent).build();
+    return create(cls, scope);
+  }
+
+  static <C> C create(Class<C> cls, Scope scope) {
+    return newProxy(cls, new ComponentInvocationHandler(scope));
   }
 
   private final Scope scope;
@@ -153,7 +158,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
     }
 
     @Override public Object invoke(Object[] args) {
-      return ReflectiveComponentParser.parse(cls, scope);
+      return ComponentInvocationHandler.forSubcomponent(cls, scope);
     }
   }
 
@@ -168,7 +173,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
     }
 
     @Override public Object invoke(Object[] args) {
-      return ReflectiveComponentBuilderParser.parse(cls, scope);
+      return ComponentBuilderInvocationHandler.forSubcomponentBuilder(cls, scope);
     }
   }
 }

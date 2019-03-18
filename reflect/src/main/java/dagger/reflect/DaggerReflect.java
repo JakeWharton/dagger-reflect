@@ -17,15 +17,15 @@ package dagger.reflect;
 
 public final class DaggerReflect {
   public static <C> C create(Class<C> componentClass) {
-    return ReflectiveComponentParser.parse(componentClass);
+    return ComponentInvocationHandler.forComponent(componentClass);
   }
 
   public static <B> B builder(Class<B> builderClass) {
-    return ReflectiveComponentBuilderParser.parse(builderClass);
+    return ComponentBuilderInvocationHandler.forComponentBuilder(builderClass);
   }
 
   public static <F> F factory(Class<F> factoryClass) {
-    return ReflectiveComponentFactoryParser.parse(factoryClass);
+    return ComponentFactoryInvocationHandler.forComponentFactory(factoryClass);
   }
 
   static RuntimeException notImplemented(String feature) {
