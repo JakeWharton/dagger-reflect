@@ -218,6 +218,15 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("3");
   }
 
+  @Test public void builderExplicitModulesNullThrowsNpe() {
+    BuilderExplicitModules.Builder builder = backend.builder(BuilderExplicitModules.Builder.class);
+    try {
+      builder.module1(null);
+      fail();
+    } catch (NullPointerException ignored) {
+    }
+  }
+
   @Test public void builderExplicitModulesSetTwice() {
     BuilderExplicitModules component = backend.builder(BuilderExplicitModules.Builder.class)
         .module1(new BuilderExplicitModules.Module1("3"))
@@ -243,6 +252,15 @@ public final class IntegrationTest {
         .build();
 
     assertThat(component.string()).isEqualTo("hey");
+  }
+
+  @Test public void builderDependencyNullThrowsNpe() {
+    BuilderDependency.Builder builder = backend.builder(BuilderDependency.Builder.class);
+    try {
+      builder.other(null);
+      fail();
+    } catch (NullPointerException ignored) {
+    }
   }
 
   @Test public void builderDependencySetTwice() {
@@ -284,11 +302,29 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("hey");
   }
 
+  @Test public void factoryDependencyNullThrowsNpe() {
+    FactoryDependency.Factory factory = backend.factory(FactoryDependency.Factory.class);
+    try {
+      factory.create(null);
+      fail();
+    } catch (NullPointerException ignored) {
+    }
+  }
+
   @Test public void factoryExplicitModules() {
     FactoryExplicitModules component = backend.factory(FactoryExplicitModules.Factory.class)
         .create(new FactoryExplicitModules.Module1("hey"));
 
     assertThat(component.string()).isEqualTo("hey");
+  }
+
+  @Test public void factoryExplicitModulesNullThrowsNpe() {
+    FactoryExplicitModules.Factory factory = backend.factory(FactoryExplicitModules.Factory.class);
+    try {
+      factory.create(null);
+      fail();
+    } catch (NullPointerException ignored) {
+    }
   }
 
   @Test public void factoryImplicitModules() {
@@ -558,6 +594,11 @@ public final class IntegrationTest {
     assertThat(component.integer()).isEqualTo(42);
   }
 
+  @Test public void moduleIncludes() {
+    ModuleIncludes component = backend.create(ModuleIncludes.class);
+    assertThat(component.string()).isEqualTo("5");
+  }
+
   @Test public void nestedComponent() {
     NestedComponent.MoreNesting.AndMore.TheComponent component =
         backend.create(NestedComponent.MoreNesting.AndMore.TheComponent.class);
@@ -769,8 +810,9 @@ public final class IntegrationTest {
   @Test public void abstractClassBuilderFails() {
     ignoreCodegenBackend();
 
+    AbstractComponent.Builder builder = backend.builder(AbstractComponent.Builder.class);
     try {
-      backend.builder(AbstractComponent.Builder.class);
+      builder.build();
       fail();
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat()
@@ -825,7 +867,7 @@ public final class IntegrationTest {
     } catch (IllegalArgumentException e) {
       assertThat(e).hasMessageThat()
           .isEqualTo("com.example.AbstractBuilderClass.Builder is not an interface. "
-              + "Only interface builders are supported.");
+              + "Only interfaces are supported.");
     }
   }
 
@@ -848,11 +890,8 @@ public final class IntegrationTest {
     try {
       backend.create(ComponentWithDependencies.class);
       fail();
-    } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("com.example.ComponentWithDependencies "
-              + "declares dependencies [java.lang.String, java.lang.Runnable] "
-              + "and therefore must be created with a builder");
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().isEqualTo("java.lang.String must be set");
     }
   }
 

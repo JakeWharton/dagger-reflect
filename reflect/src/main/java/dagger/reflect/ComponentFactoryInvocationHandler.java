@@ -1,26 +1,29 @@
 package dagger.reflect;
 
 import dagger.BindsInstance;
+import dagger.Component;
+import dagger.Module;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
-import java.util.LinkedHashSet;
-import java.util.Set;
-import org.jetbrains.annotations.Nullable;
 
-import static dagger.reflect.Reflection.findAnnotation;
 import static dagger.reflect.Reflection.findQualifier;
-import static dagger.reflect.Reflection.findScope;
+import static dagger.reflect.Reflection.hasAnnotation;
+import static dagger.reflect.Reflection.newProxy;
 
 final class ComponentFactoryInvocationHandler implements InvocationHandler {
-  static <T> T create(Class<?> componentClass, Class<T> factoryClass, Set<Class<?>> modules,
-      Set<Class<?>> dependencies, @Nullable Scope parent) {
-    if (!componentClass.isInterface()) {
-      throw new IllegalArgumentException(componentClass.getCanonicalName()
-          + " is not an interface. Only interfaces are supported.");
+  static <F> F forComponentFactory(Class<F> factoryClass) {
+    if (factoryClass.getAnnotation(Component.Factory.class) == null) {
+      throw new IllegalArgumentException(
+          factoryClass.getCanonicalName() + " lacks @Component.Factory annotation");
+    }
+
+    Class<?> componentClass = factoryClass.getEnclosingClass();
+    if (componentClass == null) {
+      throw new IllegalArgumentException(factoryClass.getCanonicalName()
+          + " is not a nested type inside of a component interface.");
     }
     if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
       // Instances of proxies cannot create another proxy instance where the second interface is
@@ -29,29 +32,20 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
           + componentClass.getCanonicalName()
           + " must be public in order to be reflectively created");
     }
-    if (!factoryClass.isInterface()) {
-      throw new IllegalArgumentException(factoryClass.getCanonicalName()
-          + " is not an interface. Only interface factories are supported.");
-    }
-    return factoryClass.cast(
-        Proxy.newProxyInstance(factoryClass.getClassLoader(), new Class<?>[] { factoryClass },
-            new ComponentFactoryInvocationHandler(componentClass, factoryClass, modules,
-                dependencies, parent)));
+
+    ComponentScopeBuilder scopeBuilder =
+        ComponentScopeBuilder.buildComponent(componentClass);
+    return newProxy(factoryClass,
+        new ComponentFactoryInvocationHandler(componentClass, scopeBuilder));
   }
 
   private final Class<?> componentClass;
-  private final Class<?> factoryClass;
-  private final Set<Class<?>> componentModules;
-  private final Set<Class<?>> componentDependencies;
-  private final @Nullable Scope parent;
+  private final ComponentScopeBuilder scopeBuilder;
 
-  private ComponentFactoryInvocationHandler(Class<?> componentClass, Class<?> factoryClass,
-      Set<Class<?>> componentModules, Set<Class<?>> componentDependencies, @Nullable Scope parent) {
+  private ComponentFactoryInvocationHandler(Class<?> componentClass,
+      ComponentScopeBuilder scopeBuilder) {
     this.componentClass = componentClass;
-    this.factoryClass = factoryClass;
-    this.componentModules = componentModules;
-    this.componentDependencies = componentDependencies;
-    this.parent = parent;
+    this.scopeBuilder = scopeBuilder;
   }
 
   @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -64,41 +58,43 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
       throw new IllegalStateException(); // TODO must be assignable
     }
 
-    Annotation scopeAnnotation = findScope(factoryClass.getDeclaredAnnotations());
-    Scope.Builder scope = new Scope.Builder(parent, scopeAnnotation)
-        .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
-
-    Set<Class<?>> missingModules = new LinkedHashSet<>(componentModules);
-    Set<Class<?>> missingDependencies = new LinkedHashSet<>(componentDependencies);
-
     Type[] parameterTypes = method.getGenericParameterTypes();
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
     for (int i = 0; i < parameterTypes.length; i++) {
       Type parameterType = parameterTypes[i];
       Object argument = args[i];
-      boolean isBindsInstance =
-          findAnnotation(parameterAnnotations[i], BindsInstance.class) != null;
-      if (isBindsInstance) {
+
+      if (hasAnnotation(parameterAnnotations[i], BindsInstance.class)) {
         Annotation qualifier = findQualifier(parameterAnnotations[i]);
-        scope.addInstance(Key.of(qualifier, parameterType), argument);
-      } else //noinspection SuspiciousMethodCalls Can only succeed when parameterType is a Class.
-          if (missingModules.remove(parameterType)) {
-        scope.addModule((Class<?>) parameterType, argument);
-      } else //noinspection SuspiciousMethodCalls Can only succeed when parameterType is a Class.
-          if (missingDependencies.remove(parameterType)) {
-        scope.addDependency((Class<?>) parameterType, argument);
+        scopeBuilder.putBoundInstance(Key.of(qualifier, parameterType), argument);
+      } else if (parameterType instanceof Class<?>) {
+        Class<?> parameterClass = (Class<?>) parameterType;
+        if (argument == null) {
+          throw new NullPointerException(
+              "@Component.Factory parameter " + parameterClass.getName() + " was null");
+        }
+        if (parameterClass.getAnnotation(Module.class) != null) {
+          try {
+            scopeBuilder.setModule(parameterClass, argument);
+          } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("@Component.Factory has a parameter for module + "
+                + parameterClass.getName()
+                + " that isn't required", e);
+          }
+        } else {
+          try {
+            scopeBuilder.setDependency(parameterClass, argument);
+          } catch (IllegalArgumentException e) {
+            throw new IllegalStateException("@Component.Factory has a parameter for dependency "
+                + parameterClass.getName()
+                + " that isn't required", e);
+          }
+        }
       } else {
-        throw new IllegalStateException(); // TODO unknown argument type
+        throw new IllegalStateException(parameterType.toString()); // TODO unknown argument type
       }
     }
 
-    if (!missingDependencies.isEmpty()) {
-      throw new IllegalStateException(); // TODO throw
-    }
-    for (Class<?> missingModule : missingModules) {
-      scope.addModule(missingModule, null);
-    }
-
-    return ComponentInvocationHandler.create(componentClass, scope.build());
+    return ComponentInvocationHandler.create(componentClass, scopeBuilder.build());
   }
 }
