@@ -17,6 +17,7 @@ enum Backend {
       return DaggerReflect.factory(factoryClass);
     }
   },
+  @SuppressWarnings("RefersToDaggerCodegen") // Only referring to our type, not theirs.
   CODEGEN {
     @Override <C> C create(Class<C> componentClass) {
       return DaggerCodegen.create(componentClass);
