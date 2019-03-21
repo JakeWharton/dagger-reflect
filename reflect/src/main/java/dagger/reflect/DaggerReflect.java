@@ -28,10 +28,6 @@ public final class DaggerReflect {
     return ComponentFactoryInvocationHandler.forComponentFactory(factoryClass);
   }
 
-  static RuntimeException notImplemented(String feature) {
-    return new UnsupportedOperationException(feature + " does not work yet, sorry!");
-  }
-
   private DaggerReflect() {
     throw new AssertionError();
   }
