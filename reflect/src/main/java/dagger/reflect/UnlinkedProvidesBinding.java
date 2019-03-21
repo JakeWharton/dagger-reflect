@@ -16,7 +16,7 @@ final class UnlinkedProvidesBinding extends Binding.UnlinkedBinding {
     this.method = method;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker) {
+  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
     Type[] parameterTypes = method.getGenericParameterTypes();
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
     LinkedBinding<?>[] dependencies = new LinkedBinding<?>[parameterTypes.length];

@@ -599,6 +599,45 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo("5");
   }
 
+  @Test public void moduleSubcomponentBindsBuilder() {
+    ModuleSubcomponentBindsBuilder component = backend.create(ModuleSubcomponentBindsBuilder.class);
+    assertThat(component.string()).isEqualTo("5");
+  }
+
+  @Test public void moduleSubcomponentBindsFactory() {
+    ModuleSubcomponentBindsBuilder component = backend.create(ModuleSubcomponentBindsBuilder.class);
+    assertThat(component.string()).isEqualTo("5");
+  }
+
+  @Test public void moduleSubcomponentBindsFactoryAndBuilder() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.create(ModuleSubcomponentBindsFactoryAndBuilder.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo(
+              "@Subcomponent has more than one @Subcomponent.Builder or @Subcomponent.Factory: ["
+                  + "com.example.ModuleSubcomponentBindsFactoryAndBuilder.StringSubcomponent.Builder, "
+                  + "com.example.ModuleSubcomponentBindsFactoryAndBuilder.StringSubcomponent.Factory]");
+    }
+  }
+
+  @Test public void moduleSubcomponentNoFactoryOrBuilder() {
+    ignoreCodegenBackend();
+
+    try {
+      backend.create(ModuleSubcomponentNoFactoryOrBuilder.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("com.example.ModuleSubcomponentNoFactoryOrBuilder.StringSubcomponent "
+              + "doesn't have a @Subcomponent.Builder or @Subcomponent.Factory, "
+              + "which is required when used with @Module.subcomponents");
+    }
+  }
+
   @Test public void nestedComponent() {
     NestedComponent.MoreNesting.AndMore.TheComponent component =
         backend.create(NestedComponent.MoreNesting.AndMore.TheComponent.class);

@@ -18,7 +18,15 @@ package dagger.reflect;
 import org.jetbrains.annotations.Nullable;
 
 interface Binding {
-  LinkedBinding<?> link(Linker linker);
+  /**
+   * Resolve any dependencies from {@code linker} which are needed to create this binding's
+   * instances.
+   * <p>
+   * Despite receiving a {@link Scope}, DO NOT use this to resolve any bindings. This instance is
+   * only for creating child scopes as part of this binding's created instances.
+   */
+  // TODO if we ever make this public API we may need to enforce Scope isn't used to get bindings.
+  LinkedBinding<?> link(Linker linker, Scope scope);
   Binding asScoped();
   @Override String toString();
 
@@ -31,7 +39,7 @@ interface Binding {
   abstract class LinkedBinding<T> implements Binding {
     abstract @Nullable T get();
 
-    @Override public final LinkedBinding<?> link(Linker linker) {
+    @Override public final LinkedBinding<?> link(Linker linker, Scope scope) {
       return this;
     }
 

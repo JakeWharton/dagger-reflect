@@ -32,6 +32,16 @@ import javax.inject.Scope;
 import org.jetbrains.annotations.Nullable;
 
 final class Reflection {
+  static @Nullable Class<?> findEnclosedAnnotatedClass(Class<?> cls,
+      Class<? extends Annotation> annotationClass) {
+    for (Class<?> declaredClass : cls.getDeclaredClasses()) {
+      if (declaredClass.getAnnotation(annotationClass) != null) {
+        return declaredClass;
+      }
+    }
+    return null;
+  }
+
   static @Nullable Annotation findQualifier(Annotation[] annotations) {
     Annotation qualifier = null;
     for (Annotation annotation : annotations) {

@@ -14,7 +14,7 @@ final class UnlinkedBindsBinding extends UnlinkedBinding {
     this.method = method;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker) {
+  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
     Type[] parameterTypes = method.getGenericParameterTypes();
     if (parameterTypes.length != 1) {
       throw new IllegalArgumentException(

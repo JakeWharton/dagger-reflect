@@ -9,7 +9,7 @@ final class UnlinkedScopedBinding extends UnlinkedBinding {
     this.unlinkedBinding = unlinkedBinding;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker) {
-    return new LinkedScopedBinding<>(unlinkedBinding.link(linker));
+  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
+    return new LinkedScopedBinding<>(unlinkedBinding.link(linker, scope));
   }
 }

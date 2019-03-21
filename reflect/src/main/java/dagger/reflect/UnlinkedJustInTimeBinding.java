@@ -20,7 +20,7 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
     this.constructor = constructor;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker) {
+  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
     // TODO field and method bindings? reuse some/all of reflective members injector somehow?
     Class<?> target = cls;
     while (target != Object.class) {
