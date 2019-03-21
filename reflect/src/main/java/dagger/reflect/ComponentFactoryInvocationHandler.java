@@ -3,6 +3,7 @@ package dagger.reflect;
 import dagger.BindsInstance;
 import dagger.Component;
 import dagger.Module;
+import dagger.Subcomponent;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -12,19 +13,14 @@ import java.lang.reflect.Type;
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.hasAnnotation;
 import static dagger.reflect.Reflection.newProxy;
+import static dagger.reflect.Reflection.requireAnnotation;
+import static dagger.reflect.Reflection.requireEnclosingClass;
 
 final class ComponentFactoryInvocationHandler implements InvocationHandler {
   static <F> F forComponentFactory(Class<F> factoryClass) {
-    if (factoryClass.getAnnotation(Component.Factory.class) == null) {
-      throw new IllegalArgumentException(
-          factoryClass.getCanonicalName() + " lacks @Component.Factory annotation");
-    }
+    requireAnnotation(factoryClass, Component.Factory.class);
 
-    Class<?> componentClass = factoryClass.getEnclosingClass();
-    if (componentClass == null) {
-      throw new IllegalArgumentException(factoryClass.getCanonicalName()
-          + " is not a nested type inside of a component interface.");
-    }
+    Class<?> componentClass = requireEnclosingClass(factoryClass);
     if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
@@ -35,6 +31,24 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
 
     ComponentScopeBuilder scopeBuilder =
         ComponentScopeBuilder.buildComponent(componentClass);
+    return newProxy(factoryClass,
+        new ComponentFactoryInvocationHandler(componentClass, scopeBuilder));
+  }
+
+  static <F> F forSubcomponentFactory(Class<F> factoryClass, Scope scope) {
+    requireAnnotation(factoryClass, Subcomponent.Factory.class);
+
+    Class<?> componentClass = requireEnclosingClass(factoryClass);
+    if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
+      // Instances of proxies cannot create another proxy instance where the second interface is
+      // not public. This prevents proxies of builders from creating proxies of the component.
+      throw new IllegalArgumentException("Component interface "
+          + componentClass.getCanonicalName()
+          + " must be public in order to be reflectively created");
+    }
+
+    ComponentScopeBuilder scopeBuilder =
+        ComponentScopeBuilder.buildSubcomponent(componentClass, scope);
     return newProxy(factoryClass,
         new ComponentFactoryInvocationHandler(componentClass, scopeBuilder));
   }

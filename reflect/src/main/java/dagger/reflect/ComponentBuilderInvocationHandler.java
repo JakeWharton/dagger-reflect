@@ -27,19 +27,14 @@ import java.lang.reflect.Type;
 
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.newProxy;
+import static dagger.reflect.Reflection.requireAnnotation;
+import static dagger.reflect.Reflection.requireEnclosingClass;
 
 final class ComponentBuilderInvocationHandler implements InvocationHandler {
   static <B> B forComponentBuilder(Class<B> builderClass) {
-    if (builderClass.getAnnotation(Component.Builder.class) == null) {
-      throw new IllegalArgumentException(
-          builderClass.getCanonicalName() + " lacks @Component.Builder annotation");
-    }
+    requireAnnotation(builderClass, Component.Builder.class);
 
-    Class<?> componentClass = builderClass.getEnclosingClass();
-    if (componentClass == null) {
-      throw new IllegalArgumentException(builderClass.getCanonicalName()
-          + " is not a nested type inside of a component interface.");
-    }
+    Class<?> componentClass = requireEnclosingClass(builderClass);
     if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
@@ -55,16 +50,9 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
   }
 
   static <B> B forSubcomponentBuilder(Class<B> builderClass, Scope parent) {
-    if (builderClass.getAnnotation(Subcomponent.Builder.class) == null) {
-      throw new IllegalArgumentException(
-          builderClass.getCanonicalName() + " lacks @Subcomponent.Builder annotation");
-    }
+    requireAnnotation(builderClass, Subcomponent.Builder.class);
 
-    Class<?> subcomponentClass = builderClass.getEnclosingClass();
-    if (subcomponentClass == null) {
-      throw new IllegalArgumentException(builderClass.getCanonicalName()
-          + " is not a nested type inside of a subcomponent interface.");
-    }
+    Class<?> subcomponentClass = requireEnclosingClass(builderClass);
     if ((subcomponentClass.getModifiers() & Modifier.PUBLIC) == 0) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.

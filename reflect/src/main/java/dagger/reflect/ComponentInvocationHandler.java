@@ -102,6 +102,9 @@ final class ComponentInvocationHandler implements InvocationHandler {
         if (returnClass.getAnnotation(Subcomponent.Builder.class) != null) {
           return new SubcomponentBuilderMethodInvocationHandler(returnClass, scope);
         }
+        if (returnClass.getAnnotation(Subcomponent.Factory.class) != null) {
+          return new SubcomponentFactoryMethodInvocationHandler(returnClass, scope);
+        }
       }
 
       Key key = Key.of(findQualifier(method.getDeclaredAnnotations()), returnType);
@@ -174,6 +177,21 @@ final class ComponentInvocationHandler implements InvocationHandler {
 
     @Override public Object invoke(Object[] args) {
       return ComponentBuilderInvocationHandler.forSubcomponentBuilder(cls, scope);
+    }
+  }
+
+  private static final class SubcomponentFactoryMethodInvocationHandler
+      implements MethodInvocationHandler {
+    private final Class<?> cls;
+    private final Scope scope;
+
+    SubcomponentFactoryMethodInvocationHandler(Class<?> cls, Scope scope) {
+      this.cls = cls;
+      this.scope = scope;
+    }
+
+    @Override public Object invoke(Object[] args) {
+      return ComponentFactoryInvocationHandler.forSubcomponentFactory(cls, scope);
     }
   }
 }

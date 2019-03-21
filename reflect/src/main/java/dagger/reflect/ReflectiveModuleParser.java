@@ -21,6 +21,7 @@ import static dagger.reflect.Reflection.findMapKey;
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.findScope;
 import static dagger.reflect.Reflection.maybeInstantiate;
+import static dagger.reflect.Reflection.requireAnnotation;
 import static java.lang.reflect.Modifier.ABSTRACT;
 import static java.lang.reflect.Modifier.PRIVATE;
 import static java.lang.reflect.Modifier.STATIC;
@@ -118,7 +119,7 @@ final class ReflectiveModuleParser {
       throw new IllegalStateException(); // TODO map key required. mention runtime retention.
     }
     Class<? extends Annotation> entryKeyAnnotationType = entryKeyAnnotation.annotationType();
-    MapKey mapKeyAnnotation = entryKeyAnnotationType.getAnnotation(MapKey.class);
+    MapKey mapKeyAnnotation = requireAnnotation(entryKeyAnnotationType, MapKey.class);
 
     Class<?> entryKeyType;
     Object entryKey;
