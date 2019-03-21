@@ -22,6 +22,6 @@ final class UnlinkedMapBinding extends UnlinkedBinding {
   }
 
   @Override public String toString() {
-    return "Set" + entryBindings;
+    return "Map" + entryBindings;
   }
 }
