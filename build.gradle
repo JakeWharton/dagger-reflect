@@ -47,6 +47,7 @@ buildscript {
 
   dependencies {
     classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.7.1'
+    classpath 'net.ltgt.gradle:gradle-nullaway-plugin:0.1'
     classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.5.0'
     classpath 'com.android.tools.build:gradle:3.3.2'
   }
@@ -57,6 +58,7 @@ subprojects {
   version = VERSION_NAME
 
   apply plugin: 'net.ltgt.errorprone'
+  apply plugin: 'net.ltgt.nullaway'
 
   repositories {
     mavenCentral()
@@ -88,9 +90,13 @@ subprojects {
     options.errorprone {
       disableWarningsInGeneratedCode = true
       excludedPaths = ".*/build/generated/.*"
+
       check("JavaxInjectOnAbstractMethod", CheckSeverity.OFF)
-      check("NullAway", CheckSeverity.ERROR)
-      option("NullAway:AnnotatedPackages", "dagger.reflect")
+
+      nullaway {
+        annotatedPackages.add('dagger.reflect')
+        severity = CheckSeverity.ERROR
+      }
     }
   }
 }
