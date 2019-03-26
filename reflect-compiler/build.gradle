@@ -9,9 +9,10 @@ dependencies {
   implementation project(':reflect')
   implementation deps.javaPoet
   implementation deps.dagger.runtime
+  implementation deps.jetbrainsAnnotations
 
-  compileOnly deps.auto.service
-  annotationProcessor deps.auto.service
+  compileOnly deps.auto.service.annotations
+  annotationProcessor deps.auto.service.compiler
 
   compileOnly deps.incap.runtime
   annotationProcessor deps.incap.processor

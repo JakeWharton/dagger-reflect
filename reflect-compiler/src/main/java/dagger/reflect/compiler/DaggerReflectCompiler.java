@@ -23,7 +23,6 @@ import com.squareup.javapoet.TypeSpec;
 import dagger.Component;
 import dagger.reflect.DaggerReflect;
 import java.util.Set;
-import javax.annotation.Nullable;
 import javax.annotation.processing.AbstractProcessor;
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
@@ -34,6 +33,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import net.ltgt.gradle.incap.IncrementalAnnotationProcessor;
+import org.jetbrains.annotations.Nullable;
 
 import static java.util.Collections.singleton;
 import static javax.lang.model.element.Modifier.FINAL;
