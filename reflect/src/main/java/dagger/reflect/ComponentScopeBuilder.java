@@ -15,30 +15,17 @@ import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findScope;
+import static dagger.reflect.Reflection.requireAnnotation;
 
 final class ComponentScopeBuilder {
   static ComponentScopeBuilder buildComponent(Class<?> componentClass) {
-    Component component = componentClass.getAnnotation(Component.class);
-    if (component == null) {
-      throw new IllegalArgumentException(
-          componentClass.getCanonicalName() + " lacks @Component annotation");
-    }
-
+    Component component = requireAnnotation(componentClass, Component.class);
     Annotation scopeAnnotation = findScope(componentClass.getDeclaredAnnotations());
     return create(component.modules(), component.dependencies(), scopeAnnotation, null);
   }
 
   static ComponentScopeBuilder buildSubcomponent(Class<?> subcomponentClass, Scope parent) {
-    Subcomponent subcomponent = subcomponentClass.getAnnotation(Subcomponent.class);
-    if (subcomponent == null) {
-      throw new IllegalArgumentException(
-          subcomponentClass.getCanonicalName() + " lacks @Subomponent annotation");
-    }
-    if (!subcomponentClass.isInterface()) {
-      throw new IllegalArgumentException(subcomponentClass.getCanonicalName()
-          + " is not an interface. Only interfaces are supported.");
-    }
-
+    Subcomponent subcomponent = requireAnnotation(subcomponentClass, Subcomponent.class);
     Annotation scopeAnnotation = findScope(subcomponentClass.getDeclaredAnnotations());
     return create(subcomponent.modules(), new Class<?>[0], scopeAnnotation, parent);
   }
@@ -52,10 +39,7 @@ final class ComponentScopeBuilder {
     Collections.addAll(moduleClassQueue, moduleClasses);
     while (!moduleClassQueue.isEmpty()) {
       Class<?> moduleClass = moduleClassQueue.removeFirst();
-      Module module = moduleClass.getAnnotation(Module.class);
-      if (module == null) {
-        throw new IllegalStateException(); // TODO need @Module
-      }
+      Module module = requireAnnotation(moduleClass, Module.class);
 
       Collections.addAll(moduleClassQueue, module.includes());
       Collections.addAll(subcomponentClasses, module.subcomponents());

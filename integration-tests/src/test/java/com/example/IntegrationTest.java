@@ -910,6 +910,14 @@ public final class IntegrationTest {
     assertThat(nested.two()).isEqualTo(2L);
   }
 
+  @Test public void subcomponentFactoryProvision() {
+    SubcomponentFactoryProvision.Nested nested = backend.create(SubcomponentFactoryProvision.class)
+        .nestedFactory()
+        .create(new SubcomponentFactoryProvision.Nested.Module2(2L));
+    assertThat(nested.one()).isEqualTo("one");
+    assertThat(nested.two()).isEqualTo(2L);
+  }
+
   @Test public void componentScopeCycle() {
     ignoreCodegenBackend();
     ignoreReflectionBackend(); // TODO

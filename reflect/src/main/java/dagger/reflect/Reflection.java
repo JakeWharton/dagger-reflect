@@ -88,6 +88,31 @@ final class Reflection {
     return findAnnotation(annotations, annotation) != null;
   }
 
+  @SuppressWarnings("StringConcatenationInLoop") // Only occurs when about to throw an exception.
+  static <T extends Annotation> T requireAnnotation(Class<?> cls, Class<T> annotationClass) {
+    T annotation = cls.getAnnotation(annotationClass);
+    if (annotation != null) {
+      return annotation;
+    }
+
+    String name = "";
+    for (Class<?> a = annotationClass; a != null; a = a.getEnclosingClass()) {
+      if (!name.isEmpty()) {
+        name = "." + name;
+      }
+      name = a.getSimpleName() + name;
+    }
+    throw new IllegalArgumentException(cls.getCanonicalName() + " lacks @" + name + " annotation");
+  }
+
+  static Class<?> requireEnclosingClass(Class<?> cls) {
+    Class<?> enclosingClass = cls.getEnclosingClass();
+    if (enclosingClass != null) {
+      return enclosingClass;
+    }
+    throw new IllegalArgumentException(cls.getCanonicalName() + " must be nested in another type");
+  }
+
   static void trySet(@Nullable Object instance, Field field, @Nullable Object value) {
     if ((field.getModifiers() & Modifier.PUBLIC) == 0) {
       field.setAccessible(true);
