@@ -1,0 +1,102 @@
+apply plugin: 'java-library'
+
+sourceSets.test.java {
+  srcDir file('dagger/javatests')
+  include 'dagger/functional/**'
+
+  exclude 'dagger/functional/aot/**'
+  exclude 'dagger/functional/producers/**'
+  exclude 'dagger/functional/tck/**'
+  exclude 'dagger/functional/spi/**'
+
+  // This test contains a reference to a generated members injector type directly.
+  exclude 'dagger/functional/membersinject/MembersInjectTest.java'
+
+  // This test reflects on the generated component implementation fields.
+  exclude 'dagger/functional/staticprovides/StaticProvidesTest.java'
+
+  // TODO reflect-compiler bug! Generated class for nested type is named incorrectly.
+  exclude 'dagger/functional/binds/BindsCollectionsWithoutMultibindingsTest.java'
+  exclude 'dagger/functional/builder/BuilderBindsInstanceParameterTest.java'
+  exclude 'dagger/functional/cycle/CycleTest.java'
+  exclude 'dagger/functional/cycle/DoubleCheckCycleTest.java'
+  exclude 'dagger/functional/cycle/LongCycleTest.java'
+  exclude 'dagger/functional/factory/FactoryBindsInstanceTest.java'
+  exclude 'dagger/functional/factory/FactoryDependenciesTest.java'
+  exclude 'dagger/functional/factory/FactoryImplicitModulesTest.java'
+  exclude 'dagger/functional/factory/FactoryMixedParametersTest.java'
+  exclude 'dagger/functional/factory/FactoryRequiredModulesTest.java'
+  exclude 'dagger/functional/factory/SubcomponentFactoryTest.java'
+  exclude 'dagger/functional/guava/a/OptionalBindingComponentsWithInaccessibleTypesTest.java'
+  exclude 'dagger/functional/guava/OptionalBindingComponentsAbsentTest.java'
+  exclude 'dagger/functional/guava/OptionalBindingComponentsPresentTest.java'
+  exclude 'dagger/functional/gwt/GwtIncompatiblesTest.java'
+  exclude 'dagger/functional/jdk8/a/OptionalBindingComponentsWithInaccessibleTypesTest.java'
+  exclude 'dagger/functional/jdk8/OptionalBindingComponentsEmptyTest.java'
+  exclude 'dagger/functional/jdk8/OptionalBindingComponentsPresentTest.java'
+  exclude 'dagger/functional/multibindings/ComplexMapKeysInDifferentOrderTest.java'
+  exclude 'dagger/functional/membersinject/MembersInjectionOrdering.java'
+  exclude 'dagger/functional/membersinject/MembersInjectionOrderingTest.java'
+  exclude 'dagger/functional/membersinject/MembersWithSameNameTest.java'
+  exclude 'dagger/functional/modules/ModuleIncludesTest.java'
+  exclude 'dagger/functional/multibindings/MapKeyWithDefaultTest.java'
+  exclude 'dagger/functional/subcomponent/ModuleWithSubcomponentsTest.java'
+  exclude 'dagger/functional/subcomponent/SubcomponentFactoryMethodTest.java'
+  exclude 'dagger/functional/subcomponent/SubcomponentMultibindingsTest.java'
+  exclude 'dagger/functional/ComponentMethodTest.java'
+  exclude 'dagger/functional/LazyMapsTest.java'
+  exclude 'dagger/functional/NestedTest.java'
+  exclude 'dagger/functional/OuterClassBar.java'
+
+  // TODO reflect-compiler bug! Not generating builder method.
+  exclude 'dagger/functional/builder/BuilderTest.java'
+  exclude 'dagger/functional/nullables/NullabilityTest.java'
+  exclude 'dagger/functional/MultibindingTest.java'
+  exclude 'dagger/functional/NonComponentDependencyTest.java'
+}
+
+test.filter {
+  // TODO reflect bug! Not supporting @Reusable scope.
+  excludeTest 'dagger.functional.binds.BindsTest', null
+  excludeTest 'dagger.functional.ReusableTest', null
+
+  // TODO reflect bug! JIT binding depending on JIT binding is inexplicably not working.
+  excludeTest 'dagger.functional.DependsOnGeneratedCodeTest', 'testComponentDependsOnGeneratedCode'
+
+  // TODO reflect bug! Need something like ByteBuddy for proxying classes at runtime.
+  excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', null
+  excludeTest 'dagger.functional.subcomponent.SubcomponentTest', null
+  excludeTest 'dagger.functional.subcomponent.repeat.RepeatedModuleTest', null
+  excludeTest 'dagger.functional.BasicTest', null
+
+  // TODO reflect bug! Components can have multiple scope annotations.
+  excludeTest 'dagger.functional.scope.ScopeTest', null
+
+  // TODO reflect bug! Generics don't work well.
+  excludeTest 'dagger.functional.GenericTest', null
+
+  // TODO reflect bug! Module subcomponents do not work.
+  excludeTest 'dagger.functional.subcomponent.pruning.SubcomponentOnlyRequestedBySiblingTest', 'subcomponentAddedInParent_onlyUsedInSibling'
+}
+
+dependencies {
+  testImplementation project(':reflect')
+  testImplementation deps.junit
+  testImplementation deps.truth
+  testImplementation deps.auto.value.annotations
+  testImplementation deps.auto.factory // TODO https://github.com/google/auto/issues/631
+  testAnnotationProcessor project(':reflect-compiler')
+  testAnnotationProcessor deps.auto.value.compiler
+  testAnnotationProcessor deps.auto.factory
+}
+
+def ensureDaggerSubmodule = tasks.create('ensureDaggerSubmodule') {
+  doFirst {
+    def dagger = file('dagger/.git')
+    if (!dagger.exists()) {
+      throw new RuntimeException(
+          "Missing 'dagger' git submodule clone. Did you run 'git submodule update --init'?")
+    }
+  }
+}
+compileTestJava.dependsOn(ensureDaggerSubmodule)
