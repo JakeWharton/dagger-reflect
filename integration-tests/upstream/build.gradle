@@ -9,47 +9,17 @@ sourceSets.test.java {
   exclude 'dagger/functional/tck/**'
   exclude 'dagger/functional/spi/**'
 
-  // This test contains a reference to a generated members injector type directly.
+  // These tests contains a reference to a generated types directly.
+  exclude 'dagger/functional/gwt/GwtIncompatiblesTest.java'
   exclude 'dagger/functional/membersinject/MembersInjectTest.java'
 
   // This test reflects on the generated component implementation fields.
   exclude 'dagger/functional/staticprovides/StaticProvidesTest.java'
 
-  // TODO reflect-compiler bug! Generated class for nested type is named incorrectly.
-  exclude 'dagger/functional/binds/BindsCollectionsWithoutMultibindingsTest.java'
-  exclude 'dagger/functional/builder/BuilderBindsInstanceParameterTest.java'
-  exclude 'dagger/functional/cycle/CycleTest.java'
-  exclude 'dagger/functional/cycle/DoubleCheckCycleTest.java'
-  exclude 'dagger/functional/cycle/LongCycleTest.java'
-  exclude 'dagger/functional/factory/FactoryBindsInstanceTest.java'
-  exclude 'dagger/functional/factory/FactoryDependenciesTest.java'
-  exclude 'dagger/functional/factory/FactoryImplicitModulesTest.java'
-  exclude 'dagger/functional/factory/FactoryMixedParametersTest.java'
-  exclude 'dagger/functional/factory/FactoryRequiredModulesTest.java'
-  exclude 'dagger/functional/factory/SubcomponentFactoryTest.java'
-  exclude 'dagger/functional/guava/a/OptionalBindingComponentsWithInaccessibleTypesTest.java'
-  exclude 'dagger/functional/guava/OptionalBindingComponentsAbsentTest.java'
-  exclude 'dagger/functional/guava/OptionalBindingComponentsPresentTest.java'
-  exclude 'dagger/functional/gwt/GwtIncompatiblesTest.java'
-  exclude 'dagger/functional/jdk8/a/OptionalBindingComponentsWithInaccessibleTypesTest.java'
-  exclude 'dagger/functional/jdk8/OptionalBindingComponentsEmptyTest.java'
-  exclude 'dagger/functional/jdk8/OptionalBindingComponentsPresentTest.java'
-  exclude 'dagger/functional/multibindings/ComplexMapKeysInDifferentOrderTest.java'
-  exclude 'dagger/functional/membersinject/MembersInjectionOrdering.java'
-  exclude 'dagger/functional/membersinject/MembersInjectionOrderingTest.java'
-  exclude 'dagger/functional/membersinject/MembersWithSameNameTest.java'
-  exclude 'dagger/functional/modules/ModuleIncludesTest.java'
-  exclude 'dagger/functional/multibindings/MapKeyWithDefaultTest.java'
-  exclude 'dagger/functional/subcomponent/ModuleWithSubcomponentsTest.java'
-  exclude 'dagger/functional/subcomponent/SubcomponentFactoryMethodTest.java'
-  exclude 'dagger/functional/subcomponent/SubcomponentMultibindingsTest.java'
-  exclude 'dagger/functional/ComponentMethodTest.java'
-  exclude 'dagger/functional/LazyMapsTest.java'
-  exclude 'dagger/functional/NestedTest.java'
-  exclude 'dagger/functional/OuterClassBar.java'
-
   // TODO reflect-compiler bug! Not generating builder method.
   exclude 'dagger/functional/builder/BuilderTest.java'
+  exclude 'dagger/functional/cycle/DoubleCheckCycleTest.java'
+  exclude 'dagger/functional/membersinject/MembersInjectionOrderingTest.java'
   exclude 'dagger/functional/nullables/NullabilityTest.java'
   exclude 'dagger/functional/MultibindingTest.java'
   exclude 'dagger/functional/NonComponentDependencyTest.java'
@@ -61,7 +31,10 @@ test.filter {
   excludeTest 'dagger.functional.ReusableTest', null
 
   // TODO reflect bug! JIT binding depending on JIT binding is inexplicably not working.
+  excludeTest 'dagger.functional.cycle.CycleTest', null
+  excludeTest 'dagger.functional.cycle.LongCycleTest', 'longCycle'
   excludeTest 'dagger.functional.DependsOnGeneratedCodeTest', 'testComponentDependsOnGeneratedCode'
+  excludeTest 'dagger.functional.NestedTest', 'nestedFoo'
 
   // TODO reflect bug! Need something like ByteBuddy for proxying classes at runtime.
   excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', null
@@ -77,6 +50,34 @@ test.filter {
 
   // TODO reflect bug! Module subcomponents do not work.
   excludeTest 'dagger.functional.subcomponent.pruning.SubcomponentOnlyRequestedBySiblingTest', 'subcomponentAddedInParent_onlyUsedInSibling'
+  excludeTest 'dagger.functional.subcomponent.ModuleWithSubcomponentsTest', null
+
+  // TODO reflect bug! Injecting Provides<T> does not work.
+  excludeTest 'dagger.functional.cycle.CycleTest', 'cycleWithDeferredBinds'
+  excludeTest 'dagger.functional.cycle.CycleTest', 'providerMapIndirectionCycle'
+  excludeTest 'dagger.functional.guava.OptionalBindingComponentsAbsentTest', null
+  excludeTest 'dagger.functional.guava.OptionalBindingComponentsPresentTest', null
+  excludeTest 'dagger.functional.jdk8.OptionalBindingComponentsEmptyTest', null
+  excludeTest 'dagger.functional.jdk8.OptionalBindingComponentsPresentTest', null
+  excludeTest 'dagger.functional.ComponentMethodTest', null
+
+  // TODO reflect bug! Injecting Lazy<T> does not work.
+  excludeTest 'dagger.functional.LazyMapsTest', null
+
+  // TODO reflect bug! Subcomponent factory provision method does not work.
+  excludeTest 'dagger.functional.subcomponent.SubcomponentFactoryMethodTest', null
+
+  // TODO reflect bug! Members injection on JIT binding does not work.
+  excludeTest 'dagger.functional.cycle.CycleTest', 'lazyIndirectionSelfCycle'
+  excludeTest 'dagger.functional.cycle.CycleTest', 'providerIndirectionSelfCycle'
+  excludeTest 'dagger.functional.NestedTest', 'nestedBar'
+
+  // TODO reflect bug! Subcomponent multibindings propagation does not work.
+  excludeTest 'dagger.functional.subcomponent.SubcomponentMultibindingsTest', null
+
+  // Uses @MapKey which does not have runtime retention.
+  excludeTest 'dagger.functional.multibindings.ComplexMapKeysInDifferentOrderTest', 'test'
+  excludeTest 'dagger.functional.multibindings.MapKeyWithDefaultTest', 'test'
 }
 
 dependencies {
