@@ -5,7 +5,7 @@ sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
 
 dependencies {
-  implementation deps.dagger.runtime
+  api deps.dagger.runtime
   implementation deps.auto.value.annotations
   implementation deps.jetbrainsAnnotations
   implementation deps.animalSnifferAnnotations

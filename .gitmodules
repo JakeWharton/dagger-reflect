@@ -1,0 +1,3 @@
+[submodule "integration-tests/upstream/dagger"]
+	path = integration-tests/upstream/dagger
+	url = https://github.com/google/dagger.git

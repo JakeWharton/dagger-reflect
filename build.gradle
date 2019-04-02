@@ -14,7 +14,7 @@ buildscript {
           'androidCompiler': "com.google.dagger:dagger-android-processor:${versions.dagger}",
       ],
       'junit': 'junit:junit:4.13-beta-1',
-      'truth': 'com.google.truth:truth:0.43',
+      'truth': 'com.google.truth.extensions:truth-java8-extension:0.43',
       'compileTesting': 'com.google.testing.compile:compile-testing:0.15',
       'javaPoet': 'com.squareup:javapoet:1.11.1',
       'auto': [
@@ -22,6 +22,7 @@ buildscript {
               'annotations': 'com.google.auto.service:auto-service-annotations:1.0-rc5',
               'compiler': 'com.google.auto.service:auto-service:1.0-rc5',
           ],
+          'factory': 'com.google.auto.factory:auto-factory:1.0-beta6',
           'value': [
               'annotations': 'com.google.auto.value:auto-value-annotations:1.6.3',
               'compiler': 'com.google.auto.value:auto-value:1.6.3',
