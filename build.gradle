@@ -94,8 +94,6 @@ subprojects {
       disableWarningsInGeneratedCode = true
       excludedPaths = ".*/build/generated/.*"
 
-      check("JavaxInjectOnAbstractMethod", CheckSeverity.OFF)
-
       nullaway {
         annotatedPackages.add('dagger.reflect')
         severity = CheckSeverity.ERROR

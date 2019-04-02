@@ -10,6 +10,7 @@ public interface MembersInjectionAbstractMethod {
   void inject(Target instance);
 
   abstract class Target {
+    @SuppressWarnings("JavaxInjectOnAbstractMethod") // Known incorrect behavior under test.
     @Inject abstract void abstractMethod(String one);
   }
 
