@@ -57,17 +57,27 @@ final class Reflection {
   }
 
   static @Nullable Annotation findScope(Annotation[] annotations) {
-    Annotation scope = null;
+    Set<Annotation> scopes = findScopes(annotations);
+    switch (scopes.size()) {
+      case 0: return null;
+      case 1: return scopes.iterator().next();
+      default: throw new IllegalStateException("Multiple scope annotations found: " + scopes);
+    }
+  }
+
+  static Set<Annotation> findScopes(Annotation[] annotations) {
+    Set<Annotation> scopes = null;
     for (Annotation annotation : annotations) {
       if (annotation.annotationType().getAnnotation(Scope.class) != null) {
-        if (scope != null) {
-          throw new IllegalArgumentException(
-              "Multiple scope annotations: " + scope + " and " + annotation);
+        if (scopes == null) {
+          scopes = new LinkedHashSet<>();
         }
-        scope = annotation;
+        scopes.add(annotation);
       }
     }
-    return scope;
+    return scopes != null
+        ? scopes
+        : Collections.emptySet();
   }
 
   static @Nullable Annotation findMapKey(Annotation[] annotations) {

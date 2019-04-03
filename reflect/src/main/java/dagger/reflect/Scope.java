@@ -10,15 +10,15 @@ import org.jetbrains.annotations.Nullable;
 final class Scope {
   final BindingMap bindings;
   private final JustInTimeLookup.Factory jitLookupFactory;
-  /** The annotation denoting {@linkplain javax.inject.Scope scoped} bindings for this instance. */
-  private final @Nullable Annotation annotation;
+  /** The annotations denoting {@linkplain javax.inject.Scope scoped} bindings for this instance. */
+  private final Set<Annotation> annotations;
   private final @Nullable Scope parent;
 
   private Scope(BindingMap bindings, JustInTimeLookup.Factory jitLookupFactory,
-      @Nullable Annotation annotation, @Nullable Scope parent) {
+      Set<Annotation> annotations, @Nullable Scope parent) {
     this.bindings = bindings;
     this.jitLookupFactory = jitLookupFactory;
-    this.annotation = annotation;
+    this.annotations = annotations;
     this.parent = parent;
   }
 
@@ -70,7 +70,7 @@ final class Scope {
 
     Annotation scope = lookup.scope;
     if (scope != null) {
-      if (!scope.equals(annotation)) {
+      if (!annotations.contains(scope)) {
         return parent != null
             ? parent.putJitBinding(key, lookup)
             : null;
@@ -87,34 +87,42 @@ final class Scope {
 
   static final class Builder {
     private final @Nullable Scope parent;
-    final @Nullable Annotation annotation;
+    final Set<Annotation> annotations;
     private final BindingMap.Builder bindings = new BindingMap.Builder();
     private JustInTimeLookup.Factory jitLookupFactory = JustInTimeLookup.Factory.NONE;
 
-    Builder(@Nullable Scope parent, @Nullable Annotation annotation) {
-      if (annotation != null && parent != null) {
-        if (parent.annotation == null) {
-          throw new IllegalStateException("Scope " + annotation + " may not depend on unscoped");
+    Builder(@Nullable Scope parent, Set<Annotation> annotations) {
+      if (!annotations.isEmpty() && parent != null) {
+        if (parent.annotations.isEmpty()) {
+          throw new IllegalStateException(
+              "Scope with annotations " + annotations + " may not depend on unscoped");
         }
 
         // Traverse ancestry chain looking for a duplicate annotation declaration.
         for (Scope ancestor = parent; ancestor != null; ancestor = ancestor.parent) {
-          if (annotation.equals(ancestor.annotation)) {
+          boolean duplicateScope = false;
+          for (Annotation ancestorAnnotation : ancestor.annotations) {
+            if (annotations.contains(ancestorAnnotation)) {
+              duplicateScope = true;
+              break;
+            }
+          }
+          if (duplicateScope) {
             StringBuilder message = new StringBuilder("Detected scope annotation cycle:\n  * ")
-                .append(annotation)
+                .append(annotations)
                 .append('\n');
             // Re-traverse the ancestry from our parent up to the offending ancestor for the chain.
             for (Scope visit = parent; visit != ancestor; visit = visit.parent) {
               if (visit == null) throw new AssertionError(); // Checked by outer loop.
-              message.append("  * ").append(visit.annotation).append('\n');
+              message.append("  * ").append(visit.annotations).append('\n');
             }
-            message.append("  * ").append(ancestor.annotation);
+            message.append("  * ").append(ancestor.annotations);
             throw new IllegalStateException(message.toString());
           }
         }
       }
       this.parent = parent;
-      this.annotation = annotation;
+      this.annotations = annotations;
     }
 
     Builder justInTimeLookupFactory(JustInTimeLookup.Factory jitLookupFactory) {
@@ -214,7 +222,7 @@ final class Scope {
     }
 
     Scope build() {
-      return new Scope(bindings.build(), jitLookupFactory, annotation, parent);
+      return new Scope(bindings.build(), jitLookupFactory, annotations, parent);
     }
   }
 }

@@ -14,24 +14,24 @@ import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.Reflection.findEnclosedAnnotatedClass;
-import static dagger.reflect.Reflection.findScope;
+import static dagger.reflect.Reflection.findScopes;
 import static dagger.reflect.Reflection.requireAnnotation;
 
 final class ComponentScopeBuilder {
   static ComponentScopeBuilder buildComponent(Class<?> componentClass) {
     Component component = requireAnnotation(componentClass, Component.class);
-    Annotation scopeAnnotation = findScope(componentClass.getDeclaredAnnotations());
+    Set<Annotation> scopeAnnotation = findScopes(componentClass.getDeclaredAnnotations());
     return create(component.modules(), component.dependencies(), scopeAnnotation, null);
   }
 
   static ComponentScopeBuilder buildSubcomponent(Class<?> subcomponentClass, Scope parent) {
     Subcomponent subcomponent = requireAnnotation(subcomponentClass, Subcomponent.class);
-    Annotation scopeAnnotation = findScope(subcomponentClass.getDeclaredAnnotations());
+    Set<Annotation> scopeAnnotation = findScopes(subcomponentClass.getDeclaredAnnotations());
     return create(subcomponent.modules(), new Class<?>[0], scopeAnnotation, parent);
   }
 
   private static ComponentScopeBuilder create(Class<?>[] moduleClasses, Class<?>[] dependencyClasses,
-      @Nullable Annotation scopeAnnotation, @Nullable Scope parent) {
+      Set<Annotation> scopeAnnotations, @Nullable Scope parent) {
     Map<Class<?>, Object> moduleInstances = new LinkedHashMap<>();
     Set<Class<?>> subcomponentClasses = new LinkedHashSet<>();
 
@@ -55,23 +55,23 @@ final class ComponentScopeBuilder {
     }
 
     return new ComponentScopeBuilder(moduleInstances, dependencyInstances, subcomponentClasses,
-        scopeAnnotation, parent);
+        scopeAnnotations, parent);
   }
 
   private final Map<Key, Object> boundInstances = new LinkedHashMap<>();
   private final Map<Class<?>, Object> moduleInstances;
   private final Map<Class<?>, Object> dependencyInstances;
   private final Set<Class<?>> subcomponentClasses;
-  private final @Nullable Annotation scopeAnnotation;
+  private final Set<Annotation> scopeAnnotations;
   private final @Nullable Scope parent;
 
   private ComponentScopeBuilder(Map<Class<?>, Object> moduleInstances,
       Map<Class<?>, Object> dependencyInstances, Set<Class<?>> subcomponentClasses,
-      @Nullable Annotation scopeAnnotation, @Nullable Scope parent) {
+      Set<Annotation> scopeAnnotations, @Nullable Scope parent) {
     this.moduleInstances = moduleInstances;
     this.dependencyInstances = dependencyInstances;
     this.subcomponentClasses = subcomponentClasses;
-    this.scopeAnnotation = scopeAnnotation;
+    this.scopeAnnotations = scopeAnnotations;
     this.parent = parent;
   }
 
@@ -104,7 +104,7 @@ final class ComponentScopeBuilder {
   }
 
   Scope build() {
-    Scope.Builder scopeBuilder = new Scope.Builder(parent, scopeAnnotation)
+    Scope.Builder scopeBuilder = new Scope.Builder(parent, scopeAnnotations)
         .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
 
     for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
