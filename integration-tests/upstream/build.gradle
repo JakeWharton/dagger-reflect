@@ -92,10 +92,18 @@ dependencies {
 
 def ensureDaggerSubmodule = tasks.create('ensureDaggerSubmodule') {
   doFirst {
-    def dagger = file('dagger/.git')
-    if (!dagger.exists()) {
+    if (!file('dagger/.git').exists()) {
       throw new RuntimeException(
           "Missing 'dagger' git submodule clone. Did you run 'git submodule update --init'?")
+    }
+    def describe = 'git describe'.execute(null, file('dagger'))
+    if (describe.waitFor() != 0) {
+      System.err.println(describe.errorStream.text)
+      throw new RuntimeException("Could not run 'git describe' in 'dagger' git submodule clone")
+    }
+    if ("dagger-${versions.dagger}" != describe.inputStream.text.trim()) {
+      throw new RuntimeException(
+          "Wrong tag checked out for 'dagger' git submodule clone. Should be 'dagger-${versions.dagger}'.")
     }
   }
 }

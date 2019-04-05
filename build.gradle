@@ -2,7 +2,7 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 
 buildscript {
   ext.versions = [
-      'dagger': 'HEAD-SNAPSHOT', // TODO update to 2.22 or newer once released
+      'dagger': '2.22.1',
       'incap' : '0.2'
   ]
 
