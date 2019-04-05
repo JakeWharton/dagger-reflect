@@ -58,6 +58,45 @@ public final class DaggerReflectCompilerTest {
         .generatesSources(expected);
   }
 
+  @Test public void nested() {
+    JavaFileObject component = JavaFileObjects.forSourceString("example.TestComponent", ""
+        + "package example;\n"
+        + "\n"
+        + "import dagger.Component;\n"
+        + "\n"
+        + "interface One {\n"
+        + "  interface Two {\n"
+        + "    @Component\n"
+        + "    interface TestComponent {\n"
+        + "    }\n"
+        + "  }\n"
+        + "}\n"
+    );
+
+    JavaFileObject expected = JavaFileObjects.forSourceString("example.DaggerOne_Two_TestComponent", ""
+        + "package example;\n"
+        + "\n"
+        + "import dagger.reflect.DaggerReflect;\n"
+        + "import java.lang.AssertionError;\n"
+        + "\n"
+        + "public final class DaggerOne_Two_TestComponent {\n"
+        + "  private DaggerOne_Two_TestComponent() {\n"
+        + "    throw new AssertionError();\n"
+        + "  }\n"
+        + "  public static One.Two.TestComponent create() {\n"
+        + "    return DaggerReflect.create(One.Two.TestComponent.class);\n"
+        + "  }\n"
+        + "}\n"
+    );
+
+    assertAbout(javaSource())
+        .that(component)
+        .processedWith(new DaggerReflectCompiler())
+        .compilesWithoutError()
+        .and()
+        .generatesSources(expected);
+  }
+
   @Test public void builder() {
     JavaFileObject component = JavaFileObjects.forSourceString("example.TestComponent", ""
         + "package example;\n"

@@ -110,7 +110,8 @@ public final class DaggerReflectCompiler extends AbstractProcessor {
 
   private static TypeSpec createComponent(ClassName component, @Nullable ClassName builder,
       @Nullable ClassName factory) {
-    TypeSpec.Builder type = TypeSpec.classBuilder("Dagger" + component.simpleName())
+    String componentName = "Dagger" + String.join("_", component.simpleNames());
+    TypeSpec.Builder type = TypeSpec.classBuilder(componentName)
         .addModifiers(PUBLIC, FINAL)
         .addMethod(MethodSpec.constructorBuilder()
             .addModifiers(PRIVATE)
