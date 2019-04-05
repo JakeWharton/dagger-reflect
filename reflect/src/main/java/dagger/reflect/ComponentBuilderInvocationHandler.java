@@ -101,7 +101,19 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
       }
       Object argument = args[0];
 
-      if (method.getAnnotation(BindsInstance.class) != null) {
+      boolean isMethodBindsInstance = method.getAnnotation(BindsInstance.class) != null;
+      boolean isParameterBindsInstance =
+          Reflection.hasAnnotation(parameterAnnotations[0], BindsInstance.class);
+      if (isMethodBindsInstance || isParameterBindsInstance) {
+        if (isMethodBindsInstance && isParameterBindsInstance) {
+          throw new IllegalStateException("@Component.Builder setter method "
+              + method.getDeclaringClass().getName()
+              + '.'
+              + method.getName()
+              + " may not have @BindsInstance on both the method and its parameter; "
+              + "choose one or the other");
+        }
+
         Key key = Key.of(findQualifier(parameterAnnotations[0]), parameterTypes[0]);
         // TODO most nullable annotations don't have runtime retention. so maybe just always allow?
         //if (argument == null && !hasNullable(parameterAnnotations[0])) {

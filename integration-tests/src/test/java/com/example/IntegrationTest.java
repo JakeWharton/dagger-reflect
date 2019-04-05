@@ -202,6 +202,47 @@ public final class IntegrationTest {
     assertThat(component.string()).isNull();
   }
 
+  @Test public void builderBindsInstanceOnParameter() {
+    BuilderBindsInstanceOnParameter component =
+        backend.builder(BuilderBindsInstanceOnParameter.Builder.class)
+            .string("foo")
+            .build();
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test public void builderBindsInstanceOnParameterCalledTwice() {
+    BuilderBindsInstanceOnParameter component =
+        backend.builder(BuilderBindsInstanceOnParameter.Builder.class)
+            .string("foo")
+            .string("bar")
+            .build();
+    assertThat(component.string()).isEqualTo("bar");
+  }
+
+  @Test public void builderBindsInstanceOnParameterNull() {
+    BuilderBindsInstanceOnParameterNull component =
+        backend.builder(BuilderBindsInstanceOnParameterNull.Builder.class)
+            .string(null)
+            .build();
+    assertThat(component.string()).isNull();
+  }
+
+  @Test public void builderBindsInstanceOnParameterAndMethod() {
+    ignoreCodegenBackend();
+
+    BuilderBindsInstanceOnParameterAndMethod.Builder builder =
+        backend.builder(BuilderBindsInstanceOnParameterAndMethod.Builder.class);
+    try {
+      builder.string("hey");
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat()
+          .isEqualTo("@Component.Builder setter method "
+              + "com.example.BuilderBindsInstanceOnParameterAndMethod$Builder.string may not have "
+              + "@BindsInstance on both the method and its parameter; choose one or the other");
+    }
+  }
+
   @Test public void builderImplicitModules() {
     BuilderImplicitModules component = backend.builder(BuilderImplicitModules.Builder.class)
         .value(3L)
