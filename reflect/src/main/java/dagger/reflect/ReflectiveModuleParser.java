@@ -80,7 +80,7 @@ final class ReflectiveModuleParser {
       Annotation[] annotations) {
     Annotation scope = findScope(annotations);
     if (scope != null) {
-      if (!scope.equals(scopeBuilder.annotation)) {
+      if (!scopeBuilder.annotations.contains(scope)) {
         throw new IllegalStateException(); // TODO wrong scope
       }
       binding = binding.asScoped();

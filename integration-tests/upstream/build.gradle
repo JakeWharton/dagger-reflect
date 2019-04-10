@@ -49,9 +49,6 @@ test.filter {
   excludeTest 'dagger.functional.subcomponent.repeat.RepeatedModuleTest', null
   excludeTest 'dagger.functional.BasicTest', null
 
-  // TODO reflect bug! Components can have multiple scope annotations.
-  excludeTest 'dagger.functional.scope.ScopeTest', null
-
   // TODO reflect bug! Generics don't work well.
   excludeTest 'dagger.functional.GenericTest', null
 

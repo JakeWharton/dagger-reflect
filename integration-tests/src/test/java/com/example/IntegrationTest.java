@@ -517,6 +517,16 @@ public final class IntegrationTest {
     assertThat(value1).isSameAs(value2);
   }
 
+  @Test public void scopedWithMultipleAnnotations() {
+    ScopedWithMultipleAnnotations component = backend.create(ScopedWithMultipleAnnotations.class);
+    Object value1 = component.value();
+    Object value2 = component.value();
+    assertThat(value1).isSameAs(value2);
+    Runnable runnable1 = component.runnable();
+    Runnable runnable2 = component.runnable();
+    assertThat(runnable1).isSameAs(runnable2);
+  }
+
   @Test public void scopedWrong() {
     ignoreCodegenBackend();
 
@@ -1010,6 +1020,18 @@ public final class IntegrationTest {
     }
   }
 
+  @Test public void componentScopeCycleWithMultipleAnnotations() {
+    ignoreCodegenBackend();
+    ignoreReflectionBackend(); // TODO
+
+    try {
+      backend.create(ComponentScopeCycleWithMultipleAnnotations.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e).hasMessageThat().isEqualTo("TODO");
+    }
+  }
+
   @Test public void componentAndSubcomponentScopeCycle() {
     ignoreCodegenBackend();
     ignoreReflectionBackend(); // TODO
@@ -1046,9 +1068,9 @@ public final class IntegrationTest {
       fail();
     } catch (IllegalStateException e) {
       assertThat(e).hasMessageThat().isEqualTo("Detected scope annotation cycle:\n"
-          + "  * @javax.inject.Singleton()\n"
-          + "  * @com.example.SubcomponentScopeCycle$Request()\n"
-          + "  * @javax.inject.Singleton()");
+          + "  * [@javax.inject.Singleton()]\n"
+          + "  * [@com.example.SubcomponentScopeCycle$Request()]\n"
+          + "  * [@javax.inject.Singleton()]");
     }
   }
 
@@ -1062,7 +1084,8 @@ public final class IntegrationTest {
       fail();
     } catch (IllegalStateException e) {
       assertThat(e).hasMessageThat()
-          .isEqualTo("Scope @javax.inject.Singleton() may not depend on unscoped");
+          .isEqualTo(
+              "Scope with annotations [@javax.inject.Singleton()] may not depend on unscoped");
     }
   }
 
