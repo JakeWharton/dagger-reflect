@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
-import static dagger.reflect.DaggerReflect.notImplemented;
+import static dagger.reflect.Reflection.findEnclosedAnnotatedClass;
 import static dagger.reflect.Reflection.findScope;
 import static dagger.reflect.Reflection.requireAnnotation;
 
@@ -130,7 +130,29 @@ final class ComponentScopeBuilder {
     }
 
     for (Class<?> subcomponentClass : subcomponentClasses) {
-      throw notImplemented("@Module(subcomponents=…");
+      Class<?> builderClass =
+          findEnclosedAnnotatedClass(subcomponentClass, Subcomponent.Builder.class);
+      Class<?> factoryClass =
+          findEnclosedAnnotatedClass(subcomponentClass, Subcomponent.Factory.class);
+
+      if (builderClass != null && factoryClass != null) {
+        throw new IllegalStateException(
+            "@Subcomponent has more than one @Subcomponent.Builder or @Subcomponent.Factory: ["
+                + builderClass.getCanonicalName()
+                + ", "
+                + factoryClass.getCanonicalName()
+                + "]");
+      } else if (builderClass != null) {
+        scopeBuilder.addBinding(Key.of(null, builderClass),
+            UnlinkedSubcomponentBinding.forBuilder(builderClass));
+      } else if (factoryClass != null) {
+        scopeBuilder.addBinding(Key.of(null, factoryClass),
+            UnlinkedSubcomponentBinding.forFactory(factoryClass));
+      } else {
+        throw new IllegalStateException(subcomponentClass.getCanonicalName()
+            + " doesn't have a @Subcomponent.Builder or @Subcomponent.Factory,"
+            + " which is required when used with @Module.subcomponents");
+      }
     }
 
     return scopeBuilder.build();

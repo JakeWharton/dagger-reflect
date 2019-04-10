@@ -11,11 +11,11 @@ final class UnlinkedMapBinding extends UnlinkedBinding {
     this.entryBindings = entryBindings;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker) {
+  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
     Map<Object, LinkedBinding<Object>> linkedBindings = new LinkedHashMap<>(entryBindings.size());
     for (Map.Entry<Object, Binding> entryBinding : entryBindings.entrySet()) {
       LinkedBinding<Object> linkedBinding =
-          (LinkedBinding<Object>) entryBinding.getValue().link(linker);
+          (LinkedBinding<Object>) entryBinding.getValue().link(linker, scope);
       linkedBindings.put(entryBinding.getKey(), linkedBinding);
     }
     return new LinkedMapBinding<>(linkedBindings);

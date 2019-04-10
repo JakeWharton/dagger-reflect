@@ -48,7 +48,7 @@ test.filter {
   // TODO reflect bug! Generics don't work well.
   excludeTest 'dagger.functional.GenericTest', null
 
-  // TODO reflect bug! Module subcomponents do not work.
+  // TODO reflect bug! Something with @IntoSet, set bindings, and subcomponents.
   excludeTest 'dagger.functional.subcomponent.pruning.SubcomponentOnlyRequestedBySiblingTest', 'subcomponentAddedInParent_onlyUsedInSibling'
   excludeTest 'dagger.functional.subcomponent.ModuleWithSubcomponentsTest', null
 
