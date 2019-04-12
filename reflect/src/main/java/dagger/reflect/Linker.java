@@ -27,10 +27,7 @@ final class Linker {
   }
 
   @Nullable LinkedBinding<?> find(Key key) {
-    Binding binding = scope.bindings.get(key);
-    if (binding instanceof UnlinkedBinding) {
-      return performLinking(key, (UnlinkedBinding) binding);
-    }
+    Binding binding = scope.findBinding(key);
     return (LinkedBinding<?>) binding;
   }
 

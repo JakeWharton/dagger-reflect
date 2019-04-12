@@ -3,6 +3,7 @@ package dagger.reflect;
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;
@@ -28,15 +29,6 @@ final class Scope {
       return binding;
     }
 
-    JustInTimeLookup jitLookup = jitLookupFactory.create(key);
-    if (jitLookup != null) {
-      LinkedBinding<?> jitBinding = putJitBinding(key, jitLookup);
-      if (jitBinding == null) {
-        throw new IllegalStateException(); // TODO nice error message with scope chain
-      }
-      return jitBinding;
-    }
-
     throw new IllegalArgumentException("No provider available for " + key);
   }
 
@@ -44,12 +36,21 @@ final class Scope {
    * Look for a linked binding for {@code key} in this scope or anywhere in the parent scope chain.
    * If an unlinked binding is found for the key, perform linking before returning it.
    */
-  private @Nullable LinkedBinding<?> findBinding(Key key) {
+  @Nullable LinkedBinding<?> findBinding(Key key) {
     Binding binding = bindings.get(key);
     if (binding != null) {
       return binding instanceof LinkedBinding<?>
           ? (LinkedBinding<?>) binding
           :  Linker.link(this, key, (UnlinkedBinding) binding);
+    }
+
+    JustInTimeLookup jitLookup = jitLookupFactory.create(key);
+    if (jitLookup != null) {
+      LinkedBinding<?> jitBinding = putJitBinding(key, jitLookup);
+      if (jitBinding == null) {
+        throw new IllegalStateException(); // TODO nice error message with scope chain
+      }
+      return jitBinding;
     }
 
     return parent != null

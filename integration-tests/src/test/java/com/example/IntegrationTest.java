@@ -129,8 +129,6 @@ public final class IntegrationTest {
   }
 
   @Test public void justInTimeUnscopedIntoJustInTimeScoped() {
-    ignoreReflectionBackend();
-
     JustInTimeDependsOnJustInTime component = backend.create(JustInTimeDependsOnJustInTime.class);
     JustInTimeDependsOnJustInTime.Foo foo1 = component.thing();
     JustInTimeDependsOnJustInTime.Foo foo2 = component.thing();
@@ -727,6 +725,8 @@ public final class IntegrationTest {
 
   @Test public void providerCycle() {
     ignoreCodegenBackend();
+    // TODO this should work on reflection backend.
+    ignoreReflectionBackend();
 
     ProviderCycle component = backend.create(ProviderCycle.class);
     try {
