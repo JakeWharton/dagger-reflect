@@ -9,6 +9,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import javax.inject.Provider;
 
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.hasAnnotation;
@@ -29,10 +30,9 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
           + " must be public in order to be reflectively created");
     }
 
-    ComponentScopeBuilder scopeBuilder =
-        ComponentScopeBuilder.buildComponent(componentClass);
     return newProxy(factoryClass,
-        new ComponentFactoryInvocationHandler(componentClass, scopeBuilder));
+        new ComponentFactoryInvocationHandler(componentClass,
+            () -> ComponentScopeBuilder.buildComponent(componentClass)));
   }
 
   static <F> F forSubcomponentFactory(Class<F> factoryClass, Scope scope) {
@@ -47,19 +47,18 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
           + " must be public in order to be reflectively created");
     }
 
-    ComponentScopeBuilder scopeBuilder =
-        ComponentScopeBuilder.buildSubcomponent(componentClass, scope);
     return newProxy(factoryClass,
-        new ComponentFactoryInvocationHandler(componentClass, scopeBuilder));
+        new ComponentFactoryInvocationHandler(componentClass,
+            () -> ComponentScopeBuilder.buildSubcomponent(componentClass, scope)));
   }
 
   private final Class<?> componentClass;
-  private final ComponentScopeBuilder scopeBuilder;
+  private final Provider<ComponentScopeBuilder> scopeBuilderProvider;
 
   private ComponentFactoryInvocationHandler(Class<?> componentClass,
-      ComponentScopeBuilder scopeBuilder) {
+      Provider<ComponentScopeBuilder> scopeBuilderProvider) {
     this.componentClass = componentClass;
-    this.scopeBuilder = scopeBuilder;
+    this.scopeBuilderProvider = scopeBuilderProvider;
   }
 
   @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
@@ -72,6 +71,12 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
       throw new IllegalStateException(); // TODO must be assignable
     }
 
+    ComponentScopeBuilder scopeBuilder = scopeBuilderProvider.get();
+    parseFactoryMethod(method, args, scopeBuilder);
+    return ComponentInvocationHandler.create(componentClass, scopeBuilder.build());
+  }
+
+  static void parseFactoryMethod(Method method, Object[] args, ComponentScopeBuilder scopeBuilder) {
     Type[] parameterTypes = method.getGenericParameterTypes();
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
     for (int i = 0; i < parameterTypes.length; i++) {
@@ -108,7 +113,5 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
         throw new IllegalStateException(parameterType.toString()); // TODO unknown argument type
       }
     }
-
-    return ComponentInvocationHandler.create(componentClass, scopeBuilder.build());
   }
 }

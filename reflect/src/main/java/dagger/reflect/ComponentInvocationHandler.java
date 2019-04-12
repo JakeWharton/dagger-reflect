@@ -24,17 +24,12 @@ import java.lang.reflect.Type;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
-import static dagger.reflect.Reflection.newProxy;
 import static dagger.reflect.Reflection.findQualifier;
+import static dagger.reflect.Reflection.newProxy;
 
 final class ComponentInvocationHandler implements InvocationHandler {
   static <C> C forComponent(Class<C> cls) {
     Scope scope = ComponentScopeBuilder.buildComponent(cls).build();
-    return create(cls, scope);
-  }
-
-  static <C> C forSubcomponent(Class<C> cls, Scope parent) {
-    Scope scope = ComponentScopeBuilder.buildSubcomponent(cls, parent).build();
     return create(cls, scope);
   }
 
@@ -58,7 +53,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
 
     MethodInvocationHandler handler = handlers.get(method);
     if (handler == null) {
-      handler = createMethodInvocationHandler(method, args, scope);
+      handler = createMethodInvocationHandler(method, scope);
       MethodInvocationHandler replaced = handlers.putIfAbsent(method, handler);
       if (replaced != null) {
         handler = replaced;
@@ -68,11 +63,36 @@ final class ComponentInvocationHandler implements InvocationHandler {
   }
 
   private static ComponentInvocationHandler.MethodInvocationHandler createMethodInvocationHandler(
-      Method method, Object[] args, Scope scope) {
+      Method method, Scope scope) {
     Type returnType = method.getGenericReturnType();
     Class<?>[] parameterTypes = method.getParameterTypes();
 
-    if (args != null && args.length == 1) {
+    if (returnType instanceof Class<?>) {
+      Class<?> returnClass = (Class<?>) returnType;
+      if (returnClass.getAnnotation(Subcomponent.class) != null) {
+        return new SubcomponentMethodInvocationHandler(method, returnClass, scope);
+      }
+      if (returnClass.getAnnotation(Subcomponent.Builder.class) != null) {
+        if (parameterTypes.length != 0) {
+          throw new IllegalStateException(method.toString()); // TODO
+        }
+        return new SubcomponentBuilderMethodInvocationHandler(returnClass, scope);
+      }
+      if (returnClass.getAnnotation(Subcomponent.Factory.class) != null) {
+        if (parameterTypes.length != 0) {
+          throw new IllegalStateException(method.toString()); // TODO
+        }
+        return new SubcomponentFactoryMethodInvocationHandler(returnClass, scope);
+      }
+    }
+
+    if (parameterTypes.length == 0) {
+      Key key = Key.of(findQualifier(method.getDeclaredAnnotations()), returnType);
+      LinkedBinding<?> binding = scope.getBinding(key);
+      return new ProvisionMethodInvocationHandler(binding);
+    }
+
+    if (parameterTypes.length == 1) {
       boolean returnInstance;
       if (returnType == void.class) {
         returnInstance = false;
@@ -91,25 +111,6 @@ final class ComponentInvocationHandler implements InvocationHandler {
       MembersInjector<Object> injector =
           (MembersInjector<Object>) ReflectiveMembersInjector.create(parameterTypes[0], scope);
       return new MembersInjectorMethodInvocationHandler(injector, returnInstance);
-    }
-
-    if (args == null || args.length == 0) {
-      if (returnType instanceof Class<?>) {
-        Class<?> returnClass = (Class<?>) returnType;
-        if (returnClass.getAnnotation(Subcomponent.class) != null) {
-          return new SubcomponentMethodInvocationHandler(returnClass, scope);
-        }
-        if (returnClass.getAnnotation(Subcomponent.Builder.class) != null) {
-          return new SubcomponentBuilderMethodInvocationHandler(returnClass, scope);
-        }
-        if (returnClass.getAnnotation(Subcomponent.Factory.class) != null) {
-          return new SubcomponentFactoryMethodInvocationHandler(returnClass, scope);
-        }
-      }
-
-      Key key = Key.of(findQualifier(method.getDeclaredAnnotations()), returnType);
-      LinkedBinding<?> binding = scope.getBinding(key);
-      return new ProvisionMethodInvocationHandler(binding);
     }
 
     throw new IllegalStateException(method.toString()); // TODO unsupported method shape
@@ -152,16 +153,20 @@ final class ComponentInvocationHandler implements InvocationHandler {
 
   private static final class SubcomponentMethodInvocationHandler
       implements MethodInvocationHandler {
+    private final Method method;
     private final Class<?> cls;
     private final Scope scope;
 
-    SubcomponentMethodInvocationHandler(Class<?> cls, Scope scope) {
+    SubcomponentMethodInvocationHandler(Method method, Class<?> cls, Scope scope) {
+      this.method = method;
       this.cls = cls;
       this.scope = scope;
     }
 
     @Override public Object invoke(Object[] args) {
-      return ComponentInvocationHandler.forSubcomponent(cls, scope);
+      ComponentScopeBuilder scopeBuilder = ComponentScopeBuilder.buildSubcomponent(cls, scope);
+      ComponentFactoryInvocationHandler.parseFactoryMethod(method, args, scopeBuilder);
+      return create(cls, scopeBuilder.build());
     }
   }
 
