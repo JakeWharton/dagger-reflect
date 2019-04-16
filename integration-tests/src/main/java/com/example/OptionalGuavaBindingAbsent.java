@@ -5,6 +5,7 @@ import dagger.BindsOptionalOf;
 import dagger.Component;
 import dagger.Module;
 
+@SuppressWarnings("Guava") // Explicitly testing Guava support.
 @Component(modules = OptionalGuavaBindingAbsent.Module1.class)
 public interface OptionalGuavaBindingAbsent {
   Optional<String> string();

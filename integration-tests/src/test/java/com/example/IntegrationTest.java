@@ -92,6 +92,12 @@ public final class IntegrationTest {
     assertThat(component.string()).isEqualTo(Optional.empty());
   }
 
+  @Test public void optionalBindingPrimitive() {
+    OptionalBindingPrimitive component = backend.create(OptionalBindingPrimitive.class);
+    assertThat(component.five()).isEqualTo(Optional.of(5L));
+  }
+
+  @SuppressWarnings("Guava") // Explicitly testing Guava support.
   @Test public void optionalGuavaBinding() {
     OptionalGuavaBinding component = backend.create(OptionalGuavaBinding.class);
     assertThat(component.string()).isEqualTo(com.google.common.base.Optional.of("foo"));
@@ -100,6 +106,12 @@ public final class IntegrationTest {
   @Test public void optionalGuavaBindingAbsent() {
     OptionalGuavaBindingAbsent component = backend.create(OptionalGuavaBindingAbsent.class);
     assertThat(component.string()).isEqualTo(com.google.common.base.Optional.absent());
+  }
+
+  @SuppressWarnings("Guava") // Explicitly testing Guava support.
+  @Test public void optionalGuavaBindingPrimitive() {
+    OptionalGuavaBindingPrimitive component = backend.create(OptionalGuavaBindingPrimitive.class);
+    assertThat(component.five()).isEqualTo(com.google.common.base.Optional.of(5L));
   }
 
   @Test public void justInTimeConstructor() {
@@ -570,6 +582,17 @@ public final class IntegrationTest {
     assertThat(component.values()).containsExactly("one", "two");
   }
 
+  @Test public void multibindingSetPrimitive() {
+    MultibindingSetPrimitive component = backend.create(MultibindingSetPrimitive.class);
+    assertThat(component.values()).containsExactly(1L, 2L);
+  }
+
+  @Test public void multibindingSetElementsPrimitive() {
+    MultibindingSetElementsPrimitive component =
+        backend.create(MultibindingSetElementsPrimitive.class);
+    assertThat(component.values()).containsExactly(1L, 2L);
+  }
+
   @Test public void multibindingProviderSet() {
     ignoreReflectionBackend();
 
@@ -587,6 +610,16 @@ public final class IntegrationTest {
   @Test public void multibindingMap() {
     MultibindingMap component = backend.create(MultibindingMap.class);
     assertThat(component.values()).containsExactly("1", "one", "2", "two");
+  }
+
+  @Test public void multibindingMapPrimitiveKey() {
+    MultibindingMapPrimitiveKey component = backend.create(MultibindingMapPrimitiveKey.class);
+    assertThat(component.values()).containsExactly(1L, "one", 2L, "two");
+  }
+
+  @Test public void multibindingMapPrimitiveValue() {
+    MultibindingMapPrimitiveValue component = backend.create(MultibindingMapPrimitiveValue.class);
+    assertThat(component.values()).containsExactly("1", 1L, "2", 2L);
   }
 
   @Test public void multibindingMapNoUnwrap() {

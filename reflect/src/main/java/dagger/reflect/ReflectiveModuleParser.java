@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import org.jetbrains.annotations.Nullable;
 
+import static dagger.reflect.Reflection.boxIfNecessary;
 import static dagger.reflect.Reflection.findAnnotation;
 import static dagger.reflect.Reflection.findMapKey;
 import static dagger.reflect.Reflection.findQualifier;
@@ -42,8 +43,8 @@ final class ReflectiveModuleParser {
             addBinding(scopeBuilder, key, binding, annotations);
           } else if (method.getAnnotation(BindsOptionalOf.class) != null) {
             try {
-              Key key =
-                  Key.of(qualifier, new ParameterizedTypeImpl(null, Optional.class, returnType));
+              Key key = Key.of(qualifier,
+                  new ParameterizedTypeImpl(null, Optional.class, boxIfNecessary(returnType)));
               Binding binding = new UnlinkedJavaOptionalBinding(method);
               addBinding(scopeBuilder, key, binding, annotations);
             } catch (NoClassDefFoundError ignored) {
@@ -51,7 +52,7 @@ final class ReflectiveModuleParser {
             try {
               Key key = Key.of(qualifier,
                   new ParameterizedTypeImpl(null, com.google.common.base.Optional.class,
-                      returnType));
+                      boxIfNecessary(returnType)));
               Binding binding = new UnlinkedGuavaOptionalBinding(method);
               addBinding(scopeBuilder, key, binding, annotations);
             } catch (NoClassDefFoundError ignored) {
@@ -126,7 +127,7 @@ final class ReflectiveModuleParser {
     Class<? extends Annotation> entryKeyAnnotationType = entryKeyAnnotation.annotationType();
     MapKey mapKeyAnnotation = requireAnnotation(entryKeyAnnotationType, MapKey.class);
 
-    Class<?> entryKeyType;
+    Type entryKeyType;
     Object entryKey;
     if (mapKeyAnnotation.unwrapValue()) {
       // Find the single declared method on the map key and gets its type and value.
@@ -136,7 +137,7 @@ final class ReflectiveModuleParser {
       }
       Method method = methods[0];
 
-      entryKeyType = method.getReturnType();
+      entryKeyType = boxIfNecessary(method.getReturnType());
       entryKey = Reflection.tryInvoke(entryKeyAnnotation, method);
       if (entryKey == null) {
         throw new AssertionError(); // Not allowed by the Java language specification.
