@@ -7,14 +7,10 @@ import java.util.Map;
 import org.jetbrains.annotations.Nullable;
 
 final class Linker {
-  static LinkedBinding<?> link(Scope scope, Key key, UnlinkedBinding unlinkedBinding) {
-    return new Linker(scope).performLinking(key, unlinkedBinding);
-  }
-
   private final Scope scope;
   private final Map<Key, Binding> chain = new LinkedHashMap<>();
 
-  private Linker(Scope scope) {
+  Linker(Scope scope) {
     this.scope = scope;
   }
 
@@ -27,14 +23,10 @@ final class Linker {
   }
 
   @Nullable LinkedBinding<?> find(Key key) {
-    Binding binding = scope.bindings.get(key);
-    if (binding instanceof UnlinkedBinding) {
-      return performLinking(key, (UnlinkedBinding) binding);
-    }
-    return (LinkedBinding<?>) binding;
+    return scope.findBinding(key, this);
   }
 
-  private LinkedBinding<?> performLinking(Key key, UnlinkedBinding unlinkedBinding) {
+  LinkedBinding<?> link(Key key, UnlinkedBinding unlinkedBinding) {
     if (chain.containsKey(key)) {
       throw failure(key, "Dependency cycle", "forms a cycle");
     }
@@ -42,7 +34,7 @@ final class Linker {
     LinkedBinding<?> linkedBinding = unlinkedBinding.link(this, scope);
     chain.remove(key);
 
-    return scope.bindings.replace(key, unlinkedBinding, linkedBinding);
+    return linkedBinding;
   }
 
   private RuntimeException failure(Key key, String reason, String cause) {

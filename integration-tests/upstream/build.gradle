@@ -30,12 +30,6 @@ test.filter {
   excludeTest 'dagger.functional.binds.BindsTest', null
   excludeTest 'dagger.functional.ReusableTest', null
 
-  // TODO reflect bug! JIT binding depending on JIT binding is inexplicably not working.
-  excludeTest 'dagger.functional.cycle.CycleTest', null
-  excludeTest 'dagger.functional.cycle.LongCycleTest', 'longCycle'
-  excludeTest 'dagger.functional.DependsOnGeneratedCodeTest', 'testComponentDependsOnGeneratedCode'
-  excludeTest 'dagger.functional.NestedTest', 'nestedFoo'
-
   // TODO reflect bug! Need something like ByteBuddy for proxying classes at runtime.
   excludeTest 'dagger.functional.builder.BuilderBindsInstanceParameterTest', null
   excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', null
@@ -59,6 +53,7 @@ test.filter {
   // TODO reflect bug! Injecting Provides<T> does not work.
   excludeTest 'dagger.functional.cycle.CycleTest', 'cycleWithDeferredBinds'
   excludeTest 'dagger.functional.cycle.CycleTest', 'providerMapIndirectionCycle'
+  excludeTest 'dagger.functional.cycle.LongCycleTest', 'longCycle'
   excludeTest 'dagger.functional.guava.OptionalBindingComponentsAbsentTest', null
   excludeTest 'dagger.functional.guava.OptionalBindingComponentsPresentTest', null
   excludeTest 'dagger.functional.jdk8.OptionalBindingComponentsEmptyTest', null
@@ -72,8 +67,11 @@ test.filter {
   excludeTest 'dagger.functional.subcomponent.SubcomponentFactoryMethodTest', null
 
   // TODO reflect bug! Members injection on JIT binding does not work.
+  excludeTest 'dagger.functional.cycle.CycleTest', 'lazyIndirectionCycle'
   excludeTest 'dagger.functional.cycle.CycleTest', 'lazyIndirectionSelfCycle'
+  excludeTest 'dagger.functional.cycle.CycleTest', 'providerIndirectionCycle'
   excludeTest 'dagger.functional.cycle.CycleTest', 'providerIndirectionSelfCycle'
+  excludeTest 'dagger.functional.cycle.CycleTest', 'subcomponentIndirectionCycle'
   excludeTest 'dagger.functional.NestedTest', 'nestedBar'
 
   // TODO reflect bug! Subcomponent multibindings propagation does not work.

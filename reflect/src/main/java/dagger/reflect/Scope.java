@@ -3,18 +3,22 @@ package dagger.reflect;
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
 final class Scope {
-  final BindingMap bindings;
+  private final ConcurrentHashMap<Key, Binding> bindings;
   private final JustInTimeLookup.Factory jitLookupFactory;
   /** The annotations denoting {@linkplain javax.inject.Scope scoped} bindings for this instance. */
   private final Set<Annotation> annotations;
   private final @Nullable Scope parent;
 
-  private Scope(BindingMap bindings, JustInTimeLookup.Factory jitLookupFactory,
+  private Scope(ConcurrentHashMap<Key, Binding> bindings, JustInTimeLookup.Factory jitLookupFactory,
       Set<Annotation> annotations, @Nullable Scope parent) {
     this.bindings = bindings;
     this.jitLookupFactory = jitLookupFactory;
@@ -23,37 +27,54 @@ final class Scope {
   }
 
   LinkedBinding<?> getBinding(Key key) {
-    LinkedBinding<?> binding = findBinding(key);
+    LinkedBinding<?> binding = findBinding(key, null);
+    if (binding != null) {
+      return binding;
+    }
+    throw new IllegalArgumentException("No provider available for " + key);
+  }
+
+  /**
+   * Look for a linked binding for {@code key} in this scope or anywhere in the parent scope chain.
+   * If an unlinked binding is found for the key, perform linking before returning it. Bindings may
+   * be just-in-time created to fulfil this request.
+   *
+   * @param linker An optional {@link Linker} to use. One will be created if null and needed.
+   */
+  @Nullable LinkedBinding<?> findBinding(Key key, @Nullable Linker linker) {
+    LinkedBinding<?> binding = findExistingBinding(key, linker);
     if (binding != null) {
       return binding;
     }
 
     JustInTimeLookup jitLookup = jitLookupFactory.create(key);
     if (jitLookup != null) {
-      LinkedBinding<?> jitBinding = putJitBinding(key, jitLookup);
+      LinkedBinding<?> jitBinding = putJitBinding(key, linker, jitLookup);
       if (jitBinding == null) {
         throw new IllegalStateException(); // TODO nice error message with scope chain
       }
       return jitBinding;
     }
 
-    throw new IllegalArgumentException("No provider available for " + key);
+    return null;
   }
 
   /**
-   * Look for a linked binding for {@code key} in this scope or anywhere in the parent scope chain.
-   * If an unlinked binding is found for the key, perform linking before returning it.
+   * Look for an existing linked binding for {@code key} in this scope or anywhere in the parent
+   * scope chain. If an unlinked binding is found for the key, perform linking before returning it.
+   *
+   * @param linker An optional {@link Linker} to use. One will be created if null and needed.
    */
-  private @Nullable LinkedBinding<?> findBinding(Key key) {
+  private @Nullable LinkedBinding<?> findExistingBinding(Key key, @Nullable Linker linker) {
     Binding binding = bindings.get(key);
     if (binding != null) {
       return binding instanceof LinkedBinding<?>
           ? (LinkedBinding<?>) binding
-          :  Linker.link(this, key, (UnlinkedBinding) binding);
+          : link(key, linker, (UnlinkedBinding) binding);
     }
 
     return parent != null
-        ? parent.findBinding(key)
+        ? parent.findExistingBinding(key, linker)
         : null;
   }
 
@@ -65,30 +86,52 @@ final class Scope {
    * Otherwise, the parent scope (if any) will be recursively checked. If no matching scope
    * annotation is found by traversing the parents null will be returned.
    */
-  private @Nullable LinkedBinding<?> putJitBinding(Key key, JustInTimeLookup lookup) {
+  private @Nullable LinkedBinding<?> putJitBinding(Key key, @Nullable Linker linker,
+      JustInTimeLookup lookup) {
     Binding jitBinding = lookup.binding;
 
     Annotation scope = lookup.scope;
     if (scope != null) {
       if (!annotations.contains(scope)) {
         return parent != null
-            ? parent.putJitBinding(key, lookup)
+            ? parent.putJitBinding(key, linker, lookup)
             : null;
       }
 
       jitBinding = jitBinding.asScoped();
     }
 
-    Binding binding = bindings.putIfAbsent(key, jitBinding);
+    Binding replaced = bindings.putIfAbsent(key, jitBinding);
+    Binding binding = replaced != null
+        ? replaced // You raced another thread and lost.
+        : jitBinding;
+
     return binding instanceof LinkedBinding<?>
         ? (LinkedBinding<?>) binding
-        : Linker.link(this, key, (UnlinkedBinding) binding);
+        : link(key, linker, (UnlinkedBinding) binding);
+  }
+
+  private LinkedBinding<?> link(Key key, @Nullable Linker linker, UnlinkedBinding binding) {
+    if (linker == null) {
+      linker = new Linker(this);
+    }
+    LinkedBinding<?> linkedBinding = linker.link(key, binding);
+
+    if (!bindings.replace(key, binding, linkedBinding)) {
+      // If replace() returned false we raced another thread and lost. Return the winner.
+      LinkedBinding<?> race = (LinkedBinding<?>) bindings.get(key);
+      if (race == null) throw new AssertionError();
+      return race;
+    }
+    return linkedBinding;
   }
 
   static final class Builder {
     private final @Nullable Scope parent;
     final Set<Annotation> annotations;
-    private final BindingMap.Builder bindings = new BindingMap.Builder();
+    private final Map<Key, Binding> keyToBinding = new LinkedHashMap<>();
+    private final Map<Key, SetBindings> keyToSetBindings = new LinkedHashMap<>();
+    private final Map<Key, Map<Object, Binding>> keyToMapBindings = new LinkedHashMap<>();
     private JustInTimeLookup.Factory jitLookupFactory = JustInTimeLookup.Factory.NONE;
 
     Builder(@Nullable Scope parent, Set<Annotation> annotations) {
@@ -135,7 +178,12 @@ final class Scope {
       if (key == null) throw new NullPointerException("key == null");
       if (binding == null) throw new NullPointerException("binding == null");
 
-      bindings.add(key, binding);
+      Binding replaced = keyToBinding.put(key, binding);
+      if (replaced != null) {
+        throw new IllegalStateException(
+            "Duplicate binding for " + key + ": " + replaced + " and " + binding);
+      }
+
       return this;
     }
 
@@ -155,7 +203,14 @@ final class Scope {
         throw new IllegalArgumentException("key.type() must be Set");
       }
 
-      bindings.addIntoSet(key, elementBinding);
+      SetBindings setBindings = keyToSetBindings.get(key);
+      //noinspection Java8MapApi Supporting old Android API levels.
+      if (setBindings == null) {
+        setBindings = new SetBindings();
+        keyToSetBindings.put(key, setBindings);
+      }
+      setBindings.elementBindings.add(elementBinding);
+
       return this;
     }
 
@@ -174,7 +229,14 @@ final class Scope {
         throw new IllegalArgumentException("key.type() must be Set");
       }
 
-      bindings.addElementsIntoSet(key, elementsBinding);
+      SetBindings setBindings = keyToSetBindings.get(key);
+      //noinspection Java8MapApi Supporting old Android API levels.
+      if (setBindings == null) {
+        setBindings = new SetBindings();
+        keyToSetBindings.put(key, setBindings);
+      }
+      setBindings.elementsBindings.add(elementsBinding);
+
       return this;
     }
 
@@ -198,7 +260,17 @@ final class Scope {
         throw new IllegalArgumentException("key.type() must be Map");
       }
 
-      bindings.addIntoMap(key, entryKey, entryValueBinding);
+      Map<Object, Binding> mapBindings = keyToMapBindings.get(key);
+      //noinspection Java8MapApi Supporting old Android API levels.
+      if (mapBindings == null) {
+        mapBindings = new LinkedHashMap<>();
+        keyToMapBindings.put(key, mapBindings);
+      }
+      Binding replaced = mapBindings.put(entryKey, entryValueBinding);
+      if (replaced != null) {
+        throw new IllegalStateException(); // TODO duplicate keys
+      }
+
       return this;
     }
 
@@ -222,7 +294,48 @@ final class Scope {
     }
 
     Scope build() {
-      return new Scope(bindings.build(), jitLookupFactory, annotations, parent);
+      ConcurrentHashMap<Key, Binding> allBindings = new ConcurrentHashMap<>(keyToBinding);
+
+      // Coalesce all of the set contribution bindings for each key into a single set binding.
+      for (Map.Entry<Key, SetBindings> entry : keyToSetBindings.entrySet()) {
+        Key key = entry.getKey();
+
+        // Take a defensive copy in case the builder is being re-used.
+        SetBindings setBindings = entry.getValue();
+        List<Binding> elementBindings = new ArrayList<>(setBindings.elementBindings);
+        List<Binding> elementsBindings = new ArrayList<>(setBindings.elementsBindings);
+
+        Binding replaced =
+            allBindings.put(key, new UnlinkedSetBinding(elementBindings, elementsBindings));
+        if (replaced != null) {
+          throw new IllegalStateException(); // TODO implicit set binding duplicates explicit one.
+        }
+      }
+
+      // Coalesce all of the bindings for each key into a single map binding.
+      for (Map.Entry<Key, Map<Object, Binding>> entry : keyToMapBindings.entrySet()) {
+        Key key = entry.getKey();
+
+        // Take a defensive copy in case the builder is being re-used.
+        Map<Object, Binding> entryBindings = new LinkedHashMap<>(entry.getValue());
+
+        Binding replaced = allBindings.put(key, new UnlinkedMapBinding(entryBindings));
+        if (replaced != null) {
+          throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
+        }
+      }
+
+      return new Scope(allBindings, jitLookupFactory, annotations, parent);
+    }
+
+    private static final class SetBindings {
+      /** Bindings which produce a single element for the target set. */
+      final List<Binding> elementBindings = new ArrayList<>();
+      /** Bindings which produce a set of elements for the target set. */
+      final List<Binding> elementsBindings = new ArrayList<>();
+
+      SetBindings() {
+      }
     }
   }
 }
