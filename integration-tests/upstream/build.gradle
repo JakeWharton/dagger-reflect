@@ -63,9 +63,6 @@ test.filter {
   // TODO reflect bug! Injecting Lazy<T> does not work.
   excludeTest 'dagger.functional.LazyMapsTest', null
 
-  // TODO reflect bug! Subcomponent factory provision method does not work.
-  excludeTest 'dagger.functional.subcomponent.SubcomponentFactoryMethodTest', null
-
   // TODO reflect bug! Members injection on JIT binding does not work.
   excludeTest 'dagger.functional.cycle.CycleTest', 'lazyIndirectionCycle'
   excludeTest 'dagger.functional.cycle.CycleTest', 'lazyIndirectionSelfCycle'

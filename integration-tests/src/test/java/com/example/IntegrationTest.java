@@ -998,6 +998,13 @@ public final class IntegrationTest {
     assertThat(nested.two()).isEqualTo(2L);
   }
 
+  @Test public void subcomponentFactoryMethod() {
+    SubcomponentFactoryMethod.Nested nested = backend.create(SubcomponentFactoryMethod.class)
+        .createNested(new SubcomponentFactoryMethod.Nested.Module2(2L));
+    assertThat(nested.one()).isEqualTo("one");
+    assertThat(nested.two()).isEqualTo(2L);
+  }
+
   @Test public void subcomponentFactoryProvision() {
     SubcomponentFactoryProvision.Nested nested = backend.create(SubcomponentFactoryProvision.class)
         .nestedFactory()
