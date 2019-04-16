@@ -4,6 +4,7 @@ import dagger.Binds;
 import dagger.BindsOptionalOf;
 import dagger.MapKey;
 import dagger.Provides;
+import dagger.Reusable;
 import dagger.multibindings.ElementsIntoSet;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.IntoSet;
@@ -80,10 +81,14 @@ final class ReflectiveModuleParser {
       Annotation[] annotations) {
     Annotation scope = findScope(annotations);
     if (scope != null) {
-      if (!scopeBuilder.annotations.contains(scope)) {
+      if (scope.annotationType().equals(Reusable.class)) {
+        // Do nothing. We're technically not forced to do anything here, as @Reusable is a
+        // best-effort optimization.
+      } else if (!scopeBuilder.annotations.contains(scope)) {
         throw new IllegalStateException(); // TODO wrong scope
+      } else {
+        binding = binding.asScoped();
       }
-      binding = binding.asScoped();
     }
 
     if (findAnnotation(annotations, IntoSet.class) != null) {

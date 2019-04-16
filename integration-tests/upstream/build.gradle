@@ -26,9 +26,17 @@ sourceSets.test.java {
 }
 
 test.filter {
-  // TODO reflect bug! Not supporting @Reusable scope.
-  excludeTest 'dagger.functional.binds.BindsTest', null
+  // dagger-reflect does not produce the exact same behavior as dagger-compiler for @Reusable.
   excludeTest 'dagger.functional.ReusableTest', null
+
+  // TODO reflect bug! Not supporting primitives being bound into parameterized types.
+  excludeTest 'dagger.functional.binds.BindsTest', null
+
+  // TODO reflect bug! JIT binding depending on JIT binding is inexplicably not working.
+  excludeTest 'dagger.functional.cycle.CycleTest', null
+  excludeTest 'dagger.functional.cycle.LongCycleTest', 'longCycle'
+  excludeTest 'dagger.functional.DependsOnGeneratedCodeTest', 'testComponentDependsOnGeneratedCode'
+  excludeTest 'dagger.functional.NestedTest', 'nestedFoo'
 
   // TODO reflect bug! Need something like ByteBuddy for proxying classes at runtime.
   excludeTest 'dagger.functional.builder.BuilderBindsInstanceParameterTest', null

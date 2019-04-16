@@ -508,6 +508,22 @@ public final class IntegrationTest {
     assertThat(target.fromMethod).isEqualTo("foo");
   }
 
+  @Test public void reusableScoped() {
+    // @Reusable has no formal definition of reuse semantics. As such, we simply validate that
+    // common uses of it don't throw an exception. We do not ensure behavior compatibility with
+    // dagger-compiler, although it's an option in the future.
+
+    ReusableScoped component = backend.create(ReusableScoped.class);
+    Object object = component.object();
+    assertThat(object).isNotNull(); // Smoke test.
+
+    ReusableScoped.Child subcomponent = component.child();
+    Object childObject = subcomponent.object();
+    assertThat(childObject).isNotNull(); // Smoke test.
+    Runnable childRunnable = subcomponent.runnable();
+    assertThat(childRunnable).isNotNull(); // Smoke test.
+  }
+
   @Test public void scoped() {
     Scoped component = backend.create(Scoped.class);
     Object value1 = component.value();
