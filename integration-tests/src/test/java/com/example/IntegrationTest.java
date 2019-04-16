@@ -112,6 +112,14 @@ public final class IntegrationTest {
     assertThat(component.thing()).isNotNull();
   }
 
+  @Test public void justInTimeMembersInjection() {
+    JustInTimeMembersInjection component = backend.create(JustInTimeMembersInjection.class);
+    JustInTimeMembersInjection.Thing thing = component.thing();
+    assertThat(thing.stringConstructor).isEqualTo("hey");
+    assertThat(thing.stringField).isEqualTo("hey");
+    assertThat(thing.stringMethod).isEqualTo("hey");
+  }
+
   @Test public void justInTimeScoped() {
     JustInTimeScoped component = backend.create(JustInTimeScoped.class);
     JustInTimeScoped.Thing thing1 = component.thing();

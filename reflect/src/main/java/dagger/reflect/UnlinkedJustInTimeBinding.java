@@ -1,14 +1,11 @@
 package dagger.reflect;
 
+import dagger.MembersInjector;
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-import javax.inject.Inject;
 
-import static dagger.reflect.DaggerReflect.notImplemented;
 import static dagger.reflect.Reflection.findQualifier;
 
 final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
@@ -21,22 +18,6 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
   }
 
   @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
-    // TODO field and method bindings? reuse some/all of reflective members injector somehow?
-    Class<?> target = cls;
-    while (target != Object.class) {
-      for (Field field : target.getDeclaredFields()) {
-        if (field.getAnnotation(Inject.class) != null) {
-          throw notImplemented("@Inject on fields in just-in-time bindings");
-        }
-      }
-      for (Method method : target.getDeclaredMethods()) {
-        if (method.getAnnotation(Inject.class) != null) {
-          throw notImplemented("@Inject on methods in just-in-time bindings");
-        }
-      }
-      target = target.getSuperclass();
-    }
-
     Type[] parameterTypes = constructor.getGenericParameterTypes();
     Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
 
@@ -46,7 +27,9 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
       bindings[i] = linker.get(key);
     }
 
-    return new LinkedJustInTimeBinding<>(constructor, bindings);
+    MembersInjector<T> membersInjector = ReflectiveMembersInjector.create(cls, scope);
+
+    return new LinkedJustInTimeBinding<>(constructor, bindings, membersInjector);
   }
 
   @Override public String toString() {
