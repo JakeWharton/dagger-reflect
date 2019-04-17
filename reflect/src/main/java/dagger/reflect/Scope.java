@@ -1,14 +1,18 @@
 package dagger.reflect;
 
+import dagger.Lazy;
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.inject.Provider;
 import org.jetbrains.annotations.Nullable;
 
 final class Scope {
@@ -42,6 +46,20 @@ final class Scope {
    * @param linker An optional {@link Linker} to use. One will be created if null and needed.
    */
   @Nullable LinkedBinding<?> findBinding(Key key, @Nullable Linker linker) {
+    Type keyType = key.type();
+    if (keyType instanceof ParameterizedType) {
+      ParameterizedType parameterizedKeyType = (ParameterizedType) keyType;
+      Type rawKeyType = parameterizedKeyType.getRawType();
+      if (rawKeyType == Provider.class) {
+        Key realKey = Key.of(key.qualifier(), parameterizedKeyType.getActualTypeArguments()[0]);
+        return new LinkedProviderBinding<>(this, realKey);
+      }
+      if (rawKeyType == Lazy.class) {
+        Key realKey = Key.of(key.qualifier(), parameterizedKeyType.getActualTypeArguments()[0]);
+        return new LinkedLazyBinding<>(this, realKey);
+      }
+    }
+
     LinkedBinding<?> binding = findExistingBinding(key, linker);
     if (binding != null) {
       return binding;
