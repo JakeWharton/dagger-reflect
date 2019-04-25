@@ -7,16 +7,16 @@ import dagger.Module;
 import dagger.Provides;
 
 @SuppressWarnings("Guava") // Explicitly testing Guava support.
-@Component(modules = OptionalGuavaBinding.Module1.class)
-public interface OptionalGuavaBinding {
-  Optional<String> string();
+@Component(modules = OptionalGuavaBindingPrimitive.Module1.class)
+public interface OptionalGuavaBindingPrimitive {
+  Optional<Long> five();
 
   @Module
   abstract class Module1 {
-    @Provides static String foo() {
-      return "foo";
+    @Provides static long five() {
+      return 5L;
     }
 
-    @BindsOptionalOf abstract String optionalFoo();
+    @BindsOptionalOf abstract long optionalFive();
   }
 }

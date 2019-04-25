@@ -29,9 +29,6 @@ test.filter {
   // dagger-reflect does not produce the exact same behavior as dagger-compiler for @Reusable.
   excludeTest 'dagger.functional.ReusableTest', null
 
-  // TODO reflect bug! Not supporting primitives being bound into parameterized types.
-  excludeTest 'dagger.functional.binds.BindsTest', null
-
   // TODO reflect bug! Need something like ByteBuddy for proxying classes at runtime.
   excludeTest 'dagger.functional.builder.BuilderBindsInstanceParameterTest', null
   excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', null
@@ -47,6 +44,7 @@ test.filter {
 
   // TODO reflect bug! Generics don't work well.
   excludeTest 'dagger.functional.GenericTest', null
+  excludeTest 'dagger.functional.binds.BindsTest', null
 
   // TODO reflect bug! Something with @IntoSet, set bindings, and subcomponents.
   excludeTest 'dagger.functional.subcomponent.pruning.SubcomponentOnlyRequestedBySiblingTest', 'subcomponentAddedInParent_onlyUsedInSibling'

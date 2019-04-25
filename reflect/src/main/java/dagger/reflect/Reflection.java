@@ -24,6 +24,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
+import java.lang.reflect.Type;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
@@ -206,6 +207,25 @@ final class Reflection {
           + " is not an interface. Only interfaces are supported.");
     }
     return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls }, handler));
+  }
+
+  static Type boxIfNecessary(Type type) {
+    if (type instanceof Class<?>) {
+      Class<?> cls = (Class<?>) type;
+      if (cls.isPrimitive()) {
+        if (cls == boolean.class) return Boolean.class;
+        if (cls == byte.class) return Byte.class;
+        if (cls == char.class) return Character.class;
+        if (cls == double.class) return Double.class;
+        if (cls == float.class) return Float.class;
+        if (cls == int.class) return Integer.class;
+        if (cls == long.class) return Long.class;
+        if (cls == short.class) return Short.class;
+        if (cls == void.class) return Void.class;
+        throw new AssertionError("Unknown primitive type: " + cls);
+      }
+    }
+    return type;
   }
 
   private Reflection() {
