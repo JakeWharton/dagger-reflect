@@ -15,7 +15,7 @@ buildscript {
       ],
       'junit': 'junit:junit:4.13-beta-1',
       'truth': 'com.google.truth.extensions:truth-java8-extension:0.43',
-      'compileTesting': 'com.google.testing.compile:compile-testing:0.15',
+      'compileTesting': 'com.google.testing.compile:compile-testing:0.16',
       'javaPoet': 'com.squareup:javapoet:1.11.1',
       'auto': [
           'service': [
