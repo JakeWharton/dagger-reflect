@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Provider;
+
+import dagger.Lazy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
@@ -190,6 +192,73 @@ public final class IntegrationTest {
     } catch (IllegalStateException e) {
       // TODO assert some message
     }
+  }
+
+  @Test public void providerUnscopedBinding() {
+    ignoreReflectionBackend();
+
+    ProviderUnscopedBinding component = backend.create(ProviderUnscopedBinding.class);
+    Provider<String> value = component.value();
+
+    // Ensure the Provider is lazy in invoking and aggregating its backing @Provides methods.
+    ProviderUnscopedBinding.Module1.oneCount.set(1);
+
+    assertThat(value.get()).isEqualTo("one1");
+    assertThat(value.get()).isEqualTo("one2");
+  }
+
+  @Test public void providerScopedBinding() {
+    ignoreReflectionBackend();
+
+    ProviderScopedBinding component = backend.create(ProviderScopedBinding.class);
+    Provider<String> value = component.value();
+
+    // Ensure the Provider is lazy in invoking and aggregating its backing @Provides methods.
+    ProviderScopedBinding.Module1.oneCount.set(1);
+
+    assertThat(value.get()).isSameAs(value.get());
+    assertThat(value.get()).isEqualTo("one1");
+    assertThat(value.get()).isEqualTo("one1");
+  }
+
+  @Test public void lazyInvokedTwiceInstancesAreSame() {
+    ignoreReflectionBackend();
+
+    LazyUnscopedBinding component = backend.create(LazyUnscopedBinding.class);
+    Lazy<String> value = component.value();
+
+    // Ensure the Provider is lazy in invoking and aggregating its backing @Provides methods.
+    LazyUnscopedBinding.Module1.oneCount.set(1);
+
+    assertThat(value.get()).isEqualTo("one1");
+    assertThat(value.get()).isEqualTo("one1");
+  }
+
+  @Test public void lazyInvokedTwiceDifferentLazyDifferentInstances() {
+    ignoreReflectionBackend();
+
+    LazyUnscopedBinding component = backend.create(LazyUnscopedBinding.class);
+    Lazy<String> lazyOne = component.value();
+    Lazy<String> lazyTwo = component.value();
+
+    // Ensure the Provider is lazy in invoking and aggregating its backing @Provides methods.
+    LazyUnscopedBinding.Module1.oneCount.set(1);
+
+    assertThat(lazyOne.get()).isEqualTo("one1");
+    assertThat(lazyTwo.get()).isEqualTo("one2");
+  }
+
+  @Test public void lazyScopedInjection() {
+    ignoreReflectionBackend();
+
+    LazyScopedBinding component = backend.create(LazyScopedBinding.class);
+    Lazy<String> value = component.value();
+
+    // Ensure the Provider is lazy in invoking and aggregating its backing @Provides methods.
+    LazyScopedBinding.Module1.oneCount.set(1);
+
+    assertThat(value.get()).isEqualTo("one1");
+    assertThat(value.get()).isEqualTo("one1");
   }
 
   @Test public void implicitModuleInstance() {
