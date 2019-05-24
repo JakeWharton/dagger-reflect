@@ -51,7 +51,7 @@ buildscript {
 
   dependencies {
     classpath 'net.ltgt.gradle:gradle-errorprone-plugin:0.8'
-    classpath 'net.ltgt.gradle:gradle-nullaway-plugin:0.1'
+    classpath 'net.ltgt.gradle:gradle-nullaway-plugin:0.2'
     classpath 'ru.vyarus:gradle-animalsniffer-plugin:1.5.0'
     classpath 'com.android.tools.build:gradle:3.3.2'
   }
