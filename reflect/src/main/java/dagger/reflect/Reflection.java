@@ -135,9 +135,7 @@ final class Reflection {
   }
 
   static void trySet(@Nullable Object instance, Field field, @Nullable Object value) {
-    if ((field.getModifiers() & Modifier.PUBLIC) == 0) {
-      field.setAccessible(true);
-    }
+    field.setAccessible(true);
     try {
       field.set(instance, value);
     } catch (IllegalAccessException e) {

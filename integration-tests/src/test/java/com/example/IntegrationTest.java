@@ -195,8 +195,6 @@ public final class IntegrationTest {
   }
 
   @Test public void providerUnscopedBinding() {
-    ignoreReflectionBackend();
-
     ProviderUnscopedBinding component = backend.create(ProviderUnscopedBinding.class);
     Provider<String> value = component.value();
 
@@ -208,8 +206,6 @@ public final class IntegrationTest {
   }
 
   @Test public void providerScopedBinding() {
-    ignoreReflectionBackend();
-
     ProviderScopedBinding component = backend.create(ProviderScopedBinding.class);
     Provider<String> value = component.value();
 
@@ -222,8 +218,6 @@ public final class IntegrationTest {
   }
 
   @Test public void lazyInvokedTwiceInstancesAreSame() {
-    ignoreReflectionBackend();
-
     LazyUnscopedBinding component = backend.create(LazyUnscopedBinding.class);
     Lazy<String> value = component.value();
 
@@ -235,8 +229,6 @@ public final class IntegrationTest {
   }
 
   @Test public void lazyInvokedTwiceDifferentLazyDifferentInstances() {
-    ignoreReflectionBackend();
-
     LazyUnscopedBinding component = backend.create(LazyUnscopedBinding.class);
     Lazy<String> lazyOne = component.value();
     Lazy<String> lazyTwo = component.value();
@@ -249,8 +241,6 @@ public final class IntegrationTest {
   }
 
   @Test public void lazyScopedInjection() {
-    ignoreReflectionBackend();
-
     LazyScopedBinding component = backend.create(LazyScopedBinding.class);
     Lazy<String> value = component.value();
 

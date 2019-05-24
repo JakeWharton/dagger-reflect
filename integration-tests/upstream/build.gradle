@@ -50,24 +50,18 @@ test.filter {
   excludeTest 'dagger.functional.subcomponent.pruning.SubcomponentOnlyRequestedBySiblingTest', 'subcomponentAddedInParent_onlyUsedInSibling'
   excludeTest 'dagger.functional.subcomponent.ModuleWithSubcomponentsTest', null
 
-  // TODO reflect bug! Injecting Provides<T> does not work.
-  excludeTest 'dagger.functional.cycle.CycleTest', 'cycleWithDeferredBinds'
-  excludeTest 'dagger.functional.cycle.CycleTest', 'lazyIndirectionCycle'
-  excludeTest 'dagger.functional.cycle.CycleTest', 'lazyIndirectionSelfCycle'
-  excludeTest 'dagger.functional.cycle.CycleTest', 'providerIndirectionCycle'
-  excludeTest 'dagger.functional.cycle.CycleTest', 'providerIndirectionSelfCycle'
-  excludeTest 'dagger.functional.cycle.CycleTest', 'providerMapIndirectionCycle'
-  excludeTest 'dagger.functional.cycle.CycleTest', 'subcomponentIndirectionCycle'
-  excludeTest 'dagger.functional.cycle.LongCycleTest', 'longCycle'
+  // TODO reflect bug! Injecting Optional<Provides<T>> does not work.
   excludeTest 'dagger.functional.guava.OptionalBindingComponentsAbsentTest', null
   excludeTest 'dagger.functional.guava.OptionalBindingComponentsPresentTest', null
   excludeTest 'dagger.functional.jdk8.OptionalBindingComponentsEmptyTest', null
   excludeTest 'dagger.functional.jdk8.OptionalBindingComponentsPresentTest', null
-  excludeTest 'dagger.functional.ComponentMethodTest', null
+
+  // TODO reflect bug! Injecting MembersInjector<T> does not work.
   excludeTest 'dagger.functional.NestedTest', 'nestedBar'
 
-  // TODO reflect bug! Injecting Lazy<T> does not work.
-  excludeTest 'dagger.functional.LazyMapsTest', null
+  // TODO reflect bug! Map<Key, Provider<Value>> does not work.
+  excludeTest 'dagger.functional.cycle.CycleTest', 'providerMapIndirectionCycle'
+  excludeTest 'dagger.functional.LazyMapsTest', 'mapOfProviderOfLaziesReturnsDifferentLazy'
 
   // TODO reflect bug! Subcomponent multibindings propagation does not work.
   excludeTest 'dagger.functional.subcomponent.SubcomponentMultibindingsTest', null
