@@ -69,7 +69,7 @@ final class Scope {
     if (jitLookup != null) {
       LinkedBinding<?> jitBinding = putJitBinding(key, linker, jitLookup);
       if (jitBinding == null) {
-        throw new IllegalStateException(); // TODO nice error message with scope chain
+        throw new IllegalStateException("Unable to find binding for key=" + key + " and linker=" + linker); // TODO nice error message with scope chain
       }
       return jitBinding;
     }
