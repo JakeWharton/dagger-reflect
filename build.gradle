@@ -14,8 +14,8 @@ buildscript {
           'androidCompiler': "com.google.dagger:dagger-android-processor:${versions.dagger}",
       ],
       'junit': 'junit:junit:4.13-beta-1',
-      'truth': 'com.google.truth.extensions:truth-java8-extension:0.44',
-      'compileTesting': 'com.google.testing.compile:compile-testing:0.16',
+      'truth': 'com.google.truth.extensions:truth-java8-extension:0.45',
+      'compileTesting': 'com.google.testing.compile:compile-testing:0.18',
       'javaPoet': 'com.squareup:javapoet:1.11.1',
       'auto': [
           'service': [
