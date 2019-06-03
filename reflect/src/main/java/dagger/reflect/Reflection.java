@@ -135,7 +135,9 @@ final class Reflection {
   }
 
   static void trySet(@Nullable Object instance, Field field, @Nullable Object value) {
-    field.setAccessible(true);
+    if (!field.isAccessible()) {
+      field.setAccessible(true);
+    }
     try {
       field.set(instance, value);
     } catch (IllegalAccessException e) {
@@ -144,7 +146,7 @@ final class Reflection {
   }
 
   static @Nullable Object tryInvoke(@Nullable Object instance, Method method, Object... arguments) {
-    if ((method.getModifiers() & Modifier.PUBLIC) == 0) {
+    if (!method.isAccessible()) {
       method.setAccessible(true);
     }
     try {
@@ -160,7 +162,7 @@ final class Reflection {
   }
 
   static <T> T tryInstantiate(Constructor<T> constructor, Object... arguments) {
-    if ((constructor.getModifiers() & Modifier.PUBLIC) == 0) {
+    if (!constructor.isAccessible()) {
       constructor.setAccessible(true);
     }
     try {

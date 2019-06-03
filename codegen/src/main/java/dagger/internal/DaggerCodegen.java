@@ -85,6 +85,9 @@ public final class DaggerCodegen {
     } catch (NoSuchMethodException e) {
       throw new IllegalStateException("Unable to find method '" + name + "' on " + target, e);
     }
+    if (!method.isAccessible()) {
+      method.setAccessible(true);
+    }
     Object returnValue;
     try {
       returnValue = method.invoke(null);
