@@ -138,7 +138,7 @@ public final class IntegrationTest {
     JustInTimeScoped component = backend.create(JustInTimeScoped.class);
     JustInTimeScoped.Thing thing1 = component.thing();
     JustInTimeScoped.Thing thing2 = component.thing();
-    assertThat(thing1).isSameAs(thing2);
+    assertThat(thing1).isSameInstanceAs(thing2);
   }
 
   @Test public void justInTimeScopedInParent() {
@@ -147,14 +147,14 @@ public final class IntegrationTest {
     JustInTimeScopedInParent.Thing thing1 = child1.thing();
     JustInTimeScopedInParent.ChildComponent child2 = component.child();
     JustInTimeScopedInParent.Thing thing2 = child2.thing();
-    assertThat(thing1).isSameAs(thing2);
+    assertThat(thing1).isSameInstanceAs(thing2);
   }
 
   @Test public void justInTimeUnscopedIntoJustInTimeScoped() {
     JustInTimeDependsOnJustInTime component = backend.create(JustInTimeDependsOnJustInTime.class);
     JustInTimeDependsOnJustInTime.Foo foo1 = component.thing();
     JustInTimeDependsOnJustInTime.Foo foo2 = component.thing();
-    assertThat(foo1).isNotSameAs(foo2);
+    assertThat(foo1).isNotSameInstanceAs(foo2);
   }
 
   @Test public void justInTimeWrongScope() {
@@ -212,7 +212,7 @@ public final class IntegrationTest {
     // Ensure the Provider is lazy in invoking and aggregating its backing @Provides methods.
     ProviderScopedBinding.Module1.oneCount.set(1);
 
-    assertThat(value.get()).isSameAs(value.get());
+    assertThat(value.get()).isSameInstanceAs(value.get());
     assertThat(value.get()).isEqualTo("one1");
     assertThat(value.get()).isEqualTo("one1");
   }
@@ -492,7 +492,7 @@ public final class IntegrationTest {
     MemberInjectionReturnInstance.Target in = new MemberInjectionReturnInstance.Target();
     MemberInjectionReturnInstance.Target out = component.inject(in);
     assertThat(out.foo).isEqualTo("foo");
-    assertThat(out).isSameAs(in);
+    assertThat(out).isSameInstanceAs(in);
   }
 
   @Test public void memberInjectionNoInjects() {
@@ -607,17 +607,17 @@ public final class IntegrationTest {
     Scoped component = backend.create(Scoped.class);
     Object value1 = component.value();
     Object value2 = component.value();
-    assertThat(value1).isSameAs(value2);
+    assertThat(value1).isSameInstanceAs(value2);
   }
 
   @Test public void scopedWithMultipleAnnotations() {
     ScopedWithMultipleAnnotations component = backend.create(ScopedWithMultipleAnnotations.class);
     Object value1 = component.value();
     Object value2 = component.value();
-    assertThat(value1).isSameAs(value2);
+    assertThat(value1).isSameInstanceAs(value2);
     Runnable runnable1 = component.runnable();
     Runnable runnable2 = component.runnable();
-    assertThat(runnable1).isSameAs(runnable2);
+    assertThat(runnable1).isSameInstanceAs(runnable2);
   }
 
   @Test public void scopedWrong() {
