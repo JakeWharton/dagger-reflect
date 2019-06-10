@@ -3,6 +3,7 @@ package dagger.reflect;
 import dagger.Lazy;
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
+import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -332,12 +333,35 @@ final class Scope {
 
       // Coalesce all of the bindings for each key into a single map binding.
       for (Map.Entry<Key, Map<Object, Binding>> entry : keyToMapBindings.entrySet()) {
-        Key key = entry.getKey();
+        Key mapOfValueKey = entry.getKey();
 
         // Take a defensive copy in case the builder is being re-used.
         Map<Object, Binding> entryBindings = new LinkedHashMap<>(entry.getValue());
 
-        Binding replaced = allBindings.put(key, new UnlinkedMapBinding(entryBindings));
+        ParameterizedType mapType = (ParameterizedType) mapOfValueKey.type();
+        Type mapKeyType = mapType.getActualTypeArguments()[0];
+        Type mapValueType = mapType.getActualTypeArguments()[1];
+
+        Key mapOfProviderKey = Key.of(mapOfValueKey.qualifier(),
+            new ParameterizedTypeImpl(null, Map.class, mapKeyType,
+                new ParameterizedTypeImpl(null, Provider.class, mapValueType)));
+        Key mapOfLazyKey = Key.of(mapOfValueKey.qualifier(),
+            new ParameterizedTypeImpl(null, Map.class, mapKeyType,
+                new ParameterizedTypeImpl(null, Lazy.class, mapValueType)));
+
+        Binding replaced =
+            allBindings.put(mapOfValueKey, new UnlinkedMapOfValueBinding(mapOfProviderKey));
+        if (replaced != null) {
+          throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
+        }
+
+        replaced = allBindings.put(mapOfLazyKey, new UnlinkedMapOfLazyBinding(mapOfProviderKey));
+        if (replaced != null) {
+          throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
+        }
+
+        replaced = allBindings.put(mapOfProviderKey,
+            new UnlinkedMapOfProviderBinding(entryBindings));
         if (replaced != null) {
           throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
         }
