@@ -175,11 +175,11 @@ final class TypeUtil {
     private final Type upperBound;
     private final @Nullable Type lowerBound;
 
-    WildcardTypeImpl(Type[] upperBounds, Type[] lowerBounds) {
-      if (lowerBounds.length > 1) throw new IllegalArgumentException();
+    WildcardTypeImpl(Type[] upperBounds, @Nullable Type[] lowerBounds) {
+      if (lowerBounds != null && lowerBounds.length > 1) throw new IllegalArgumentException();
       if (upperBounds.length != 1) throw new IllegalArgumentException();
 
-      if (lowerBounds.length == 1) {
+      if (lowerBounds != null && lowerBounds.length == 1) {
         if (lowerBounds[0] == null) throw new NullPointerException();
         checkNotPrimitive(lowerBounds[0]);
         if (upperBounds[0] != Object.class) throw new IllegalArgumentException();
