@@ -21,11 +21,12 @@ import java.lang.reflect.Type;
 import org.jetbrains.annotations.Nullable;
 
 import static dagger.reflect.Reflection.boxIfNecessary;
+import static dagger.reflect.TypeUtil.canonicalize;
 
 @AutoValue
 abstract class Key {
   static Key of(@Nullable Annotation qualifier, Type type) {
-    return new AutoValue_Key(qualifier, boxIfNecessary(type));
+    return new AutoValue_Key(qualifier, canonicalize(boxIfNecessary(type)));
   }
 
   abstract @Nullable Annotation qualifier();
