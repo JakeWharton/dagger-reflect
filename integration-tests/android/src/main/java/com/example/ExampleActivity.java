@@ -1,6 +1,7 @@
 package com.example;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup.LayoutParams;
@@ -28,6 +29,8 @@ public final class ExampleActivity extends Activity {
     textView.setTextSize(COMPLEX_UNIT_DIP, 40);
     textView.setText(string);
     setContentView(textView);
+
+    startService(new Intent(this, ExampleService.class));
   }
 
   @Module

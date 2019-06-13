@@ -1,16 +1,17 @@
 package com.example;
 
-import android.app.Activity;
 import com.example.ExampleActivity.ExampleActivityModule;
+import com.example.ExampleService.ExampleServiceModule;
 import dagger.Component;
 import dagger.android.AndroidInjectionModule;
 import dagger.android.DispatchingAndroidInjector;
 
 @Component(modules = {
     ExampleActivityModule.class,
+    ExampleServiceModule.class,
     AndroidInjectionModule.class,
     StringModule.class
 })
 interface AppComponent {
-  DispatchingAndroidInjector<Activity> activityInjector();
+  DispatchingAndroidInjector<Object> androidInjector();
 }
