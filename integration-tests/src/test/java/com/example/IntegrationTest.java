@@ -622,6 +622,12 @@ public final class IntegrationTest {
     assertThat(childRunnable).isNotNull(); // Smoke test.
   }
 
+  @Test public void reusableJustInTime() {
+    ignoreReflectionBackend();
+    ReusableScopedJustInTime component = backend.create(ReusableScopedJustInTime.class);
+    assertThat(component.bar()).isNotNull(); // Smoke test.
+  }
+
   @Test public void scoped() {
     Scoped component = backend.create(Scoped.class);
     Object value1 = component.value();
