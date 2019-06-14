@@ -30,6 +30,8 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.inject.Qualifier;
 import javax.inject.Scope;
+
+import dagger.Reusable;
 import org.jetbrains.annotations.Nullable;
 
 final class Reflection {
@@ -66,9 +68,19 @@ final class Reflection {
     }
   }
 
+  /**
+   * Finds scoping annotations that aren't {@link Reusable}.
+   *
+   * @param annotations The set of annotations to parse for scoping annotations.
+   * @return All annotations with Scope or an empty set if none are found.
+   */
   static Set<Annotation> findScopes(Annotation[] annotations) {
     Set<Annotation> scopes = null;
     for (Annotation annotation : annotations) {
+      // Reusable is ignored.
+      if (annotation.annotationType() == Reusable.class) {
+        continue;
+      }
       if (annotation.annotationType().getAnnotation(Scope.class) != null) {
         if (scopes == null) {
           scopes = new LinkedHashSet<>();
