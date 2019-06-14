@@ -70,6 +70,25 @@ public final class IntegrationTest {
     assertThat(component.strings()).containsExactly("bar", "foo");
   }
 
+  @Test public void mapWithoutBinds() {
+    MapWithoutBinds component = backend.create(MapWithoutBinds.class);
+    assertThat(component.strings()).containsExactly("1", "one", "2", "two");
+  }
+
+  @Test public void mapProviderWithoutBinds() {
+    MapProviderWithoutBinds component = backend.create(MapProviderWithoutBinds.class);
+
+    Map<String, Provider<String>> values = component.strings();
+    assertThat(values.keySet()).containsExactly("1", "2");
+
+    // Ensure each Provider is lazy in invoking its backing @Provides method.
+    MapProviderWithoutBinds.Module1.twoValue.set("two");
+    assertThat(values.get("2").get()).isEqualTo("two");
+
+    MapProviderWithoutBinds.Module1.oneValue.set("one");
+    assertThat(values.get("1").get()).isEqualTo("one");
+  }
+
   @Test public void optionalBinding() {
     OptionalBinding component = backend.create(OptionalBinding.class);
     assertThat(component.string()).isEqualTo(Optional.of("foo"));
@@ -689,8 +708,6 @@ public final class IntegrationTest {
   }
 
   @Test public void multibindingProviderMap() {
-    ignoreReflectionBackend();
-
     MultibindingProviderMap component = backend.create(MultibindingProviderMap.class);
     Provider<Map<String, String>> values = component.values();
 
