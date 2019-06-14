@@ -70,6 +70,7 @@ final class Reflection {
 
   /**
    * Finds scoping annotations that aren't {@link Reusable}.
+   * Reusable is ignored since it is a best effort optimization and isn't a real scoping annotation.
    *
    * @param annotations The set of annotations to parse for scoping annotations.
    * @return All annotations with Scope or an empty set if none are found.
