@@ -1,12 +1,11 @@
 package com.example;
 
-import android.app.Activity;
 import android.app.Application;
 import dagger.Dagger;
 import dagger.android.AndroidInjector;
-import dagger.android.HasActivityInjector;
+import dagger.android.HasAndroidInjector;
 
-public final class ExampleApp extends Application implements HasActivityInjector {
+public final class ExampleApp extends Application implements HasAndroidInjector {
   private AppComponent component;
 
   @Override public void onCreate() {
@@ -15,7 +14,8 @@ public final class ExampleApp extends Application implements HasActivityInjector
     component = Dagger.create(AppComponent.class);
   }
 
-  @Override public AndroidInjector<Activity> activityInjector() {
-    return component.activityInjector();
+  @Override
+  public AndroidInjector<Object> androidInjector() {
+    return component.androidInjector();
   }
 }
