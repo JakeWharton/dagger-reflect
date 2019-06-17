@@ -623,7 +623,6 @@ public final class IntegrationTest {
   }
 
   @Test public void reusableJustInTime() {
-    ignoreReflectionBackend();
     ReusableScopedJustInTime component = backend.create(ReusableScopedJustInTime.class);
     assertThat(component.bar()).isNotNull(); // Smoke test.
   }
