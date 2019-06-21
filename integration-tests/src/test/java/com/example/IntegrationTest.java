@@ -213,6 +213,13 @@ public final class IntegrationTest {
     }
   }
 
+  @Test public void providerGenericIntoJustInTimeGeneric() {
+    ignoreReflectionBackend();
+
+    ProviderGenericIntoJustInTime component = backend.create(ProviderGenericIntoJustInTime.class);
+    assertThat(component.thing().genericProvider.get()).isNotNull();
+  }
+
   @Test public void providerUnscopedBinding() {
     ProviderUnscopedBinding component = backend.create(ProviderUnscopedBinding.class);
     Provider<String> value = component.value();
