@@ -43,7 +43,15 @@ test.filter {
   excludeTest 'dagger.functional.BasicTest', null
 
   // TODO reflect bug! Generics don't work well.
-  excludeTest 'dagger.functional.GenericTest', null
+  excludeTest 'dagger.functional.GenericTest', 'complexGenerics'
+  excludeTest 'dagger.functional.GenericTest', 'genericModules'
+  excludeTest 'dagger.functional.GenericTest', 'membersInjections'
+  excludeTest 'dagger.functional.GenericTest', 'noDepsGenerics'
+  excludeTest 'dagger.functional.GenericTest', 'packagePrivateTypeParameterDependencies'
+  excludeTest 'dagger.functional.GenericTest', 'publicSubclassWithPackagePrivateTypeParameterOfSuperclass'
+  excludeTest 'dagger.functional.GenericTest', 'testGenericComponentCreate'
+  excludeTest 'dagger.functional.GenericTest', 'testGenericDoubleReferences'
+  excludeTest 'dagger.functional.GenericTest', 'testGenericSimpleReferences'
   excludeTest 'dagger.functional.binds.BindsTest', null
 
   // TODO reflect bug! Something with @IntoSet, set bindings, and subcomponents.
