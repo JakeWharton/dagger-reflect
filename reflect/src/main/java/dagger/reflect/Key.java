@@ -20,18 +20,38 @@ import static dagger.reflect.TypeUtil.canonicalize;
 
 import com.google.auto.value.AutoValue;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import org.jetbrains.annotations.Nullable;
 
 @AutoValue
 abstract class Key {
   static Key of(@Nullable Annotation qualifier, Type type) {
+    if (containsTypeVariable(type)) {
+      throw new IllegalArgumentException("cannot contain type variable " + type);
+    }
     return new AutoValue_Key(qualifier, canonicalize(boxIfNecessary(type)));
   }
 
   abstract @Nullable Annotation qualifier();
 
   abstract Type type();
+
+  private static boolean containsTypeVariable(Type type) {
+    if (type instanceof TypeVariable) {
+      return true;
+    }
+    if (type instanceof ParameterizedType) {
+      Type[] actualTypeArguments = ((ParameterizedType) type).getActualTypeArguments();
+      for (Type arg : actualTypeArguments) {
+        if (containsTypeVariable(arg)) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
 
   @Override
   public final String toString() {

@@ -65,6 +65,9 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
       if (isTypeVariable(type)) {
         return true;
       }
+      if (hasParameterizedTypeVariable(type)) {
+        return true;
+      }
     }
     return false;
   }
@@ -78,7 +81,7 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
   /**
    * Find matching concrete types for a list of types. For every TypeVariable like `T` in the array
    * arg, we lookup the matching type in this class's concrete type arguments. If it is already a
-   * concrete type, just return the type. Creates a new array to match parameterizd type.
+   * concrete type, just return the type. Creates a new array to match parameterized type.
    *
    * @param typeArguments The Types and TypeVariables to find matching concrete types for.
    * @return The matching concrete type for the placeholder.
@@ -88,6 +91,8 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
     for (int i = 0; i < typeArguments.length; i++) {
       if (isTypeVariable(typeArguments[i])) {
         matchedTypeArguments[i] = matchTypeToConcreteType((TypeVariable<?>) typeArguments[i]);
+      } else if (typeArguments[i] instanceof ParameterizedType) {
+        matchedTypeArguments[i] = findKeyForParameterizedType((ParameterizedType) typeArguments[i]);
       } else {
         matchedTypeArguments[i] = typeArguments[i];
       }
