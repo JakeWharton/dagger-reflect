@@ -258,10 +258,14 @@ public final class IntegrationTest {
 
   @Test
   public void providerGenericIntoJustInTimeGeneric() {
-    ignoreReflectionBackend();
-
     ProviderGenericIntoJustInTime component = backend.create(ProviderGenericIntoJustInTime.class);
     assertThat(component.thing().genericProvider.get()).isNotNull();
+  }
+
+  @Test public void providerMultipleGenericIntoJustInTimeGeneric() {
+    ProviderMultipleGenericIntoJustInTime component = backend.create(ProviderMultipleGenericIntoJustInTime.class);
+    assertThat(component.thing().thingProvider.get()).isNotNull();
+    assertThat(component.thing().valueProvider.get()).isNotNull();
   }
 
   @Test

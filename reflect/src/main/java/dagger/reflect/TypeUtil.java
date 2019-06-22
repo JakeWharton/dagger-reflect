@@ -15,12 +15,13 @@
  */
 package dagger.reflect;
 
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.Arrays;
-import org.jetbrains.annotations.Nullable;
 
 final class TypeUtil {
   private static final Type[] EMPTY_TYPE_ARRAY = new Type[] {};

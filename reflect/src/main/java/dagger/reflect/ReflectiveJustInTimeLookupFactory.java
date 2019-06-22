@@ -18,8 +18,10 @@ final class ReflectiveJustInTimeLookupFactory implements JustInTimeLookup.Factor
 
     Type type = key.type();
     Class<Object> cls;
+    Type[] typeArguments = null;
     if (type instanceof ParameterizedType) {
       cls = (Class<Object>) ((ParameterizedType) type).getRawType();
+      typeArguments = ((ParameterizedType) type).getActualTypeArguments();
     } else if (type instanceof Class<?>) {
       cls = (Class<Object>) type;
     } else {
@@ -42,7 +44,7 @@ final class ReflectiveJustInTimeLookupFactory implements JustInTimeLookup.Factor
     }
 
     Annotation scope = findScope(cls.getAnnotations());
-    Binding binding = new UnlinkedJustInTimeBinding<>(cls, target);
+    Binding binding = new UnlinkedJustInTimeBinding<>(cls, target, typeArguments);
     return new JustInTimeLookup(scope, binding);
   }
 }
