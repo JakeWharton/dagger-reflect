@@ -22,7 +22,7 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
     requireAnnotation(factoryClass, Component.Factory.class);
 
     Class<?> componentClass = requireEnclosingClass(factoryClass);
-    if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
+    if (!Modifier.isPublic(componentClass.getModifiers())) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
       throw new IllegalArgumentException("Component interface "
@@ -39,7 +39,7 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
     requireAnnotation(factoryClass, Subcomponent.Factory.class);
 
     Class<?> componentClass = requireEnclosingClass(factoryClass);
-    if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
+    if (!Modifier.isPublic(componentClass.getModifiers())) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
       throw new IllegalArgumentException("Component interface "

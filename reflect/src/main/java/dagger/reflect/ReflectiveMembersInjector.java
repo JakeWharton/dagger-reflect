@@ -42,11 +42,11 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
         if (field.getAnnotation(Inject.class) == null) {
           continue;
         }
-        if ((field.getModifiers() & Modifier.PRIVATE) != 0) {
+        if (Modifier.isPrivate(field.getModifiers())) {
           throw new IllegalArgumentException("Dagger does not support injection into private fields: "
                   + target.getCanonicalName() + "." + field.getName());
         }
-        if ((field.getModifiers() & Modifier.STATIC) != 0) {
+        if (Modifier.isStatic(field.getModifiers())) {
           throw new IllegalArgumentException("Dagger does not support injection into static fields: "
                   + target.getCanonicalName() + "." + field.getName());
         }
@@ -62,15 +62,15 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
         if (method.getAnnotation(Inject.class) == null) {
           continue;
         }
-        if ((method.getModifiers() & Modifier.PRIVATE) != 0) {
+        if (Modifier.isPrivate(method.getModifiers())) {
           throw new IllegalArgumentException("Dagger does not support injection into private methods: "
                   + target.getCanonicalName() + "." + method.getName() + "()");
         }
-        if ((method.getModifiers() & Modifier.STATIC) != 0) {
+        if (Modifier.isStatic(method.getModifiers())) {
           throw new IllegalArgumentException("Dagger does not support injection into static methods: "
                   + target.getCanonicalName() + "." + method.getName() + "()");
         }
-        if ((method.getModifiers() & Modifier.ABSTRACT) != 0) {
+        if (Modifier.isAbstract(method.getModifiers())) {
           throw new IllegalArgumentException("Methods with @Inject may not be abstract: "
               + target.getCanonicalName() + "." + method.getName() + "()");
         }
