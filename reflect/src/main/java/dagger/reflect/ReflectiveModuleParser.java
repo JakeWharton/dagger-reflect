@@ -4,13 +4,13 @@ import dagger.Binds;
 import dagger.BindsOptionalOf;
 import dagger.MapKey;
 import dagger.Provides;
-import dagger.Reusable;
 import dagger.multibindings.ElementsIntoSet;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.IntoSet;
 import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.Map;
 import java.util.Optional;
@@ -24,9 +24,6 @@ import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.findScope;
 import static dagger.reflect.Reflection.maybeInstantiate;
 import static dagger.reflect.Reflection.requireAnnotation;
-import static java.lang.reflect.Modifier.ABSTRACT;
-import static java.lang.reflect.Modifier.PRIVATE;
-import static java.lang.reflect.Modifier.STATIC;
 
 final class ReflectiveModuleParser {
   static void parse(Class<?> moduleClass, @Nullable Object instance, Scope.Builder scopeBuilder) {
@@ -36,7 +33,7 @@ final class ReflectiveModuleParser {
         Annotation[] annotations = method.getAnnotations();
         Annotation qualifier = findQualifier(annotations);
 
-        if ((method.getModifiers() & ABSTRACT) != 0) {
+        if (Modifier.isAbstract(method.getModifiers())) {
           if (method.getAnnotation(Binds.class) != null) {
             Key key = Key.of(qualifier, returnType);
             Binding binding = new UnlinkedBindsBinding(method);
@@ -59,7 +56,7 @@ final class ReflectiveModuleParser {
             }
           }
         } else {
-          if ((method.getModifiers() & STATIC) == 0 && instance == null) {
+          if (!Modifier.isStatic(method.getModifiers()) && instance == null) {
             // Try to just-in-time create an instance of the module using a default constructor.
             instance = maybeInstantiate(moduleClass);
             if (instance == null) {
@@ -150,7 +147,7 @@ final class ReflectiveModuleParser {
   }
 
   private static void ensureNotPrivate(Method method) {
-    if ((method.getModifiers() & PRIVATE) != 0) {
+    if (Modifier.isPrivate(method.getModifiers())) {
       throw new IllegalArgumentException("Provides methods may not be private: " + method);
     }
   }

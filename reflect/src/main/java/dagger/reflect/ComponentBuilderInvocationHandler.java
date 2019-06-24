@@ -35,7 +35,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
     requireAnnotation(builderClass, Component.Builder.class);
 
     Class<?> componentClass = requireEnclosingClass(builderClass);
-    if ((componentClass.getModifiers() & Modifier.PUBLIC) == 0) {
+    if (!Modifier.isPublic(componentClass.getModifiers())) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
       throw new IllegalArgumentException("Component interface "
@@ -53,7 +53,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
     requireAnnotation(builderClass, Subcomponent.Builder.class);
 
     Class<?> subcomponentClass = requireEnclosingClass(builderClass);
-    if ((subcomponentClass.getModifiers() & Modifier.PUBLIC) == 0) {
+    if (!Modifier.isPublic(subcomponentClass.getModifiers())) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
       throw new IllegalArgumentException("Subcomponent interface "
