@@ -92,12 +92,10 @@ subprojects {
       disableWarningsInGeneratedCode = true
       excludedPaths = ".*/build/generated/.*"
 
-      // TODO https://github.com/tbroyer/gradle-nullaway-plugin/issues/2
-      option('NullAway:AssertsEnabled', 'true')
-
       nullaway {
         annotatedPackages.add('dagger.reflect')
         severity = CheckSeverity.ERROR
+        isAssertsEnabled().set(true)
       }
     }
   }
