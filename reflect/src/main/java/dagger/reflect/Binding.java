@@ -15,7 +15,7 @@
  */
 package dagger.reflect;
 
-import org.jetbrains.annotations.Nullable;
+import javax.inject.Provider;
 
 interface Binding {
   /**
@@ -36,9 +36,7 @@ interface Binding {
     }
   }
 
-  abstract class LinkedBinding<T> implements Binding {
-    abstract @Nullable T get();
-
+  abstract class LinkedBinding<T> implements Binding, Provider<T> {
     @Override public final LinkedBinding<?> link(Linker linker, Scope scope) {
       return this;
     }
