@@ -89,6 +89,20 @@ public final class IntegrationTest {
     assertThat(values.get("1").get()).isEqualTo("one");
   }
 
+  @Test public void mapLazyWithoutBinds() {
+    MapLazyWithoutBinds component = backend.create(MapLazyWithoutBinds.class);
+
+    Map<String, Lazy<String>> values = component.strings();
+    assertThat(values.keySet()).containsExactly("1", "2");
+
+    // Ensure each Provider is lazy in invoking its backing @Provides method.
+    MapLazyWithoutBinds.Module1.twoValue.set("two");
+    assertThat(values.get("2").get()).isEqualTo("two");
+
+    MapLazyWithoutBinds.Module1.oneValue.set("one");
+    assertThat(values.get("1").get()).isEqualTo("one");
+  }
+
   @Test public void optionalBinding() {
     OptionalBinding component = backend.create(OptionalBinding.class);
     assertThat(component.string()).isEqualTo(Optional.of("foo"));
@@ -732,8 +746,6 @@ public final class IntegrationTest {
   }
 
   @Test public void multibindingMapProvider() {
-    ignoreReflectionBackend();
-
     MultibindingMapProvider component = backend.create(MultibindingMapProvider.class);
     Map<String, Provider<String>> values = component.values();
     assertThat(values.keySet()).containsExactly("1", "2");
