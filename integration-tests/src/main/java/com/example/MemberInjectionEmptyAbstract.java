@@ -7,6 +7,5 @@ interface MemberInjectionEmptyAbstract {
 
   void inject(Target target);
 
-  abstract class Target {
-  }
+  abstract class Target {}
 }

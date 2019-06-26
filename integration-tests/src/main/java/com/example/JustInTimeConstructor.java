@@ -8,6 +8,7 @@ interface JustInTimeConstructor {
   Thing thing();
 
   final class Thing {
-    @Inject Thing() {}
+    @Inject
+    Thing() {}
   }
 }

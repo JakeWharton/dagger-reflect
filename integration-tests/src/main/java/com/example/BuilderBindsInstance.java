@@ -9,7 +9,9 @@ public interface BuilderBindsInstance {
 
   @Component.Builder
   interface Builder {
-    @BindsInstance Builder string(String one);
+    @BindsInstance
+    Builder string(String one);
+
     BuilderBindsInstance build();
   }
 }

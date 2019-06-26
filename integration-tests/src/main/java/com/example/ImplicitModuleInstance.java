@@ -9,8 +9,10 @@ public interface ImplicitModuleInstance {
 
   String string();
 
-  @Module class Module1 {
-    @Provides String string() {
+  @Module
+  class Module1 {
+    @Provides
+    String string() {
       return "one";
     }
   }

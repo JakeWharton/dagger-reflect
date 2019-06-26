@@ -16,5 +16,4 @@
 package dagger;
 
 @Component
-interface JustComponent {
-}
+interface JustComponent {}

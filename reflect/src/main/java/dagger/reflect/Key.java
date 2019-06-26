@@ -15,13 +15,13 @@
  */
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.boxIfNecessary;
+import static dagger.reflect.TypeUtil.canonicalize;
+
 import com.google.auto.value.AutoValue;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import org.jetbrains.annotations.Nullable;
-
-import static dagger.reflect.Reflection.boxIfNecessary;
-import static dagger.reflect.TypeUtil.canonicalize;
 
 @AutoValue
 abstract class Key {
@@ -30,14 +30,14 @@ abstract class Key {
   }
 
   abstract @Nullable Annotation qualifier();
+
   abstract Type type();
 
-  @Override public final String toString() {
+  @Override
+  public final String toString() {
     Annotation qualifier = qualifier();
     String type = getTypeName(type());
-    return qualifier != null
-        ? qualifier.toString() + ' ' + type
-        : type;
+    return qualifier != null ? qualifier.toString() + ' ' + type : type;
   }
 
   /** Backport of {@link Type#getTypeName()}. */

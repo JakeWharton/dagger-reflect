@@ -13,10 +13,17 @@ interface MultibindingMapPrimitiveKey {
 
   @Module
   abstract class Module1 {
-    @Provides @IntoMap @LongKey(1L) static String one() {
+    @Provides
+    @IntoMap
+    @LongKey(1L)
+    static String one() {
       return "one";
     }
-    @Provides @IntoMap @LongKey(2L) static String two() {
+
+    @Provides
+    @IntoMap
+    @LongKey(2L)
+    static String two() {
       return "two";
     }
   }

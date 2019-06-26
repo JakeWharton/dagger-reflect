@@ -12,28 +12,38 @@ interface MemberInjectionMethodReturnTypes {
   final class Target {
     int count;
 
-    @Inject String one(String one) {
+    @Inject
+    String one(String one) {
       count++;
       return one;
     }
-    @Inject long two(Long two) {
+
+    @Inject
+    long two(Long two) {
       count++;
       return two;
     }
-    @Inject void three(Integer three) {
+
+    @Inject
+    void three(Integer three) {
       count++;
     }
   }
 
   @Module
   abstract class Module1 {
-    @Provides static String one() {
+    @Provides
+    static String one() {
       return "one";
     }
-    @Provides static Long two() {
+
+    @Provides
+    static Long two() {
       return 2L;
     }
-    @Provides static Integer three() {
+
+    @Provides
+    static Integer three() {
       return 3;
     }
   }

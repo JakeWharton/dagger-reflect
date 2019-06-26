@@ -12,7 +12,8 @@ public interface ModuleSubcomponentBindsFactory {
 
   @Module(subcomponents = StringSubcomponent.class)
   abstract class StringModule {
-    @Provides static String string(StringSubcomponent.Factory factory) {
+    @Provides
+    static String string(StringSubcomponent.Factory factory) {
       return factory.create(5L).value().toString();
     }
   }

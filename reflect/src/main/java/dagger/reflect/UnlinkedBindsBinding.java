@@ -1,11 +1,11 @@
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findQualifier;
+
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-
-import static dagger.reflect.Reflection.findQualifier;
 
 final class UnlinkedBindsBinding extends UnlinkedBinding {
   private final Method method;
@@ -14,11 +14,11 @@ final class UnlinkedBindsBinding extends UnlinkedBinding {
     this.method = method;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
+  @Override
+  public LinkedBinding<?> link(Linker linker, Scope scope) {
     Type[] parameterTypes = method.getGenericParameterTypes();
     if (parameterTypes.length != 1) {
-      throw new IllegalArgumentException(
-          "@Binds methods must have a single parameter: " + method);
+      throw new IllegalArgumentException("@Binds methods must have a single parameter: " + method);
     }
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
     Key dependency = Key.of(findQualifier(parameterAnnotations[0]), parameterTypes[0]);
@@ -26,7 +26,8 @@ final class UnlinkedBindsBinding extends UnlinkedBinding {
     return linker.get(dependency);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "@Binds[" + method.getDeclaringClass().getName() + '.' + method.getName() + "(…)]";
   }
 }

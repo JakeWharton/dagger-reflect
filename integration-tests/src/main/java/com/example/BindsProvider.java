@@ -11,9 +11,12 @@ interface BindsProvider {
 
   @Module
   abstract class Module1 {
-    @Provides static Integer integer() {
+    @Provides
+    static Integer integer() {
       return 42;
     }
-    @Binds abstract Number number(Integer num);
+
+    @Binds
+    abstract Number number(Integer num);
   }
 }

@@ -15,7 +15,8 @@ interface MemberInjectionMethodMultipleParams {
     Long two2;
     Integer three;
 
-    @Inject void multiple(String one, Long two, Long two2, Integer three) {
+    @Inject
+    void multiple(String one, Long two, Long two2, Integer three) {
       this.one = one;
       this.two = two;
       this.two2 = two;
@@ -25,13 +26,18 @@ interface MemberInjectionMethodMultipleParams {
 
   @Module
   abstract class Module1 {
-    @Provides static String one() {
+    @Provides
+    static String one() {
       return "one";
     }
-    @Provides static Long two() {
+
+    @Provides
+    static Long two() {
       return 2L;
     }
-    @Provides static Integer three() {
+
+    @Provides
+    static Integer three() {
       return 3;
     }
   }

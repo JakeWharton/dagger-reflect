@@ -11,10 +11,12 @@ interface ModuleInterface {
 
   @Module
   interface Module1 {
-    @Provides static Integer integer() {
+    @Provides
+    static Integer integer() {
       return 42;
     }
 
-    @Binds Number number(Integer num);
+    @Binds
+    Number number(Integer num);
   }
 }

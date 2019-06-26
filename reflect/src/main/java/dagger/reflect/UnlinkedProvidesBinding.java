@@ -1,11 +1,11 @@
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findQualifier;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import org.jetbrains.annotations.Nullable;
-
-import static dagger.reflect.Reflection.findQualifier;
 
 final class UnlinkedProvidesBinding extends Binding.UnlinkedBinding {
   private final @Nullable Object instance;
@@ -16,7 +16,8 @@ final class UnlinkedProvidesBinding extends Binding.UnlinkedBinding {
     this.method = method;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
+  @Override
+  public LinkedBinding<?> link(Linker linker, Scope scope) {
     Type[] parameterTypes = method.getGenericParameterTypes();
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
     LinkedBinding<?>[] dependencies = new LinkedBinding<?>[parameterTypes.length];
@@ -27,7 +28,8 @@ final class UnlinkedProvidesBinding extends Binding.UnlinkedBinding {
     return new LinkedProvidesBinding<>(instance, method, dependencies);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "@Provides[" + method.getDeclaringClass().getName() + '.' + method.getName() + "(…)]";
   }
 }

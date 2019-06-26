@@ -15,7 +15,8 @@ interface BindsElementsIntoSet {
 
   @Module
   abstract class Module1 {
-    @Provides static Deque<String> strings() {
+    @Provides
+    static Deque<String> strings() {
       ArrayDeque<String> strings = new ArrayDeque<>();
       strings.add("foo");
       return strings;

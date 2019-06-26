@@ -6,11 +6,13 @@ import org.jetbrains.annotations.Nullable;
 
 @Component
 public interface BuilderBindsInstanceOnParameterNull {
-  @Nullable String string();
+  @Nullable
+  String string();
 
   @Component.Builder
   interface Builder {
     Builder string(@BindsInstance @Nullable String string);
+
     BuilderBindsInstanceOnParameterNull build();
   }
 }

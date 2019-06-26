@@ -11,7 +11,8 @@ public interface SubcomponentProvision {
 
   @Module
   abstract class Module1 {
-    @Provides static String one() {
+    @Provides
+    static String one() {
       return "one";
     }
   }
@@ -19,11 +20,13 @@ public interface SubcomponentProvision {
   @Subcomponent(modules = Nested.Module2.class)
   interface Nested {
     String one();
+
     Long two();
 
     @Module
     abstract class Module2 {
-      @Provides static Long two() {
+      @Provides
+      static Long two() {
         return 2L;
       }
     }

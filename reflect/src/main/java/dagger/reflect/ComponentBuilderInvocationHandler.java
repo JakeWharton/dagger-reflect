@@ -15,6 +15,11 @@
  */
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findQualifier;
+import static dagger.reflect.Reflection.newProxy;
+import static dagger.reflect.Reflection.requireAnnotation;
+import static dagger.reflect.Reflection.requireEnclosingClass;
+
 import dagger.BindsInstance;
 import dagger.Component;
 import dagger.Module;
@@ -25,11 +30,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 
-import static dagger.reflect.Reflection.findQualifier;
-import static dagger.reflect.Reflection.newProxy;
-import static dagger.reflect.Reflection.requireAnnotation;
-import static dagger.reflect.Reflection.requireEnclosingClass;
-
 final class ComponentBuilderInvocationHandler implements InvocationHandler {
   static <B> B forComponentBuilder(Class<B> builderClass) {
     requireAnnotation(builderClass, Component.Builder.class);
@@ -38,14 +38,15 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
     if (!Modifier.isPublic(componentClass.getModifiers())) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
-      throw new IllegalArgumentException("Component interface "
-          + componentClass.getCanonicalName()
-          + " must be public in order to be reflectively created");
+      throw new IllegalArgumentException(
+          "Component interface "
+              + componentClass.getCanonicalName()
+              + " must be public in order to be reflectively created");
     }
 
-    ComponentScopeBuilder scopeBuilder =
-        ComponentScopeBuilder.buildComponent(componentClass);
-    return newProxy(builderClass,
+    ComponentScopeBuilder scopeBuilder = ComponentScopeBuilder.buildComponent(componentClass);
+    return newProxy(
+        builderClass,
         new ComponentBuilderInvocationHandler(componentClass, builderClass, scopeBuilder));
   }
 
@@ -56,14 +57,16 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
     if (!Modifier.isPublic(subcomponentClass.getModifiers())) {
       // Instances of proxies cannot create another proxy instance where the second interface is
       // not public. This prevents proxies of builders from creating proxies of the component.
-      throw new IllegalArgumentException("Subcomponent interface "
-          + subcomponentClass.getCanonicalName()
-          + " must be public in order to be reflectively created");
+      throw new IllegalArgumentException(
+          "Subcomponent interface "
+              + subcomponentClass.getCanonicalName()
+              + " must be public in order to be reflectively created");
     }
 
     ComponentScopeBuilder scopeBuilder =
         ComponentScopeBuilder.buildSubcomponent(subcomponentClass, parent);
-    return newProxy(builderClass,
+    return newProxy(
+        builderClass,
         new ComponentBuilderInvocationHandler(subcomponentClass, builderClass, scopeBuilder));
   }
 
@@ -71,14 +74,15 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
   private final Class<?> builderClass;
   private final ComponentScopeBuilder scopeBuilder;
 
-  private ComponentBuilderInvocationHandler(Class<?> componentClass, Class<?> builderClass,
-      ComponentScopeBuilder scopeBuilder) {
+  private ComponentBuilderInvocationHandler(
+      Class<?> componentClass, Class<?> builderClass, ComponentScopeBuilder scopeBuilder) {
     this.componentClass = componentClass;
     this.builderClass = builderClass;
     this.scopeBuilder = scopeBuilder;
   }
 
-  @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+  @Override
+  public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     if (method.getDeclaringClass() == Object.class) {
       return method.invoke(proxy, args);
     }
@@ -106,19 +110,20 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
           Reflection.hasAnnotation(parameterAnnotations[0], BindsInstance.class);
       if (isMethodBindsInstance || isParameterBindsInstance) {
         if (isMethodBindsInstance && isParameterBindsInstance) {
-          throw new IllegalStateException("@Component.Builder setter method "
-              + method.getDeclaringClass().getName()
-              + '.'
-              + method.getName()
-              + " may not have @BindsInstance on both the method and its parameter; "
-              + "choose one or the other");
+          throw new IllegalStateException(
+              "@Component.Builder setter method "
+                  + method.getDeclaringClass().getName()
+                  + '.'
+                  + method.getName()
+                  + " may not have @BindsInstance on both the method and its parameter; "
+                  + "choose one or the other");
         }
 
         Key key = Key.of(findQualifier(parameterAnnotations[0]), parameterTypes[0]);
         // TODO most nullable annotations don't have runtime retention. so maybe just always allow?
-        //if (argument == null && !hasNullable(parameterAnnotations[0])) {
+        // if (argument == null && !hasNullable(parameterAnnotations[0])) {
         //  throw new NullPointerException(); // TODO message
-        //}
+        // }
         scopeBuilder.putBoundInstance(key, argument);
       } else {
         Type parameterType = parameterTypes[0];
@@ -134,7 +139,10 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
             } catch (IllegalArgumentException e) {
               throw new IllegalStateException(
                   "@Component.Builder has setters for modules that aren't required: "
-                      + method.getDeclaringClass().getName() + '.' + method.getName(), e);
+                      + method.getDeclaringClass().getName()
+                      + '.'
+                      + method.getName(),
+                  e);
             }
           } else {
             try {
@@ -142,11 +150,15 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
             } catch (IllegalArgumentException e) {
               throw new IllegalStateException(
                   "@Component.Builder has setters for dependencies that aren't required: "
-                      + method.getDeclaringClass().getName() + '.' + method.getName(), e);
+                      + method.getDeclaringClass().getName()
+                      + '.'
+                      + method.getName(),
+                  e);
             }
           }
         } else {
-          throw new IllegalStateException(method.toString()); // TODO report unsupported method shape
+          throw new IllegalStateException(
+              method.toString()); // TODO report unsupported method shape
         }
       }
       return proxy;

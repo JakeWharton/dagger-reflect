@@ -15,19 +15,24 @@ interface ReusableScoped {
   @Subcomponent
   interface Child {
     Object object();
+
     Runnable runnable();
   }
 
   @Module
   abstract class Module1 {
-    @Provides @Reusable static Object value() {
+    @Provides
+    @Reusable
+    static Object value() {
       return new Object();
     }
 
-    @Provides @Reusable static Runnable runnable() {
+    @Provides
+    @Reusable
+    static Runnable runnable() {
       return new Runnable() {
-        @Override public void run() {
-        }
+        @Override
+        public void run() {}
       };
     }
   }

@@ -13,7 +13,8 @@ final class LinkedMapOfLazyBinding<K, V> extends LinkedBinding<Map<K, Lazy<V>>> 
     this.mapOfProviderBinding = mapOfProviderBinding;
   }
 
-  @Override public Map<K, Lazy<V>> get() {
+  @Override
+  public Map<K, Lazy<V>> get() {
     Map<K, Provider<V>> mapOfProvider = mapOfProviderBinding.get();
     assert mapOfProvider != null;
 

@@ -12,7 +12,9 @@ interface Scoped {
 
   @Module
   abstract class Module1 {
-    @Provides @Singleton static Object value() {
+    @Provides
+    @Singleton
+    static Object value() {
       return new Object();
     }
   }

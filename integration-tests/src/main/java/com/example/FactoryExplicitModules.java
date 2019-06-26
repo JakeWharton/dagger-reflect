@@ -16,7 +16,8 @@ public interface FactoryExplicitModules {
       this.value = value;
     }
 
-    @Provides String string() {
+    @Provides
+    String string() {
       return value;
     }
   }

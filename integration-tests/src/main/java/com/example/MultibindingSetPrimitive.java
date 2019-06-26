@@ -12,10 +12,15 @@ interface MultibindingSetPrimitive {
 
   @Module
   abstract class Module1 {
-    @Provides @IntoSet static long one() {
+    @Provides
+    @IntoSet
+    static long one() {
       return 1L;
     }
-    @Provides @IntoSet static long two() {
+
+    @Provides
+    @IntoSet
+    static long two() {
       return 2L;
     }
   }

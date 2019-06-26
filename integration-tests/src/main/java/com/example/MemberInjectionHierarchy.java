@@ -13,22 +13,26 @@ interface MemberInjectionHierarchy {
     @Inject String baseOne;
     boolean baseCalled;
 
-    @Inject void two(String one) {
+    @Inject
+    void two(String one) {
       baseCalled = true;
     }
   }
+
   final class Subtype extends Base {
     @Inject String subtypeOne;
     boolean subtypeCalled;
 
-    @Inject void subtype(String foo) {
+    @Inject
+    void subtype(String foo) {
       subtypeCalled = true;
     }
   }
 
   @Module
   abstract class Module1 {
-    @Provides static String foo() {
+    @Provides
+    static String foo() {
       return "foo";
     }
   }

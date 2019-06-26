@@ -13,10 +13,12 @@ public interface OptionalGuavaBinding {
 
   @Module
   abstract class Module1 {
-    @Provides static String foo() {
+    @Provides
+    static String foo() {
       return "foo";
     }
 
-    @BindsOptionalOf abstract String optionalFoo();
+    @BindsOptionalOf
+    abstract String optionalFoo();
   }
 }

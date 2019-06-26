@@ -6,6 +6,5 @@ import dagger.Component;
 interface MemberInjectionEmpty {
   void inject(Target target);
 
-  final class Target {
-  }
+  final class Target {}
 }

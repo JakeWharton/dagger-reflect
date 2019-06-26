@@ -1,11 +1,11 @@
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findQualifier;
+
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-
-import static dagger.reflect.Reflection.findQualifier;
 
 public final class UnlinkedJavaOptionalBinding extends UnlinkedBinding {
   private final Method method;
@@ -14,7 +14,8 @@ public final class UnlinkedJavaOptionalBinding extends UnlinkedBinding {
     this.method = method;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
+  @Override
+  public LinkedBinding<?> link(Linker linker, Scope scope) {
     Type[] parameterTypes = method.getGenericParameterTypes();
     if (parameterTypes.length != 0) {
       throw new IllegalArgumentException(
@@ -29,7 +30,8 @@ public final class UnlinkedJavaOptionalBinding extends UnlinkedBinding {
     return new LinkedJavaOptionalBinding<>(dependency);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "@Optional[" + method.getDeclaringClass().getName() + '.' + method.getName() + "(…)]";
   }
 }

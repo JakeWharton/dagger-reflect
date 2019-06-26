@@ -8,11 +8,13 @@ import org.jetbrains.annotations.Nullable;
 @Component(modules = ComponentProviderNull.Module1.class)
 interface ComponentProviderNull {
 
-  @Nullable String string();
+  @Nullable
+  String string();
 
   @Module
   abstract class Module1 {
-    @Provides static @Nullable String string() {
+    @Provides
+    static @Nullable String string() {
       return null;
     }
   }

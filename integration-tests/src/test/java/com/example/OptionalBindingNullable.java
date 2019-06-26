@@ -13,10 +13,13 @@ public interface OptionalBindingNullable {
 
   @Module
   abstract class Module1 {
-    @Provides @Nullable static String foo() {
+    @Provides
+    @Nullable
+    static String foo() {
       return null;
     }
 
-    @BindsOptionalOf abstract String optionalFoo();
+    @BindsOptionalOf
+    abstract String optionalFoo();
   }
 }

@@ -11,12 +11,14 @@ public interface MembersInjectionInterfaceMethod {
 
   interface Target {
     @SuppressWarnings("JavaxInjectOnAbstractMethod") // Known incorrect behavior under test.
-    @Inject void interfaceMethod(String one);
+    @Inject
+    void interfaceMethod(String one);
   }
 
   @Module
   abstract class Module1 {
-    @Provides static String one() {
+    @Provides
+    static String one() {
       return "one";
     }
   }

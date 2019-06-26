@@ -12,7 +12,8 @@ public interface ModuleSubcomponentBindsBuilder {
 
   @Module(subcomponents = StringSubcomponent.class)
   abstract class StringModule {
-    @Provides static String string(StringSubcomponent.Builder builder) {
+    @Provides
+    static String string(StringSubcomponent.Builder builder) {
       return builder.longValue(5L).build().value().toString();
     }
   }
@@ -23,7 +24,9 @@ public interface ModuleSubcomponentBindsBuilder {
 
     @Subcomponent.Builder
     interface Builder {
-      @BindsInstance Builder longValue(Long value);
+      @BindsInstance
+      Builder longValue(Long value);
+
       StringSubcomponent build();
     }
   }

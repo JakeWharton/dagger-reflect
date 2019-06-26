@@ -3,7 +3,6 @@ package com.example;
 import dagger.Component;
 import dagger.Module;
 import dagger.Provides;
-
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -13,7 +12,8 @@ interface ProviderGenericIntoJustInTime {
 
   @Module
   abstract class Module1 {
-    @Provides static String provideString() {
+    @Provides
+    static String provideString() {
       return "foo";
     }
   }
@@ -21,7 +21,8 @@ interface ProviderGenericIntoJustInTime {
   final class Thing<T> {
     final Provider<T> genericProvider;
 
-    @Inject Thing(Provider<T> genericProvider) {
+    @Inject
+    Thing(Provider<T> genericProvider) {
       this.genericProvider = genericProvider;
     }
   }

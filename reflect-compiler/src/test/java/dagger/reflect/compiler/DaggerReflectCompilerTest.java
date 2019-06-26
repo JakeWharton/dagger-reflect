@@ -15,79 +15,45 @@
  */
 package dagger.reflect.compiler;
 
+import static com.google.common.truth.Truth.assertAbout;
+import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
+
 import com.google.testing.compile.JavaFileObjects;
 import javax.tools.JavaFileObject;
 import org.junit.Test;
 
-import static com.google.common.truth.Truth.assertAbout;
-import static com.google.testing.compile.JavaSourceSubjectFactory.javaSource;
-
 public final class DaggerReflectCompilerTest {
-  @Test public void simple() {
-    JavaFileObject component = JavaFileObjects.forSourceString("example.TestComponent", ""
-        + "package example;\n"
-        + "\n"
-        + "import dagger.Component;\n"
-        + "\n"
-        + "@Component\n"
-        + "interface TestComponent {\n"
-        + "}\n"
-    );
+  @Test
+  public void simple() {
+    JavaFileObject component =
+        JavaFileObjects.forSourceString(
+            "example.TestComponent",
+            ""
+                + "package example;\n"
+                + "\n"
+                + "import dagger.Component;\n"
+                + "\n"
+                + "@Component\n"
+                + "interface TestComponent {\n"
+                + "}\n");
 
-    JavaFileObject expected = JavaFileObjects.forSourceString("example.DaggerTestComponent", ""
-        + "package example;\n"
-        + "\n"
-        + "import dagger.reflect.DaggerReflect;\n"
-        + "import java.lang.AssertionError;\n"
-        + "\n"
-        + "public final class DaggerTestComponent {\n"
-        + "  private DaggerTestComponent() {\n"
-        + "    throw new AssertionError();\n"
-        + "  }\n"
-        + "  public static TestComponent create() {\n"
-        + "    return DaggerReflect.create(TestComponent.class);\n"
-        + "  }\n"
-        + "}\n"
-    );
-
-    assertAbout(javaSource())
-        .that(component)
-        .processedWith(new DaggerReflectCompiler())
-        .compilesWithoutError()
-        .and()
-        .generatesSources(expected);
-  }
-
-  @Test public void nested() {
-    JavaFileObject component = JavaFileObjects.forSourceString("example.TestComponent", ""
-        + "package example;\n"
-        + "\n"
-        + "import dagger.Component;\n"
-        + "\n"
-        + "interface One {\n"
-        + "  interface Two {\n"
-        + "    @Component\n"
-        + "    interface TestComponent {\n"
-        + "    }\n"
-        + "  }\n"
-        + "}\n"
-    );
-
-    JavaFileObject expected = JavaFileObjects.forSourceString("example.DaggerOne_Two_TestComponent", ""
-        + "package example;\n"
-        + "\n"
-        + "import dagger.reflect.DaggerReflect;\n"
-        + "import java.lang.AssertionError;\n"
-        + "\n"
-        + "public final class DaggerOne_Two_TestComponent {\n"
-        + "  private DaggerOne_Two_TestComponent() {\n"
-        + "    throw new AssertionError();\n"
-        + "  }\n"
-        + "  public static One.Two.TestComponent create() {\n"
-        + "    return DaggerReflect.create(One.Two.TestComponent.class);\n"
-        + "  }\n"
-        + "}\n"
-    );
+    JavaFileObject expected =
+        JavaFileObjects.forSourceString(
+            "example.DaggerTestComponent",
+            ""
+                + "package example;\n"
+                + "\n"
+                + "import dagger.reflect.DaggerReflect;\n"
+                + "import java.lang.AssertionError;\n"
+                + "\n"
+                + "public final class DaggerTestComponent {\n"
+                + "  private DaggerTestComponent() {\n"
+                + "    throw new AssertionError();\n"
+                + "  }\n"
+                + "  public static TestComponent create() {\n"
+                + "    return DaggerReflect.create(TestComponent.class);\n"
+                + "  }\n"
+                + "}\n");
 
     assertAbout(javaSource())
         .that(component)
@@ -97,38 +63,41 @@ public final class DaggerReflectCompilerTest {
         .generatesSources(expected);
   }
 
-  @Test public void builder() {
-    JavaFileObject component = JavaFileObjects.forSourceString("example.TestComponent", ""
-        + "package example;\n"
-        + "\n"
-        + "import dagger.Component;\n"
-        + "\n"
-        + "@Component\n"
-        + "interface TestComponent {\n"
-        + "  @Component.Builder\n"
-        + "  interface Builder {\n"
-        + "  }\n"
-        + "}\n"
-    );
+  @Test
+  public void nested() {
+    JavaFileObject component =
+        JavaFileObjects.forSourceString(
+            "example.TestComponent",
+            ""
+                + "package example;\n"
+                + "\n"
+                + "import dagger.Component;\n"
+                + "\n"
+                + "interface One {\n"
+                + "  interface Two {\n"
+                + "    @Component\n"
+                + "    interface TestComponent {\n"
+                + "    }\n"
+                + "  }\n"
+                + "}\n");
 
-    JavaFileObject expected = JavaFileObjects.forSourceString("example.DaggerTestComponent", ""
-        + "package example;\n"
-        + "\n"
-        + "import dagger.reflect.DaggerReflect;\n"
-        + "import java.lang.AssertionError;\n"
-        + "\n"
-        + "public final class DaggerTestComponent {\n"
-        + "  private DaggerTestComponent() {\n"
-        + "    throw new AssertionError();\n"
-        + "  }\n"
-        + "  public static TestComponent create() {\n"
-        + "    return DaggerReflect.create(TestComponent.class);\n"
-        + "  }\n"
-        + "  public static TestComponent.Builder builder() {\n"
-        + "    return DaggerReflect.builder(TestComponent.Builder.class);\n"
-        + "  }\n"
-        + "}\n"
-    );
+    JavaFileObject expected =
+        JavaFileObjects.forSourceString(
+            "example.DaggerOne_Two_TestComponent",
+            ""
+                + "package example;\n"
+                + "\n"
+                + "import dagger.reflect.DaggerReflect;\n"
+                + "import java.lang.AssertionError;\n"
+                + "\n"
+                + "public final class DaggerOne_Two_TestComponent {\n"
+                + "  private DaggerOne_Two_TestComponent() {\n"
+                + "    throw new AssertionError();\n"
+                + "  }\n"
+                + "  public static One.Two.TestComponent create() {\n"
+                + "    return DaggerReflect.create(One.Two.TestComponent.class);\n"
+                + "  }\n"
+                + "}\n");
 
     assertAbout(javaSource())
         .that(component)
@@ -138,38 +107,89 @@ public final class DaggerReflectCompilerTest {
         .generatesSources(expected);
   }
 
-  @Test public void factory() {
-    JavaFileObject component = JavaFileObjects.forSourceString("example.TestComponent", ""
-        + "package example;\n"
-        + "\n"
-        + "import dagger.Component;\n"
-        + "\n"
-        + "@Component\n"
-        + "interface TestComponent {\n"
-        + "  @Component.Factory\n"
-        + "  interface Factory {\n"
-        + "  }\n"
-        + "}\n"
-    );
+  @Test
+  public void builder() {
+    JavaFileObject component =
+        JavaFileObjects.forSourceString(
+            "example.TestComponent",
+            ""
+                + "package example;\n"
+                + "\n"
+                + "import dagger.Component;\n"
+                + "\n"
+                + "@Component\n"
+                + "interface TestComponent {\n"
+                + "  @Component.Builder\n"
+                + "  interface Builder {\n"
+                + "  }\n"
+                + "}\n");
 
-    JavaFileObject expected = JavaFileObjects.forSourceString("example.DaggerTestComponent", ""
-        + "package example;\n"
-        + "\n"
-        + "import dagger.reflect.DaggerReflect;\n"
-        + "import java.lang.AssertionError;\n"
-        + "\n"
-        + "public final class DaggerTestComponent {\n"
-        + "  private DaggerTestComponent() {\n"
-        + "    throw new AssertionError();\n"
-        + "  }\n"
-        + "  public static TestComponent create() {\n"
-        + "    return DaggerReflect.create(TestComponent.class);\n"
-        + "  }\n"
-        + "  public static TestComponent.Factory factory() {\n"
-        + "    return DaggerReflect.factory(TestComponent.Factory.class);\n"
-        + "  }\n"
-        + "}\n"
-    );
+    JavaFileObject expected =
+        JavaFileObjects.forSourceString(
+            "example.DaggerTestComponent",
+            ""
+                + "package example;\n"
+                + "\n"
+                + "import dagger.reflect.DaggerReflect;\n"
+                + "import java.lang.AssertionError;\n"
+                + "\n"
+                + "public final class DaggerTestComponent {\n"
+                + "  private DaggerTestComponent() {\n"
+                + "    throw new AssertionError();\n"
+                + "  }\n"
+                + "  public static TestComponent create() {\n"
+                + "    return DaggerReflect.create(TestComponent.class);\n"
+                + "  }\n"
+                + "  public static TestComponent.Builder builder() {\n"
+                + "    return DaggerReflect.builder(TestComponent.Builder.class);\n"
+                + "  }\n"
+                + "}\n");
+
+    assertAbout(javaSource())
+        .that(component)
+        .processedWith(new DaggerReflectCompiler())
+        .compilesWithoutError()
+        .and()
+        .generatesSources(expected);
+  }
+
+  @Test
+  public void factory() {
+    JavaFileObject component =
+        JavaFileObjects.forSourceString(
+            "example.TestComponent",
+            ""
+                + "package example;\n"
+                + "\n"
+                + "import dagger.Component;\n"
+                + "\n"
+                + "@Component\n"
+                + "interface TestComponent {\n"
+                + "  @Component.Factory\n"
+                + "  interface Factory {\n"
+                + "  }\n"
+                + "}\n");
+
+    JavaFileObject expected =
+        JavaFileObjects.forSourceString(
+            "example.DaggerTestComponent",
+            ""
+                + "package example;\n"
+                + "\n"
+                + "import dagger.reflect.DaggerReflect;\n"
+                + "import java.lang.AssertionError;\n"
+                + "\n"
+                + "public final class DaggerTestComponent {\n"
+                + "  private DaggerTestComponent() {\n"
+                + "    throw new AssertionError();\n"
+                + "  }\n"
+                + "  public static TestComponent create() {\n"
+                + "    return DaggerReflect.create(TestComponent.class);\n"
+                + "  }\n"
+                + "  public static TestComponent.Factory factory() {\n"
+                + "    return DaggerReflect.factory(TestComponent.Factory.class);\n"
+                + "  }\n"
+                + "}\n");
 
     assertAbout(javaSource())
         .that(component)

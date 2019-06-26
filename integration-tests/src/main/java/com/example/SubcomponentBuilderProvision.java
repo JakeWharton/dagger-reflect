@@ -11,7 +11,8 @@ public interface SubcomponentBuilderProvision {
 
   @Module
   abstract class Module1 {
-    @Provides static String one() {
+    @Provides
+    static String one() {
       return "one";
     }
   }
@@ -19,11 +20,13 @@ public interface SubcomponentBuilderProvision {
   @Subcomponent(modules = Nested.Module2.class)
   interface Nested {
     String one();
+
     Long two();
 
     @Subcomponent.Builder
     interface Builder {
       Builder module2(Module2 module);
+
       Nested build();
     }
 
@@ -35,7 +38,8 @@ public interface SubcomponentBuilderProvision {
         this.two = two;
       }
 
-      @Provides Long two() {
+      @Provides
+      Long two() {
         return two;
       }
     }

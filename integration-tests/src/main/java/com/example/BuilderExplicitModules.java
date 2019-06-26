@@ -16,7 +16,8 @@ public interface BuilderExplicitModules {
       this.value = value;
     }
 
-    @Provides String string() {
+    @Provides
+    String string() {
       return value;
     }
   }
@@ -24,6 +25,7 @@ public interface BuilderExplicitModules {
   @Component.Builder
   interface Builder {
     Builder module1(Module1 module1);
+
     BuilderExplicitModules build();
   }
 }

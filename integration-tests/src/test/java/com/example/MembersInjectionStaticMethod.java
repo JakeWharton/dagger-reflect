@@ -10,12 +10,14 @@ public interface MembersInjectionStaticMethod {
   void inject(Target instance);
 
   class Target {
-    @Inject static void staticMethod(String one) {}
+    @Inject
+    static void staticMethod(String one) {}
   }
 
   @Module
   abstract class Module1 {
-    @Provides static String one() {
+    @Provides
+    static String one() {
       return "one";
     }
   }

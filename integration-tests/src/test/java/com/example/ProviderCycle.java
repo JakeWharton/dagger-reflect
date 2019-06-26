@@ -10,15 +10,18 @@ public interface ProviderCycle {
 
   @Module
   abstract class Module1 {
-    @Provides static String longToString(Long value) {
+    @Provides
+    static String longToString(Long value) {
       return String.valueOf(value);
     }
 
-    @Provides static Integer stringToInteger(String value) {
+    @Provides
+    static Integer stringToInteger(String value) {
       return Integer.parseInt(value);
     }
 
-    @Provides static Long intToLong(Integer value) {
+    @Provides
+    static Long intToLong(Integer value) {
       return Long.valueOf(value);
     }
   }

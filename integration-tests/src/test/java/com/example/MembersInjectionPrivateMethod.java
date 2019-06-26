@@ -10,12 +10,14 @@ public interface MembersInjectionPrivateMethod {
   void inject(Target instance);
 
   class Target {
-    @Inject private void privateMethod(String one) {}
+    @Inject
+    private void privateMethod(String one) {}
   }
 
   @Module
   abstract class Module1 {
-    @Provides static String one() {
+    @Provides
+    static String one() {
       return "one";
     }
   }

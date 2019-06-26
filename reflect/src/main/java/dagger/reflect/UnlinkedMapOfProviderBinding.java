@@ -12,7 +12,8 @@ final class UnlinkedMapOfProviderBinding extends UnlinkedBinding {
     this.entryBindings = entryBindings;
   }
 
-  @Override public LinkedBinding<Map<Object, Provider<Object>>> link(Linker linker, Scope scope) {
+  @Override
+  public LinkedBinding<Map<Object, Provider<Object>>> link(Linker linker, Scope scope) {
     Map<Object, Provider<Object>> mapOfProviders = new LinkedHashMap<>(entryBindings.size());
     for (Map.Entry<Object, Binding> entryBinding : entryBindings.entrySet()) {
       LinkedBinding<Object> binding =
@@ -22,7 +23,8 @@ final class UnlinkedMapOfProviderBinding extends UnlinkedBinding {
     return new LinkedInstanceBinding<>(mapOfProviders);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "Map" + entryBindings;
   }
 }

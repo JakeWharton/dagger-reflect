@@ -18,10 +18,17 @@ interface MultibindingProviderMap {
     static final AtomicInteger oneCount = new AtomicInteger(0);
     static final AtomicInteger twoCount = new AtomicInteger(0);
 
-    @Provides @IntoMap @StringKey("1") static String one() {
+    @Provides
+    @IntoMap
+    @StringKey("1")
+    static String one() {
       return "one" + oneCount.getAndIncrement();
     }
-    @Provides @IntoMap @StringKey("2") static String two() {
+
+    @Provides
+    @IntoMap
+    @StringKey("2")
+    static String two() {
       return "two" + twoCount.getAndIncrement();
     }
   }

@@ -6,7 +6,8 @@ import org.jetbrains.annotations.Nullable;
 
 @Component
 public interface FactoryBindsInstanceNull {
-  @Nullable String string();
+  @Nullable
+  String string();
 
   @Component.Factory
   interface Factory {

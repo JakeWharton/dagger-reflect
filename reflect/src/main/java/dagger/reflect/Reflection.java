@@ -16,13 +16,13 @@
 package dagger.reflect;
 
 import dagger.MapKey;
+import dagger.Reusable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -30,13 +30,11 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.inject.Qualifier;
 import javax.inject.Scope;
-
-import dagger.Reusable;
 import org.jetbrains.annotations.Nullable;
 
 final class Reflection {
-  static @Nullable Class<?> findEnclosedAnnotatedClass(Class<?> cls,
-      Class<? extends Annotation> annotationClass) {
+  static @Nullable Class<?> findEnclosedAnnotatedClass(
+      Class<?> cls, Class<? extends Annotation> annotationClass) {
     for (Class<?> declaredClass : cls.getDeclaredClasses()) {
       if (declaredClass.getAnnotation(annotationClass) != null) {
         return declaredClass;
@@ -62,15 +60,18 @@ final class Reflection {
   static @Nullable Annotation findScope(Annotation[] annotations) {
     Set<Annotation> scopes = findScopes(annotations);
     switch (scopes.size()) {
-      case 0: return null;
-      case 1: return scopes.iterator().next();
-      default: throw new IllegalStateException("Multiple scope annotations found: " + scopes);
+      case 0:
+        return null;
+      case 1:
+        return scopes.iterator().next();
+      default:
+        throw new IllegalStateException("Multiple scope annotations found: " + scopes);
     }
   }
 
   /**
-   * Finds scoping annotations that aren't {@link Reusable}.
-   * Reusable is ignored since it is a best effort optimization and isn't a real scoping annotation.
+   * Finds scoping annotations that aren't {@link Reusable}. Reusable is ignored since it is a best
+   * effort optimization and isn't a real scoping annotation.
    *
    * @param annotations The set of annotations to parse for scoping annotations.
    * @return All annotations with Scope or an empty set if none are found.
@@ -89,9 +90,7 @@ final class Reflection {
         scopes.add(annotation);
       }
     }
-    return scopes != null
-        ? scopes
-        : Collections.emptySet();
+    return scopes != null ? scopes : Collections.emptySet();
   }
 
   static @Nullable Annotation findMapKey(Annotation[] annotations) {
@@ -108,8 +107,8 @@ final class Reflection {
     return key;
   }
 
-  static @Nullable <T extends Annotation> T findAnnotation(Annotation[] annotations,
-      Class<T> annotationType) {
+  static @Nullable <T extends Annotation> T findAnnotation(
+      Annotation[] annotations, Class<T> annotationType) {
     for (Annotation annotation : annotations) {
       if (annotation.annotationType() == annotationType) {
         return annotationType.cast(annotation);
@@ -216,10 +215,10 @@ final class Reflection {
 
   static <T> T newProxy(Class<T> cls, InvocationHandler handler) {
     if (!cls.isInterface()) {
-      throw new IllegalArgumentException(cls.getCanonicalName()
-          + " is not an interface. Only interfaces are supported.");
+      throw new IllegalArgumentException(
+          cls.getCanonicalName() + " is not an interface. Only interfaces are supported.");
     }
-    return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls }, handler));
+    return cls.cast(Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] {cls}, handler));
   }
 
   static Type boxIfNecessary(Type type) {

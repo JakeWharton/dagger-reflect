@@ -7,6 +7,5 @@ import javax.inject.Singleton;
 @Component(dependencies = ComponentScopedDependsOnUnscoped.UnscopedComponent.class)
 public interface ComponentScopedDependsOnUnscoped {
   @Component
-  interface UnscopedComponent {
-  }
+  interface UnscopedComponent {}
 }

@@ -1,12 +1,12 @@
 package com.example;
 
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import dagger.Component;
 import dagger.Subcomponent;
 import java.lang.annotation.Retention;
 import javax.inject.Scope;
 import javax.inject.Singleton;
-
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 @Singleton
 @Component
@@ -21,8 +21,7 @@ public interface SubcomponentScopeCycle {
 
   @Singleton
   @Subcomponent
-  interface SingletonComponent {
-  }
+  interface SingletonComponent {}
 
   @Scope
   @Retention(RUNTIME)

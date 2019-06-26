@@ -14,19 +14,22 @@ final class UnlinkedSetBinding extends UnlinkedBinding {
     this.elementsBindings = elementsBindings;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
+  @Override
+  public LinkedBinding<?> link(Linker linker, Scope scope) {
     List<LinkedBinding<Object>> linkedElementBindings = new ArrayList<>(elementBindings.size());
     for (Binding elementBinding : elementBindings) {
       linkedElementBindings.add((LinkedBinding<Object>) elementBinding.link(linker, scope));
     }
-    List<LinkedBinding<Set<Object>>> linkedElementsBindings = new ArrayList<>(elementsBindings.size());
+    List<LinkedBinding<Set<Object>>> linkedElementsBindings =
+        new ArrayList<>(elementsBindings.size());
     for (Binding elementsBinding : elementsBindings) {
       linkedElementsBindings.add((LinkedBinding<Set<Object>>) elementsBinding.link(linker, scope));
     }
     return new LinkedSetBinding<>(linkedElementBindings, linkedElementsBindings);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "Set" + elementBindings;
   }
 }

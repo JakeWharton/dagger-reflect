@@ -1,11 +1,11 @@
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findQualifier;
+
 import dagger.reflect.Binding.LinkedBinding;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
-
-import static dagger.reflect.Reflection.findQualifier;
 
 final class ReflectiveDependencyParser {
   private static final LinkedBinding<?>[] NO_BINDINGS = new LinkedBinding<?>[0];

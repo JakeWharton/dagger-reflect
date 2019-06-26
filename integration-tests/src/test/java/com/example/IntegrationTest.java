@@ -1,20 +1,19 @@
 package com.example;
 
+import static com.google.common.truth.Truth.assertThat;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
+import dagger.Lazy;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Provider;
-
-import dagger.Lazy;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
 import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
-
-import static com.google.common.truth.Truth.assertThat;
-import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 @RunWith(Parameterized.class)
 public final class IntegrationTest {
@@ -25,57 +24,68 @@ public final class IntegrationTest {
 
   @Parameter public Backend backend;
 
-  @Test public void componentProvider() {
+  @Test
+  public void componentProvider() {
     ComponentProvider component = backend.create(ComponentProvider.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void componentProviderNull() {
+  @Test
+  public void componentProviderNull() {
     ComponentProviderNull component = backend.create(ComponentProviderNull.class);
     assertThat(component.string()).isNull();
   }
 
-  @Test public void componentProviderQualified() {
+  @Test
+  public void componentProviderQualified() {
     ComponentProviderQualified component = backend.create(ComponentProviderQualified.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void staticProvider() {
+  @Test
+  public void staticProvider() {
     StaticProvider component = backend.create(StaticProvider.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void bindsProvider() {
+  @Test
+  public void bindsProvider() {
     BindsProvider component = backend.create(BindsProvider.class);
     assertThat(component.number()).isEqualTo(42);
   }
 
-  @Test public void bindsProviderNull() {
+  @Test
+  public void bindsProviderNull() {
     BindsProviderNull component = backend.create(BindsProviderNull.class);
     assertThat(component.string()).isNull();
   }
 
-  @Test public void bindIntoSet() {
+  @Test
+  public void bindIntoSet() {
     BindsIntoSet component = backend.create(BindsIntoSet.class);
     assertThat(component.strings()).containsExactly("foo");
   }
 
-  @Test public void bindElementsIntoSet() {
+  @Test
+  public void bindElementsIntoSet() {
     BindsElementsIntoSet component = backend.create(BindsElementsIntoSet.class);
     assertThat(component.strings()).containsExactly("foo");
   }
 
-  @Test public void bindIntoMap() {
+  @Test
+  public void bindIntoMap() {
     BindsIntoMap component = backend.create(BindsIntoMap.class);
     assertThat(component.strings()).containsExactly("bar", "foo");
   }
 
-  @Test public void mapWithoutBinds() {
+  @Test
+  public void mapWithoutBinds() {
     MapWithoutBinds component = backend.create(MapWithoutBinds.class);
     assertThat(component.strings()).containsExactly("1", "one", "2", "two");
   }
 
-  @Test public void mapProviderWithoutBinds() {
+  @Test
+  public void mapProviderWithoutBinds() {
     MapProviderWithoutBinds component = backend.create(MapProviderWithoutBinds.class);
 
     Map<String, Provider<String>> values = component.strings();
@@ -89,7 +99,8 @@ public final class IntegrationTest {
     assertThat(values.get("1").get()).isEqualTo("one");
   }
 
-  @Test public void mapLazyWithoutBinds() {
+  @Test
+  public void mapLazyWithoutBinds() {
     MapLazyWithoutBinds component = backend.create(MapLazyWithoutBinds.class);
 
     Map<String, Lazy<String>> values = component.strings();
@@ -103,12 +114,14 @@ public final class IntegrationTest {
     assertThat(values.get("1").get()).isEqualTo("one");
   }
 
-  @Test public void optionalBinding() {
+  @Test
+  public void optionalBinding() {
     OptionalBinding component = backend.create(OptionalBinding.class);
     assertThat(component.string()).isEqualTo(Optional.of("foo"));
   }
 
-  @Test public void optionalBindingNullable() {
+  @Test
+  public void optionalBindingNullable() {
     ignoreCodegenBackend();
 
     OptionalBindingNullable component = backend.create(OptionalBindingNullable.class);
@@ -116,50 +129,60 @@ public final class IntegrationTest {
       component.string();
       fail();
     } catch (NullPointerException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("@Provides[com.example.OptionalBindingNullable$Module1.foo(…)] "
-              + "returned null which is not allowed for optional bindings");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "@Provides[com.example.OptionalBindingNullable$Module1.foo(…)] "
+                  + "returned null which is not allowed for optional bindings");
     }
   }
 
-  @Test public void optionalBindingAbsent() {
+  @Test
+  public void optionalBindingAbsent() {
     OptionalBindingAbsent component = backend.create(OptionalBindingAbsent.class);
     assertThat(component.string()).isEqualTo(Optional.empty());
   }
 
-  @Test public void optionalBindingPrimitive() {
+  @Test
+  public void optionalBindingPrimitive() {
     OptionalBindingPrimitive component = backend.create(OptionalBindingPrimitive.class);
     assertThat(component.five()).isEqualTo(Optional.of(5L));
   }
 
   @SuppressWarnings("Guava") // Explicitly testing Guava support.
-  @Test public void optionalGuavaBinding() {
+  @Test
+  public void optionalGuavaBinding() {
     OptionalGuavaBinding component = backend.create(OptionalGuavaBinding.class);
     assertThat(component.string()).isEqualTo(com.google.common.base.Optional.of("foo"));
   }
 
-  @Test public void optionalGuavaBindingAbsent() {
+  @Test
+  public void optionalGuavaBindingAbsent() {
     OptionalGuavaBindingAbsent component = backend.create(OptionalGuavaBindingAbsent.class);
     assertThat(component.string()).isEqualTo(com.google.common.base.Optional.absent());
   }
 
   @SuppressWarnings("Guava") // Explicitly testing Guava support.
-  @Test public void optionalGuavaBindingPrimitive() {
+  @Test
+  public void optionalGuavaBindingPrimitive() {
     OptionalGuavaBindingPrimitive component = backend.create(OptionalGuavaBindingPrimitive.class);
     assertThat(component.five()).isEqualTo(com.google.common.base.Optional.of(5L));
   }
 
-  @Test public void justInTimeConstructor() {
+  @Test
+  public void justInTimeConstructor() {
     JustInTimeConstructor component = backend.create(JustInTimeConstructor.class);
     assertThat(component.thing()).isNotNull();
   }
 
-  @Test public void justInTimeGeneric() {
+  @Test
+  public void justInTimeGeneric() {
     JustInTimeGeneric component = backend.create(JustInTimeGeneric.class);
     assertThat(component.thing()).isNotNull();
   }
 
-  @Test public void justInTimeMembersInjection() {
+  @Test
+  public void justInTimeMembersInjection() {
     JustInTimeMembersInjection component = backend.create(JustInTimeMembersInjection.class);
     JustInTimeMembersInjection.Thing thing = component.thing();
     assertThat(thing.stringConstructor).isEqualTo("hey");
@@ -167,14 +190,16 @@ public final class IntegrationTest {
     assertThat(thing.stringMethod).isEqualTo("hey");
   }
 
-  @Test public void justInTimeScoped() {
+  @Test
+  public void justInTimeScoped() {
     JustInTimeScoped component = backend.create(JustInTimeScoped.class);
     JustInTimeScoped.Thing thing1 = component.thing();
     JustInTimeScoped.Thing thing2 = component.thing();
     assertThat(thing1).isSameInstanceAs(thing2);
   }
 
-  @Test public void justInTimeScopedInParent() {
+  @Test
+  public void justInTimeScopedInParent() {
     JustInTimeScopedInParent component = backend.create(JustInTimeScopedInParent.class);
     JustInTimeScopedInParent.ChildComponent child1 = component.child();
     JustInTimeScopedInParent.Thing thing1 = child1.thing();
@@ -183,14 +208,16 @@ public final class IntegrationTest {
     assertThat(thing1).isSameInstanceAs(thing2);
   }
 
-  @Test public void justInTimeUnscopedIntoJustInTimeScoped() {
+  @Test
+  public void justInTimeUnscopedIntoJustInTimeScoped() {
     JustInTimeDependsOnJustInTime component = backend.create(JustInTimeDependsOnJustInTime.class);
     JustInTimeDependsOnJustInTime.Foo foo1 = component.thing();
     JustInTimeDependsOnJustInTime.Foo foo2 = component.thing();
     assertThat(foo1).isNotSameInstanceAs(foo2);
   }
 
-  @Test public void justInTimeWrongScope() {
+  @Test
+  public void justInTimeWrongScope() {
     ignoreCodegenBackend();
 
     JustInTimeWrongScope component = backend.create(JustInTimeWrongScope.class);
@@ -202,7 +229,8 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void justInTimeScopedIntoUnscoped() {
+  @Test
+  public void justInTimeScopedIntoUnscoped() {
     ignoreCodegenBackend();
 
     JustInTimeScopedIntoUnscoped component = backend.create(JustInTimeScopedIntoUnscoped.class);
@@ -214,7 +242,8 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void justInTimeNotScopedInAncestry() {
+  @Test
+  public void justInTimeNotScopedInAncestry() {
     ignoreCodegenBackend();
 
     JustInTimeNotScopedInAncestry.ChildComponent child =
@@ -227,14 +256,16 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void providerGenericIntoJustInTimeGeneric() {
+  @Test
+  public void providerGenericIntoJustInTimeGeneric() {
     ignoreReflectionBackend();
 
     ProviderGenericIntoJustInTime component = backend.create(ProviderGenericIntoJustInTime.class);
     assertThat(component.thing().genericProvider.get()).isNotNull();
   }
 
-  @Test public void providerUnscopedBinding() {
+  @Test
+  public void providerUnscopedBinding() {
     ProviderUnscopedBinding component = backend.create(ProviderUnscopedBinding.class);
     Provider<String> value = component.value();
 
@@ -245,7 +276,8 @@ public final class IntegrationTest {
     assertThat(value.get()).isEqualTo("one2");
   }
 
-  @Test public void providerScopedBinding() {
+  @Test
+  public void providerScopedBinding() {
     ProviderScopedBinding component = backend.create(ProviderScopedBinding.class);
     Provider<String> value = component.value();
 
@@ -257,7 +289,8 @@ public final class IntegrationTest {
     assertThat(value.get()).isEqualTo("one1");
   }
 
-  @Test public void lazyInvokedTwiceInstancesAreSame() {
+  @Test
+  public void lazyInvokedTwiceInstancesAreSame() {
     LazyUnscopedBinding component = backend.create(LazyUnscopedBinding.class);
     Lazy<String> value = component.value();
 
@@ -268,7 +301,8 @@ public final class IntegrationTest {
     assertThat(value.get()).isEqualTo("one1");
   }
 
-  @Test public void lazyInvokedTwiceDifferentLazyDifferentInstances() {
+  @Test
+  public void lazyInvokedTwiceDifferentLazyDifferentInstances() {
     LazyUnscopedBinding component = backend.create(LazyUnscopedBinding.class);
     Lazy<String> lazyOne = component.value();
     Lazy<String> lazyTwo = component.value();
@@ -280,7 +314,8 @@ public final class IntegrationTest {
     assertThat(lazyTwo.get()).isEqualTo("one2");
   }
 
-  @Test public void lazyScopedInjection() {
+  @Test
+  public void lazyScopedInjection() {
     LazyScopedBinding component = backend.create(LazyScopedBinding.class);
     Lazy<String> value = component.value();
 
@@ -291,60 +326,61 @@ public final class IntegrationTest {
     assertThat(value.get()).isEqualTo("one1");
   }
 
-  @Test public void implicitModuleInstance() {
+  @Test
+  public void implicitModuleInstance() {
     ImplicitModuleInstance component = backend.create(ImplicitModuleInstance.class);
 
     assertThat(component.string()).isEqualTo("one");
   }
 
-  @Test public void builderBindsInstance() {
-    BuilderBindsInstance component = backend.builder(BuilderBindsInstance.Builder.class)
-        .string("foo")
-        .build();
+  @Test
+  public void builderBindsInstance() {
+    BuilderBindsInstance component =
+        backend.builder(BuilderBindsInstance.Builder.class).string("foo").build();
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void builderBindsInstanceCalledTwice() {
-    BuilderBindsInstance component = backend.builder(BuilderBindsInstance.Builder.class)
-        .string("foo")
-        .string("bar")
-        .build();
+  @Test
+  public void builderBindsInstanceCalledTwice() {
+    BuilderBindsInstance component =
+        backend.builder(BuilderBindsInstance.Builder.class).string("foo").string("bar").build();
     assertThat(component.string()).isEqualTo("bar");
   }
 
-  @Test public void builderBindsInstanceNull() {
-    BuilderBindsInstanceNull component = backend.builder(BuilderBindsInstanceNull.Builder.class)
-        .string(null)
-        .build();
+  @Test
+  public void builderBindsInstanceNull() {
+    BuilderBindsInstanceNull component =
+        backend.builder(BuilderBindsInstanceNull.Builder.class).string(null).build();
     assertThat(component.string()).isNull();
   }
 
-  @Test public void builderBindsInstanceOnParameter() {
+  @Test
+  public void builderBindsInstanceOnParameter() {
     BuilderBindsInstanceOnParameter component =
-        backend.builder(BuilderBindsInstanceOnParameter.Builder.class)
-            .string("foo")
-            .build();
+        backend.builder(BuilderBindsInstanceOnParameter.Builder.class).string("foo").build();
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void builderBindsInstanceOnParameterCalledTwice() {
+  @Test
+  public void builderBindsInstanceOnParameterCalledTwice() {
     BuilderBindsInstanceOnParameter component =
-        backend.builder(BuilderBindsInstanceOnParameter.Builder.class)
+        backend
+            .builder(BuilderBindsInstanceOnParameter.Builder.class)
             .string("foo")
             .string("bar")
             .build();
     assertThat(component.string()).isEqualTo("bar");
   }
 
-  @Test public void builderBindsInstanceOnParameterNull() {
+  @Test
+  public void builderBindsInstanceOnParameterNull() {
     BuilderBindsInstanceOnParameterNull component =
-        backend.builder(BuilderBindsInstanceOnParameterNull.Builder.class)
-            .string(null)
-            .build();
+        backend.builder(BuilderBindsInstanceOnParameterNull.Builder.class).string(null).build();
     assertThat(component.string()).isNull();
   }
 
-  @Test public void builderBindsInstanceOnParameterAndMethod() {
+  @Test
+  public void builderBindsInstanceOnParameterAndMethod() {
     ignoreCodegenBackend();
 
     BuilderBindsInstanceOnParameterAndMethod.Builder builder =
@@ -353,30 +389,36 @@ public final class IntegrationTest {
       builder.string("hey");
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("@Component.Builder setter method "
-              + "com.example.BuilderBindsInstanceOnParameterAndMethod$Builder.string may not have "
-              + "@BindsInstance on both the method and its parameter; choose one or the other");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "@Component.Builder setter method "
+                  + "com.example.BuilderBindsInstanceOnParameterAndMethod$Builder.string may not have "
+                  + "@BindsInstance on both the method and its parameter; choose one or the other");
     }
   }
 
-  @Test public void builderImplicitModules() {
-    BuilderImplicitModules component = backend.builder(BuilderImplicitModules.Builder.class)
-        .value(3L)
-        .build();
+  @Test
+  public void builderImplicitModules() {
+    BuilderImplicitModules component =
+        backend.builder(BuilderImplicitModules.Builder.class).value(3L).build();
 
     assertThat(component.string()).isEqualTo("3");
   }
 
-  @Test public void builderExplicitModules() {
-    BuilderExplicitModules component = backend.builder(BuilderExplicitModules.Builder.class)
-        .module1(new BuilderExplicitModules.Module1("3"))
-        .build();
+  @Test
+  public void builderExplicitModules() {
+    BuilderExplicitModules component =
+        backend
+            .builder(BuilderExplicitModules.Builder.class)
+            .module1(new BuilderExplicitModules.Module1("3"))
+            .build();
 
     assertThat(component.string()).isEqualTo("3");
   }
 
-  @Test public void builderExplicitModulesNullThrowsNpe() {
+  @Test
+  public void builderExplicitModulesNullThrowsNpe() {
     BuilderExplicitModules.Builder builder = backend.builder(BuilderExplicitModules.Builder.class);
     try {
       builder.module1(null);
@@ -385,34 +427,43 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void builderExplicitModulesSetTwice() {
-    BuilderExplicitModules component = backend.builder(BuilderExplicitModules.Builder.class)
-        .module1(new BuilderExplicitModules.Module1("3"))
-        .module1(new BuilderExplicitModules.Module1("4"))
-        .build();
+  @Test
+  public void builderExplicitModulesSetTwice() {
+    BuilderExplicitModules component =
+        backend
+            .builder(BuilderExplicitModules.Builder.class)
+            .module1(new BuilderExplicitModules.Module1("3"))
+            .module1(new BuilderExplicitModules.Module1("4"))
+            .build();
 
     assertThat(component.string()).isEqualTo("4");
   }
 
-  @Test public void builderExplicitModulesOmitted() {
+  @Test
+  public void builderExplicitModulesOmitted() {
     try {
       backend.builder(BuilderExplicitModules.Builder.class).build();
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat()
+      assertThat(e)
+          .hasMessageThat()
           .isEqualTo("com.example.BuilderExplicitModules.Module1 must be set");
     }
   }
 
-  @Test public void builderDependency() {
-    BuilderDependency component = backend.builder(BuilderDependency.Builder.class)
-        .other(new BuilderDependency.Other("hey"))
-        .build();
+  @Test
+  public void builderDependency() {
+    BuilderDependency component =
+        backend
+            .builder(BuilderDependency.Builder.class)
+            .other(new BuilderDependency.Other("hey"))
+            .build();
 
     assertThat(component.string()).isEqualTo("hey");
   }
 
-  @Test public void builderDependencyNullThrowsNpe() {
+  @Test
+  public void builderDependencyNullThrowsNpe() {
     BuilderDependency.Builder builder = backend.builder(BuilderDependency.Builder.class);
     try {
       builder.other(null);
@@ -421,16 +472,20 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void builderDependencySetTwice() {
-    BuilderDependency component = backend.builder(BuilderDependency.Builder.class)
-        .other(new BuilderDependency.Other("hey"))
-        .other(new BuilderDependency.Other("there"))
-        .build();
+  @Test
+  public void builderDependencySetTwice() {
+    BuilderDependency component =
+        backend
+            .builder(BuilderDependency.Builder.class)
+            .other(new BuilderDependency.Other("hey"))
+            .other(new BuilderDependency.Other("there"))
+            .build();
 
     assertThat(component.string()).isEqualTo("there");
   }
 
-  @Test public void builderDependencyOmitted() {
+  @Test
+  public void builderDependencyOmitted() {
     try {
       backend.builder(BuilderDependency.Builder.class).build();
       fail();
@@ -439,28 +494,32 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void factoryBindsInstance() {
-    FactoryBindsInstance component = backend.factory(FactoryBindsInstance.Factory.class)
-        .create("hey");
+  @Test
+  public void factoryBindsInstance() {
+    FactoryBindsInstance component =
+        backend.factory(FactoryBindsInstance.Factory.class).create("hey");
 
     assertThat(component.string()).isEqualTo("hey");
   }
 
-  @Test public void factoryBindsInstanceNull() {
-    FactoryBindsInstanceNull component = backend.factory(FactoryBindsInstanceNull.Factory.class)
-        .create(null);
+  @Test
+  public void factoryBindsInstanceNull() {
+    FactoryBindsInstanceNull component =
+        backend.factory(FactoryBindsInstanceNull.Factory.class).create(null);
 
     assertThat(component.string()).isNull();
   }
 
-  @Test public void factoryDependency() {
-    FactoryDependency component = backend.factory(FactoryDependency.Factory.class)
-        .create(new FactoryDependency.Other("hey"));
+  @Test
+  public void factoryDependency() {
+    FactoryDependency component =
+        backend.factory(FactoryDependency.Factory.class).create(new FactoryDependency.Other("hey"));
 
     assertThat(component.string()).isEqualTo("hey");
   }
 
-  @Test public void factoryDependencyNullThrowsNpe() {
+  @Test
+  public void factoryDependencyNullThrowsNpe() {
     FactoryDependency.Factory factory = backend.factory(FactoryDependency.Factory.class);
     try {
       factory.create(null);
@@ -469,14 +528,18 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void factoryExplicitModules() {
-    FactoryExplicitModules component = backend.factory(FactoryExplicitModules.Factory.class)
-        .create(new FactoryExplicitModules.Module1("hey"));
+  @Test
+  public void factoryExplicitModules() {
+    FactoryExplicitModules component =
+        backend
+            .factory(FactoryExplicitModules.Factory.class)
+            .create(new FactoryExplicitModules.Module1("hey"));
 
     assertThat(component.string()).isEqualTo("hey");
   }
 
-  @Test public void factoryExplicitModulesNullThrowsNpe() {
+  @Test
+  public void factoryExplicitModulesNullThrowsNpe() {
     FactoryExplicitModules.Factory factory = backend.factory(FactoryExplicitModules.Factory.class);
     try {
       factory.create(null);
@@ -485,39 +548,46 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void factoryImplicitModules() {
-    FactoryImplicitModules component = backend.factory(FactoryImplicitModules.Factory.class)
-        .create(3L);
+  @Test
+  public void factoryImplicitModules() {
+    FactoryImplicitModules component =
+        backend.factory(FactoryImplicitModules.Factory.class).create(3L);
 
     assertThat(component.string()).isEqualTo("3");
   }
 
-  @Test public void memberInjectionEmptyClass() {
+  @Test
+  public void memberInjectionEmptyClass() {
     MemberInjectionEmpty component = backend.create(MemberInjectionEmpty.class);
     MemberInjectionEmpty.Target target = new MemberInjectionEmpty.Target();
     component.inject(target);
     // No state, nothing to verify, except it didn't throw.
   }
 
-  @Test public void memberInjectionEmptyAbstractClass() {
+  @Test
+  public void memberInjectionEmptyAbstractClass() {
     MemberInjectionEmptyAbstract component = backend.create(MemberInjectionEmptyAbstract.class);
     MemberInjectionEmptyAbstract.Target target = new MemberInjectionEmptyAbstract.Target() {};
     component.inject(target);
     // No state, nothing to verify, except it didn't throw.
   }
 
-  @Test public void memberInjectionEmptyInterface() {
+  @Test
+  public void memberInjectionEmptyInterface() {
     MemberInjectionEmptyInterface component = backend.create(MemberInjectionEmptyInterface.class);
     MemberInjectionEmptyInterface.Target target = new MemberInjectionEmptyInterface.Target() {};
     component.inject(target);
     // No state, nothing to verify, except it didn't throw.
   }
 
-  @Test public void memberInjectionInterface() {
+  @Test
+  public void memberInjectionInterface() {
     MemberInjectionInterface component = backend.create(MemberInjectionInterface.class);
     class Target implements MemberInjectionInterface.Target {
       boolean called;
-      @Override public void method(String foo) {
+
+      @Override
+      public void method(String foo) {
         called = true;
       }
     }
@@ -527,7 +597,8 @@ public final class IntegrationTest {
     assertThat(target.called).isFalse();
   }
 
-  @Test public void memberInjectionReturnInstance() {
+  @Test
+  public void memberInjectionReturnInstance() {
     MemberInjectionReturnInstance component = backend.create(MemberInjectionReturnInstance.class);
     MemberInjectionReturnInstance.Target in = new MemberInjectionReturnInstance.Target();
     MemberInjectionReturnInstance.Target out = component.inject(in);
@@ -535,7 +606,8 @@ public final class IntegrationTest {
     assertThat(out).isSameInstanceAs(in);
   }
 
-  @Test public void memberInjectionNoInjects() {
+  @Test
+  public void memberInjectionNoInjects() {
     MemberInjectionNoInjects component = backend.create(MemberInjectionNoInjects.class);
     MemberInjectionNoInjects.Target target = new MemberInjectionNoInjects.Target();
     component.inject(target);
@@ -545,7 +617,8 @@ public final class IntegrationTest {
     assertThat(target.count).isEqualTo(0);
   }
 
-  @Test public void memberInjectionFieldBeforeMethod() {
+  @Test
+  public void memberInjectionFieldBeforeMethod() {
     MemberInjectionFieldBeforeMethod component =
         backend.create(MemberInjectionFieldBeforeMethod.class);
     MemberInjectionFieldBeforeMethod.Target target = new MemberInjectionFieldBeforeMethod.Target();
@@ -553,7 +626,8 @@ public final class IntegrationTest {
     assertThat(target.fieldBeforeMethod).isTrue();
   }
 
-  @Test public void memberInjectionFieldVisibility() {
+  @Test
+  public void memberInjectionFieldVisibility() {
     MemberInjectionFieldVisibility component = backend.create(MemberInjectionFieldVisibility.class);
     MemberInjectionFieldVisibility.Target target = new MemberInjectionFieldVisibility.Target();
     component.inject(target);
@@ -562,7 +636,8 @@ public final class IntegrationTest {
     assertThat(target.three).isEqualTo(3);
   }
 
-  @Test public void memberInjectionHierarchy() {
+  @Test
+  public void memberInjectionHierarchy() {
     MemberInjectionHierarchy component = backend.create(MemberInjectionHierarchy.class);
     MemberInjectionHierarchy.Subtype target = new MemberInjectionHierarchy.Subtype();
     component.inject(target);
@@ -572,7 +647,8 @@ public final class IntegrationTest {
     assertThat(target.subtypeCalled).isTrue();
   }
 
-  @Test public void memberInjectionOrder() {
+  @Test
+  public void memberInjectionOrder() {
     MemberInjectionOrder component = backend.create(MemberInjectionOrder.class);
     MemberInjectionOrder.SubType target = new MemberInjectionOrder.SubType();
     component.inject(target);
@@ -583,12 +659,12 @@ public final class IntegrationTest {
             // followed by fields, and then methods.
             "baseMethod(foo): baseField=foo, subField=null",
             // Fields and methods in superclasses are injected before those in subclasses.
-            "subMethod(foo): baseField=foo, subField=foo"
-        )
+            "subMethod(foo): baseField=foo, subField=foo")
         .inOrder();
   }
 
-  @Test public void memberInjectionMethodVisibility() {
+  @Test
+  public void memberInjectionMethodVisibility() {
     MemberInjectionMethodVisibility component =
         backend.create(MemberInjectionMethodVisibility.class);
     MemberInjectionMethodVisibility.Target target = new MemberInjectionMethodVisibility.Target();
@@ -599,7 +675,8 @@ public final class IntegrationTest {
     assertThat(target.three).isEqualTo(3);
   }
 
-  @Test public void memberInjectionMethodMultipleParams() {
+  @Test
+  public void memberInjectionMethodMultipleParams() {
     MemberInjectionMethodMultipleParams component =
         backend.create(MemberInjectionMethodMultipleParams.class);
     MemberInjectionMethodMultipleParams.Target target =
@@ -611,7 +688,8 @@ public final class IntegrationTest {
     assertThat(target.three).isEqualTo(3);
   }
 
-  @Test public void memberInjectionMethodReturnTypes() {
+  @Test
+  public void memberInjectionMethodReturnTypes() {
     MemberInjectionMethodReturnTypes component =
         backend.create(MemberInjectionMethodReturnTypes.class);
     MemberInjectionMethodReturnTypes.Target target = new MemberInjectionMethodReturnTypes.Target();
@@ -619,7 +697,8 @@ public final class IntegrationTest {
     assertThat(target.count).isEqualTo(3);
   }
 
-  @Test public void memberInjectionQualified() {
+  @Test
+  public void memberInjectionQualified() {
     MemberInjectionQualified component = backend.create(MemberInjectionQualified.class);
     MemberInjectionQualified.Target target = new MemberInjectionQualified.Target();
     component.inject(target);
@@ -627,7 +706,8 @@ public final class IntegrationTest {
     assertThat(target.fromMethod).isEqualTo("foo");
   }
 
-  @Test public void reusableScoped() {
+  @Test
+  public void reusableScoped() {
     // @Reusable has no formal definition of reuse semantics. As such, we simply validate that
     // common uses of it don't throw an exception. We do not ensure behavior compatibility with
     // dagger-compiler, although it's an option in the future.
@@ -643,19 +723,22 @@ public final class IntegrationTest {
     assertThat(childRunnable).isNotNull(); // Smoke test.
   }
 
-  @Test public void reusableJustInTime() {
+  @Test
+  public void reusableJustInTime() {
     ReusableScopedJustInTime component = backend.create(ReusableScopedJustInTime.class);
     assertThat(component.bar()).isNotNull(); // Smoke test.
   }
 
-  @Test public void scoped() {
+  @Test
+  public void scoped() {
     Scoped component = backend.create(Scoped.class);
     Object value1 = component.value();
     Object value2 = component.value();
     assertThat(value1).isSameInstanceAs(value2);
   }
 
-  @Test public void scopedWithMultipleAnnotations() {
+  @Test
+  public void scopedWithMultipleAnnotations() {
     ScopedWithMultipleAnnotations component = backend.create(ScopedWithMultipleAnnotations.class);
     Object value1 = component.value();
     Object value2 = component.value();
@@ -665,7 +748,8 @@ public final class IntegrationTest {
     assertThat(runnable1).isSameInstanceAs(runnable2);
   }
 
-  @Test public void scopedWrong() {
+  @Test
+  public void scopedWrong() {
     ignoreCodegenBackend();
 
     try {
@@ -676,28 +760,33 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void multibindingSet() {
+  @Test
+  public void multibindingSet() {
     MultibindingSet component = backend.create(MultibindingSet.class);
     assertThat(component.values()).containsExactly("one", "two");
   }
 
-  @Test public void multibindingSetElements() {
+  @Test
+  public void multibindingSetElements() {
     MultibindingSetElements component = backend.create(MultibindingSetElements.class);
     assertThat(component.values()).containsExactly("one", "two");
   }
 
-  @Test public void multibindingSetPrimitive() {
+  @Test
+  public void multibindingSetPrimitive() {
     MultibindingSetPrimitive component = backend.create(MultibindingSetPrimitive.class);
     assertThat(component.values()).containsExactly(1L, 2L);
   }
 
-  @Test public void multibindingSetElementsPrimitive() {
+  @Test
+  public void multibindingSetElementsPrimitive() {
     MultibindingSetElementsPrimitive component =
         backend.create(MultibindingSetElementsPrimitive.class);
     assertThat(component.values()).containsExactly(1L, 2L);
   }
 
-  @Test public void multibindingProviderSet() {
+  @Test
+  public void multibindingProviderSet() {
     ignoreReflectionBackend();
 
     MultibindingProviderSet component = backend.create(MultibindingProviderSet.class);
@@ -711,29 +800,35 @@ public final class IntegrationTest {
     assertThat(values.get()).containsExactly("one2", "two2");
   }
 
-  @Test public void multibindingMap() {
+  @Test
+  public void multibindingMap() {
     MultibindingMap component = backend.create(MultibindingMap.class);
     assertThat(component.values()).containsExactly("1", "one", "2", "two");
   }
 
-  @Test public void multibindingMapPrimitiveKey() {
+  @Test
+  public void multibindingMapPrimitiveKey() {
     MultibindingMapPrimitiveKey component = backend.create(MultibindingMapPrimitiveKey.class);
     assertThat(component.values()).containsExactly(1L, "one", 2L, "two");
   }
 
-  @Test public void multibindingMapPrimitiveValue() {
+  @Test
+  public void multibindingMapPrimitiveValue() {
     MultibindingMapPrimitiveValue component = backend.create(MultibindingMapPrimitiveValue.class);
     assertThat(component.values()).containsExactly("1", 1L, "2", 2L);
   }
 
-  @Test public void multibindingMapNoUnwrap() {
+  @Test
+  public void multibindingMapNoUnwrap() {
     MultibindingMapNoUnwrap component = backend.create(MultibindingMapNoUnwrap.class);
-    assertThat(component.values()).containsExactly(
-        Annotations.tableKey(1, 1), "one",
-        Annotations.tableKey(2, 3), "two");
+    assertThat(component.values())
+        .containsExactly(
+            Annotations.tableKey(1, 1), "one",
+            Annotations.tableKey(2, 3), "two");
   }
 
-  @Test public void multibindingProviderMap() {
+  @Test
+  public void multibindingProviderMap() {
     MultibindingProviderMap component = backend.create(MultibindingProviderMap.class);
     Provider<Map<String, String>> values = component.values();
 
@@ -745,7 +840,8 @@ public final class IntegrationTest {
     assertThat(values.get()).containsExactly("1", "one2", "2", "two2");
   }
 
-  @Test public void multibindingMapProvider() {
+  @Test
+  public void multibindingMapProvider() {
     MultibindingMapProvider component = backend.create(MultibindingMapProvider.class);
     Map<String, Provider<String>> values = component.values();
     assertThat(values.keySet()).containsExactly("1", "2");
@@ -758,71 +854,84 @@ public final class IntegrationTest {
     assertThat(values.get("1").get()).isEqualTo("one");
   }
 
-  @Test public void moduleClass() {
+  @Test
+  public void moduleClass() {
     ModuleClass component = backend.create(ModuleClass.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void moduleClassAndInterfaceHierarchy() {
+  @Test
+  public void moduleClassAndInterfaceHierarchy() {
     ModuleClassAndInterfaceHierarchy component =
         backend.create(ModuleClassAndInterfaceHierarchy.class);
     assertThat(component.number()).isEqualTo(42);
   }
 
-  @Test public void moduleClassAndInterfaceDuplicatesHierarchy() {
+  @Test
+  public void moduleClassAndInterfaceDuplicatesHierarchy() {
     ModuleClassAndInterfaceDuplicatesHierarchy component =
         backend.create(ModuleClassAndInterfaceDuplicatesHierarchy.class);
     assertThat(component.number()).isEqualTo(42);
   }
 
-  @Test public void moduleClassHierarchy() {
+  @Test
+  public void moduleClassHierarchy() {
     ModuleClassHierarchy component = backend.create(ModuleClassHierarchy.class);
     assertThat(component.number()).isEqualTo(42);
   }
 
-  @Test public void moduleClassHierarchyStatics() {
+  @Test
+  public void moduleClassHierarchyStatics() {
     ModuleClassHierarchyStatics component = backend.create(ModuleClassHierarchyStatics.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void moduleInterface() {
+  @Test
+  public void moduleInterface() {
     ModuleInterface component = backend.create(ModuleInterface.class);
     assertThat(component.number()).isEqualTo(42);
   }
 
-  @Test public void moduleInterfaceHierarchy() {
+  @Test
+  public void moduleInterfaceHierarchy() {
     ModuleInterfaceHierarchy component = backend.create(ModuleInterfaceHierarchy.class);
     assertThat(component.number()).isEqualTo(42);
   }
 
-  @Test public void modulePrivateMethod() {
+  @Test
+  public void modulePrivateMethod() {
     ModulePrivateMethod component = backend.create(ModulePrivateMethod.class);
     assertThat(component.integer()).isEqualTo(42);
   }
 
-  @Test public void moduleIncludes() {
+  @Test
+  public void moduleIncludes() {
     ModuleIncludes component = backend.create(ModuleIncludes.class);
     assertThat(component.string()).isEqualTo("5");
   }
 
-  @Test public void moduleSubcomponentBindsBuilder() {
+  @Test
+  public void moduleSubcomponentBindsBuilder() {
     ModuleSubcomponentBindsBuilder component = backend.create(ModuleSubcomponentBindsBuilder.class);
     assertThat(component.string()).isEqualTo("5");
   }
 
-  @Test public void moduleSubcomponentBindsFactory() {
+  @Test
+  public void moduleSubcomponentBindsFactory() {
     ModuleSubcomponentBindsBuilder component = backend.create(ModuleSubcomponentBindsBuilder.class);
     assertThat(component.string()).isEqualTo("5");
   }
 
-  @Test public void moduleSubcomponentBindsFactoryAndBuilder() {
+  @Test
+  public void moduleSubcomponentBindsFactoryAndBuilder() {
     ignoreCodegenBackend();
 
     try {
       backend.create(ModuleSubcomponentBindsFactoryAndBuilder.class);
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat()
+      assertThat(e)
+          .hasMessageThat()
           .isEqualTo(
               "@Subcomponent has more than one @Subcomponent.Builder or @Subcomponent.Factory: ["
                   + "com.example.ModuleSubcomponentBindsFactoryAndBuilder.StringSubcomponent.Builder, "
@@ -830,33 +939,39 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void moduleSubcomponentNoFactoryOrBuilder() {
+  @Test
+  public void moduleSubcomponentNoFactoryOrBuilder() {
     ignoreCodegenBackend();
 
     try {
       backend.create(ModuleSubcomponentNoFactoryOrBuilder.class);
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("com.example.ModuleSubcomponentNoFactoryOrBuilder.StringSubcomponent "
-              + "doesn't have a @Subcomponent.Builder or @Subcomponent.Factory, "
-              + "which is required when used with @Module.subcomponents");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "com.example.ModuleSubcomponentNoFactoryOrBuilder.StringSubcomponent "
+                  + "doesn't have a @Subcomponent.Builder or @Subcomponent.Factory, "
+                  + "which is required when used with @Module.subcomponents");
     }
   }
 
-  @Test public void nestedComponent() {
+  @Test
+  public void nestedComponent() {
     NestedComponent.MoreNesting.AndMore.TheComponent component =
         backend.create(NestedComponent.MoreNesting.AndMore.TheComponent.class);
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void nestedComponentBuilder() {
+  @Test
+  public void nestedComponentBuilder() {
     NestedComponent.MoreNesting.AndMore.TheComponent component =
         backend.builder(NestedComponent.MoreNesting.AndMore.TheComponent.Builder.class).build();
     assertThat(component.string()).isEqualTo("foo");
   }
 
-  @Test public void primitiveAutoBoxing() {
+  @Test
+  public void primitiveAutoBoxing() {
     PrimitiveAutoBoxing component = backend.create(PrimitiveAutoBoxing.class);
     assertThat(component.getByte()).isEqualTo((byte) 8);
     assertThat(component.getShort()).isEqualTo((short) 16);
@@ -868,7 +983,8 @@ public final class IntegrationTest {
     assertThat(component.getCharacter()).isEqualTo('\u221E');
   }
 
-  @Test public void primitiveAutoUnboxing() {
+  @Test
+  public void primitiveAutoUnboxing() {
     PrimitiveAutoUnboxing component = backend.create(PrimitiveAutoUnboxing.class);
     assertThat(component.getByte()).isEqualTo((byte) 8);
     assertThat(component.getShort()).isEqualTo((short) 16);
@@ -880,7 +996,8 @@ public final class IntegrationTest {
     assertThat(component.getChar()).isEqualTo('\u221E');
   }
 
-  @Test public void providerCycle() {
+  @Test
+  public void providerCycle() {
     ignoreCodegenBackend();
 
     ProviderCycle component = backend.create(ProviderCycle.class);
@@ -888,19 +1005,23 @@ public final class IntegrationTest {
       component.string();
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat().isEqualTo("Dependency cycle for java.lang.String\n"
-          + " * Requested: java.lang.String\n"
-          + "     from @Provides[com.example.ProviderCycle$Module1.longToString(…)]\n"
-          + " * Requested: java.lang.Long\n"
-          + "     from @Provides[com.example.ProviderCycle$Module1.intToLong(…)]\n"
-          + " * Requested: java.lang.Integer\n"
-          + "     from @Provides[com.example.ProviderCycle$Module1.stringToInteger(…)]\n"
-          + " * Requested: java.lang.String\n"
-          + "     which forms a cycle.");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Dependency cycle for java.lang.String\n"
+                  + " * Requested: java.lang.String\n"
+                  + "     from @Provides[com.example.ProviderCycle$Module1.longToString(…)]\n"
+                  + " * Requested: java.lang.Long\n"
+                  + "     from @Provides[com.example.ProviderCycle$Module1.intToLong(…)]\n"
+                  + " * Requested: java.lang.Integer\n"
+                  + "     from @Provides[com.example.ProviderCycle$Module1.stringToInteger(…)]\n"
+                  + " * Requested: java.lang.String\n"
+                  + "     which forms a cycle.");
     }
   }
 
-  @Test public void undeclaredModule() {
+  @Test
+  public void undeclaredModule() {
     ignoreCodegenBackend();
 
     UndeclaredModules.Builder builder = backend.builder(UndeclaredModules.Builder.class);
@@ -908,12 +1029,16 @@ public final class IntegrationTest {
       builder.module(new UndeclaredModules.Module1());
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("@Component.Builder has setters for modules that aren't required: "
-              + "com.example.UndeclaredModules$Builder.module");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "@Component.Builder has setters for modules that aren't required: "
+                  + "com.example.UndeclaredModules$Builder.module");
     }
   }
-  @Test public void undeclaredDependencies() {
+
+  @Test
+  public void undeclaredDependencies() {
     ignoreCodegenBackend();
 
     UndeclaredDependencies.Builder builder = backend.builder(UndeclaredDependencies.Builder.class);
@@ -921,13 +1046,16 @@ public final class IntegrationTest {
       builder.dep("hey");
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("@Component.Builder has setters for dependencies that aren't required: "
-              + "com.example.UndeclaredDependencies$Builder.dep");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "@Component.Builder has setters for dependencies that aren't required: "
+                  + "com.example.UndeclaredDependencies$Builder.dep");
     }
   }
 
-  @Test public void membersInjectionWrongReturnType() {
+  @Test
+  public void membersInjectionWrongReturnType() {
     ignoreCodegenBackend();
 
     MembersInjectorWrongReturnType component = backend.create(MembersInjectorWrongReturnType.class);
@@ -936,50 +1064,63 @@ public final class IntegrationTest {
       component.inject(instance);
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("Members injection methods may only return the injected type or void: "
-              + "com.example.MembersInjectorWrongReturnType.inject");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Members injection methods may only return the injected type or void: "
+                  + "com.example.MembersInjectorWrongReturnType.inject");
     }
   }
 
   @SuppressWarnings("OverridesJavaxInjectableMethod")
-  @Test public void membersInjectionAbstractMethod() {
+  @Test
+  public void membersInjectionAbstractMethod() {
     ignoreCodegenBackend();
 
     MembersInjectionAbstractMethod component = backend.create(MembersInjectionAbstractMethod.class);
-    MembersInjectionAbstractMethod.Target instance = new MembersInjectionAbstractMethod.Target() {
-      @Override public void abstractMethod(String one) {}
-    };
+    MembersInjectionAbstractMethod.Target instance =
+        new MembersInjectionAbstractMethod.Target() {
+          @Override
+          public void abstractMethod(String one) {}
+        };
     try {
       component.inject(instance);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .startsWith("Methods with @Inject may not be abstract: "
-              + "com.example.MembersInjectionAbstractMethod.Target.abstractMethod");
+      assertThat(e)
+          .hasMessageThat()
+          .startsWith(
+              "Methods with @Inject may not be abstract: "
+                  + "com.example.MembersInjectionAbstractMethod.Target.abstractMethod");
     }
   }
 
   @SuppressWarnings("OverridesJavaxInjectableMethod")
-  @Test public void membersInjectionInterfaceMethod() {
+  @Test
+  public void membersInjectionInterfaceMethod() {
     ignoreCodegenBackend();
 
     MembersInjectionInterfaceMethod component =
         backend.create(MembersInjectionInterfaceMethod.class);
-    MembersInjectionInterfaceMethod.Target instance = new MembersInjectionInterfaceMethod.Target() {
-      @Override public void interfaceMethod(String one) {}
-    };
+    MembersInjectionInterfaceMethod.Target instance =
+        new MembersInjectionInterfaceMethod.Target() {
+          @Override
+          public void interfaceMethod(String one) {}
+        };
     try {
       component.inject(instance);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .startsWith("Methods with @Inject may not be abstract: "
-              + "com.example.MembersInjectionInterfaceMethod.Target.interfaceMethod");
+      assertThat(e)
+          .hasMessageThat()
+          .startsWith(
+              "Methods with @Inject may not be abstract: "
+                  + "com.example.MembersInjectionInterfaceMethod.Target.interfaceMethod");
     }
   }
 
-  @Test public void membersInjectionPrivateField() {
+  @Test
+  public void membersInjectionPrivateField() {
     ignoreCodegenBackend();
 
     MembersInjectionPrivateField component = backend.create(MembersInjectionPrivateField.class);
@@ -988,13 +1129,16 @@ public final class IntegrationTest {
       component.inject(instance);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .startsWith("Dagger does not support injection into private fields: "
-              + "com.example.MembersInjectionPrivateField.Target.privateField");
+      assertThat(e)
+          .hasMessageThat()
+          .startsWith(
+              "Dagger does not support injection into private fields: "
+                  + "com.example.MembersInjectionPrivateField.Target.privateField");
     }
   }
 
-  @Test public void membersInjectionStaticField() {
+  @Test
+  public void membersInjectionStaticField() {
     ignoreCodegenBackend();
 
     MembersInjectionStaticField component = backend.create(MembersInjectionStaticField.class);
@@ -1003,13 +1147,16 @@ public final class IntegrationTest {
       component.inject(instance);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .startsWith("Dagger does not support injection into static fields: "
-              + "com.example.MembersInjectionStaticField.Target.staticField");
+      assertThat(e)
+          .hasMessageThat()
+          .startsWith(
+              "Dagger does not support injection into static fields: "
+                  + "com.example.MembersInjectionStaticField.Target.staticField");
     }
   }
 
-  @Test public void membersInjectionPrivateMethod() {
+  @Test
+  public void membersInjectionPrivateMethod() {
     ignoreCodegenBackend();
 
     MembersInjectionPrivateMethod component = backend.create(MembersInjectionPrivateMethod.class);
@@ -1018,13 +1165,16 @@ public final class IntegrationTest {
       component.inject(instance);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .startsWith("Dagger does not support injection into private methods: "
-              + "com.example.MembersInjectionPrivateMethod.Target.privateMethod()");
+      assertThat(e)
+          .hasMessageThat()
+          .startsWith(
+              "Dagger does not support injection into private methods: "
+                  + "com.example.MembersInjectionPrivateMethod.Target.privateMethod()");
     }
   }
 
-  @Test public void membersInjectionStaticMethod() {
+  @Test
+  public void membersInjectionStaticMethod() {
     ignoreCodegenBackend();
 
     MembersInjectionStaticMethod component = backend.create(MembersInjectionStaticMethod.class);
@@ -1033,26 +1183,32 @@ public final class IntegrationTest {
       component.inject(instance);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .startsWith("Dagger does not support injection into static methods: "
-              + "com.example.MembersInjectionStaticMethod.Target.staticMethod()");
+      assertThat(e)
+          .hasMessageThat()
+          .startsWith(
+              "Dagger does not support injection into static methods: "
+                  + "com.example.MembersInjectionStaticMethod.Target.staticMethod()");
     }
   }
 
-  @Test public void abstractClassCreateFails() {
+  @Test
+  public void abstractClassCreateFails() {
     ignoreCodegenBackend();
 
     try {
       backend.create(AbstractComponent.class);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("com.example.AbstractComponent is not an interface. "
-              + "Only interfaces are supported.");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "com.example.AbstractComponent is not an interface. "
+                  + "Only interfaces are supported.");
     }
   }
 
-  @Test public void abstractClassBuilderFails() {
+  @Test
+  public void abstractClassBuilderFails() {
     ignoreCodegenBackend();
 
     AbstractComponent.Builder builder = backend.builder(AbstractComponent.Builder.class);
@@ -1060,76 +1216,91 @@ public final class IntegrationTest {
       builder.build();
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("com.example.AbstractComponent is not an interface. "
-              + "Only interfaces are supported.");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "com.example.AbstractComponent is not an interface. "
+                  + "Only interfaces are supported.");
     }
   }
 
-  @Test public void noComponentAnnotationCreateFails() {
+  @Test
+  public void noComponentAnnotationCreateFails() {
     ignoreCodegenBackend();
 
     try {
       backend.create(NoAnnotation.class);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
+      assertThat(e)
+          .hasMessageThat()
           .isEqualTo("com.example.NoAnnotation lacks @Component annotation");
     }
   }
 
-  @Test public void noComponentAnnotationBuilderFails() {
+  @Test
+  public void noComponentAnnotationBuilderFails() {
     ignoreCodegenBackend();
 
     try {
       backend.builder(NoAnnotation.Builder.class);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
+      assertThat(e)
+          .hasMessageThat()
           .isEqualTo("com.example.NoAnnotation lacks @Component annotation");
     }
   }
 
-  @Test public void packagePrivateComponentFails() {
+  @Test
+  public void packagePrivateComponentFails() {
     ignoreCodegenBackend();
 
     try {
       backend.builder(PackagePrivateComponent.Builder.class);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("Component interface com.example.PackagePrivateComponent "
-              + "must be public in order to be reflectively created");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Component interface com.example.PackagePrivateComponent "
+                  + "must be public in order to be reflectively created");
     }
   }
 
-  @Test public void abstractBuilderClassFails() {
+  @Test
+  public void abstractBuilderClassFails() {
     ignoreCodegenBackend();
 
     try {
       backend.builder(AbstractBuilderClass.Builder.class);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("com.example.AbstractBuilderClass.Builder is not an interface. "
-              + "Only interfaces are supported.");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "com.example.AbstractBuilderClass.Builder is not an interface. "
+                  + "Only interfaces are supported.");
     }
   }
 
-  @Test public void noComponentBuilderAnnotationFails() {
+  @Test
+  public void noComponentBuilderAnnotationFails() {
     ignoreCodegenBackend();
 
     try {
       backend.builder(NoBuilderAnnotation.Builder.class);
       fail();
     } catch (IllegalArgumentException e) {
-      assertThat(e).hasMessageThat()
-          .isEqualTo("com.example.NoBuilderAnnotation.Builder lacks "
-              + "@Component.Builder annotation");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "com.example.NoBuilderAnnotation.Builder lacks " + "@Component.Builder annotation");
     }
   }
 
-  @Test public void componentWithDependenciesCreateFails() {
+  @Test
+  public void componentWithDependenciesCreateFails() {
     ignoreCodegenBackend();
 
     try {
@@ -1140,37 +1311,48 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void subcomponentProvision() {
+  @Test
+  public void subcomponentProvision() {
     SubcomponentProvision.Nested nested = backend.create(SubcomponentProvision.class).nested();
     assertThat(nested.one()).isEqualTo("one");
     assertThat(nested.two()).isEqualTo(2L);
   }
 
-  @Test public void subcomponentBuilderProvision() {
-    SubcomponentBuilderProvision.Nested nested = backend.create(SubcomponentBuilderProvision.class)
-        .nestedBuilder()
-        .module2(new SubcomponentBuilderProvision.Nested.Module2(2L))
-        .build();
+  @Test
+  public void subcomponentBuilderProvision() {
+    SubcomponentBuilderProvision.Nested nested =
+        backend
+            .create(SubcomponentBuilderProvision.class)
+            .nestedBuilder()
+            .module2(new SubcomponentBuilderProvision.Nested.Module2(2L))
+            .build();
     assertThat(nested.one()).isEqualTo("one");
     assertThat(nested.two()).isEqualTo(2L);
   }
 
-  @Test public void subcomponentFactoryMethod() {
-    SubcomponentFactoryMethod.Nested nested = backend.create(SubcomponentFactoryMethod.class)
-        .createNested(new SubcomponentFactoryMethod.Nested.Module2(2L));
+  @Test
+  public void subcomponentFactoryMethod() {
+    SubcomponentFactoryMethod.Nested nested =
+        backend
+            .create(SubcomponentFactoryMethod.class)
+            .createNested(new SubcomponentFactoryMethod.Nested.Module2(2L));
     assertThat(nested.one()).isEqualTo("one");
     assertThat(nested.two()).isEqualTo(2L);
   }
 
-  @Test public void subcomponentFactoryProvision() {
-    SubcomponentFactoryProvision.Nested nested = backend.create(SubcomponentFactoryProvision.class)
-        .nestedFactory()
-        .create(new SubcomponentFactoryProvision.Nested.Module2(2L));
+  @Test
+  public void subcomponentFactoryProvision() {
+    SubcomponentFactoryProvision.Nested nested =
+        backend
+            .create(SubcomponentFactoryProvision.class)
+            .nestedFactory()
+            .create(new SubcomponentFactoryProvision.Nested.Module2(2L));
     assertThat(nested.one()).isEqualTo("one");
     assertThat(nested.two()).isEqualTo(2L);
   }
 
-  @Test public void componentScopeCycle() {
+  @Test
+  public void componentScopeCycle() {
     ignoreCodegenBackend();
     ignoreReflectionBackend(); // TODO
 
@@ -1182,7 +1364,8 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void componentScopeCycleWithMultipleAnnotations() {
+  @Test
+  public void componentScopeCycleWithMultipleAnnotations() {
     ignoreCodegenBackend();
     ignoreReflectionBackend(); // TODO
 
@@ -1194,7 +1377,8 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void componentAndSubcomponentScopeCycle() {
+  @Test
+  public void componentAndSubcomponentScopeCycle() {
     ignoreCodegenBackend();
     ignoreReflectionBackend(); // TODO
 
@@ -1208,7 +1392,8 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void componentScopeDependsOnUnscoped() {
+  @Test
+  public void componentScopeDependsOnUnscoped() {
     ignoreCodegenBackend();
     ignoreReflectionBackend(); // TODO
 
@@ -1220,7 +1405,8 @@ public final class IntegrationTest {
     }
   }
 
-  @Test public void subcomponentScopeCycle() {
+  @Test
+  public void subcomponentScopeCycle() {
     ignoreCodegenBackend();
 
     SubcomponentScopeCycle.RequestComponent requestComponent =
@@ -1229,14 +1415,18 @@ public final class IntegrationTest {
       requestComponent.singleton();
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat().isEqualTo("Detected scope annotation cycle:\n"
-          + "  * [@javax.inject.Singleton()]\n"
-          + "  * [@com.example.SubcomponentScopeCycle$Request()]\n"
-          + "  * [@javax.inject.Singleton()]");
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Detected scope annotation cycle:\n"
+                  + "  * [@javax.inject.Singleton()]\n"
+                  + "  * [@com.example.SubcomponentScopeCycle$Request()]\n"
+                  + "  * [@javax.inject.Singleton()]");
     }
   }
 
-  @Test public void subcomponentScopeDependsOnUnscoped() {
+  @Test
+  public void subcomponentScopeDependsOnUnscoped() {
     ignoreCodegenBackend();
 
     SubcomponentScopedDependsOnUnscoped unscoped =
@@ -1245,7 +1435,8 @@ public final class IntegrationTest {
       unscoped.scoped();
       fail();
     } catch (IllegalStateException e) {
-      assertThat(e).hasMessageThat()
+      assertThat(e)
+          .hasMessageThat()
           .isEqualTo(
               "Scope with annotations [@javax.inject.Singleton()] may not depend on unscoped");
     }

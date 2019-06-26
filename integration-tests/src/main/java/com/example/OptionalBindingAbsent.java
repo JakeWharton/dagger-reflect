@@ -11,6 +11,7 @@ public interface OptionalBindingAbsent {
 
   @Module
   abstract class Module1 {
-    @BindsOptionalOf abstract String optionalFoo();
+    @BindsOptionalOf
+    abstract String optionalFoo();
   }
 }

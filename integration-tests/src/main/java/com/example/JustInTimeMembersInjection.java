@@ -14,18 +14,21 @@ interface JustInTimeMembersInjection {
     @Inject String stringField;
     String stringMethod;
 
-    @Inject Thing(String string) {
+    @Inject
+    Thing(String string) {
       stringConstructor = string;
     }
 
-    @Inject void setString(String string) {
+    @Inject
+    void setString(String string) {
       stringMethod = string;
     }
   }
 
   @Module
   abstract class Module1 {
-    @Provides static String string() {
+    @Provides
+    static String string() {
       return "hey";
     }
   }

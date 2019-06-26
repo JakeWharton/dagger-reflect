@@ -17,10 +17,15 @@ interface MultibindingProviderSet {
     static final AtomicInteger oneCount = new AtomicInteger(0);
     static final AtomicInteger twoCount = new AtomicInteger(0);
 
-    @Provides @IntoSet static String one() {
+    @Provides
+    @IntoSet
+    static String one() {
       return "one" + oneCount.getAndIncrement();
     }
-    @Provides @IntoSet static String two() {
+
+    @Provides
+    @IntoSet
+    static String two() {
       return "two" + twoCount.getAndIncrement();
     }
   }

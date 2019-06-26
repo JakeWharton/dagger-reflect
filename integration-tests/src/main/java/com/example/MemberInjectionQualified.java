@@ -14,19 +14,20 @@ interface MemberInjectionQualified {
     @Inject @Foo String fromField;
     String fromMethod;
 
-    @Inject void foo(@Foo String foo) {
+    @Inject
+    void foo(@Foo String foo) {
       fromMethod = foo;
     }
   }
 
   @Module
   abstract class Module1 {
-    @Provides static @Foo String foo() {
+    @Provides
+    static @Foo String foo() {
       return "foo";
     }
   }
 
   @Qualifier
-  @interface Foo {
-  }
+  @interface Foo {}
 }

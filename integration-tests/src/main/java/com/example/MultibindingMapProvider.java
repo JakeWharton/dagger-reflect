@@ -18,10 +18,17 @@ interface MultibindingMapProvider {
     static final AtomicReference<String> oneValue = new AtomicReference<>("unset one");
     static final AtomicReference<String> twoValue = new AtomicReference<>("unset two");
 
-    @Provides @IntoMap @StringKey("1") static String one() {
+    @Provides
+    @IntoMap
+    @StringKey("1")
+    static String one() {
       return oneValue.get();
     }
-    @Provides @IntoMap @StringKey("2") static String two() {
+
+    @Provides
+    @IntoMap
+    @StringKey("2")
+    static String two() {
       return twoValue.get();
     }
   }

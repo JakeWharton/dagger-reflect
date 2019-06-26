@@ -15,6 +15,10 @@
  */
 package dagger.reflect;
 
+import static dagger.reflect.Reflection.findQualifier;
+import static dagger.reflect.Reflection.tryInvoke;
+import static dagger.reflect.Reflection.trySet;
+
 import dagger.MembersInjector;
 import dagger.reflect.Binding.LinkedBinding;
 import java.lang.annotation.Annotation;
@@ -28,10 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.inject.Inject;
 
-import static dagger.reflect.Reflection.findQualifier;
-import static dagger.reflect.Reflection.tryInvoke;
-import static dagger.reflect.Reflection.trySet;
-
 final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
   static <T> MembersInjector<T> create(Class<T> cls, Scope scope) {
     Deque<ClassInjector<T>> classInjectors = new ArrayDeque<>();
@@ -43,12 +43,18 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
           continue;
         }
         if (Modifier.isPrivate(field.getModifiers())) {
-          throw new IllegalArgumentException("Dagger does not support injection into private fields: "
-                  + target.getCanonicalName() + "." + field.getName());
+          throw new IllegalArgumentException(
+              "Dagger does not support injection into private fields: "
+                  + target.getCanonicalName()
+                  + "."
+                  + field.getName());
         }
         if (Modifier.isStatic(field.getModifiers())) {
-          throw new IllegalArgumentException("Dagger does not support injection into static fields: "
-                  + target.getCanonicalName() + "." + field.getName());
+          throw new IllegalArgumentException(
+              "Dagger does not support injection into static fields: "
+                  + target.getCanonicalName()
+                  + "."
+                  + field.getName());
         }
 
         Key key = Key.of(findQualifier(field.getDeclaredAnnotations()), field.getGenericType());
@@ -63,16 +69,28 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
           continue;
         }
         if (Modifier.isPrivate(method.getModifiers())) {
-          throw new IllegalArgumentException("Dagger does not support injection into private methods: "
-                  + target.getCanonicalName() + "." + method.getName() + "()");
+          throw new IllegalArgumentException(
+              "Dagger does not support injection into private methods: "
+                  + target.getCanonicalName()
+                  + "."
+                  + method.getName()
+                  + "()");
         }
         if (Modifier.isStatic(method.getModifiers())) {
-          throw new IllegalArgumentException("Dagger does not support injection into static methods: "
-                  + target.getCanonicalName() + "." + method.getName() + "()");
+          throw new IllegalArgumentException(
+              "Dagger does not support injection into static methods: "
+                  + target.getCanonicalName()
+                  + "."
+                  + method.getName()
+                  + "()");
         }
         if (Modifier.isAbstract(method.getModifiers())) {
-          throw new IllegalArgumentException("Methods with @Inject may not be abstract: "
-              + target.getCanonicalName() + "." + method.getName() + "()");
+          throw new IllegalArgumentException(
+              "Methods with @Inject may not be abstract: "
+                  + target.getCanonicalName()
+                  + "."
+                  + method.getName()
+                  + "()");
         }
 
         Type[] parameterTypes = method.getGenericParameterTypes();
@@ -105,7 +123,8 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
     this.classInjectors = classInjectors;
   }
 
-  @Override public void injectMembers(T instance) {
+  @Override
+  public void injectMembers(T instance) {
     for (ClassInjector<T> classInjector : classInjectors) {
       classInjector.injectMembers(instance);
     }
@@ -122,7 +141,8 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
       this.methodBindings = methodBindings;
     }
 
-    @Override public void injectMembers(T instance) {
+    @Override
+    public void injectMembers(T instance) {
       // Per JSR 330, fields are injected before methods.
       for (Map.Entry<Field, LinkedBinding<?>> fieldBinding : fieldBindings.entrySet()) {
         trySet(instance, fieldBinding.getKey(), fieldBinding.getValue().get());

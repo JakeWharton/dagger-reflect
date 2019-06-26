@@ -11,13 +11,15 @@ final class UnlinkedMapOfLazyBinding extends UnlinkedBinding {
     this.mapOfProviderKey = mapOfProviderKey;
   }
 
-  @Override public LinkedBinding<?> link(Linker linker, Scope scope) {
+  @Override
+  public LinkedBinding<?> link(Linker linker, Scope scope) {
     LinkedBinding<Map<Object, Provider<Object>>> mapOfProviderBinding =
         (LinkedBinding<Map<Object, Provider<Object>>>) linker.get(mapOfProviderKey);
     return new LinkedMapOfLazyBinding<>(mapOfProviderBinding);
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "Map" + mapOfProviderKey;
   }
 }

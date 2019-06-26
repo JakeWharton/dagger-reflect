@@ -21,10 +21,14 @@ final class Scope {
   private final JustInTimeLookup.Factory jitLookupFactory;
   /** The annotations denoting {@linkplain javax.inject.Scope scoped} bindings for this instance. */
   private final Set<Annotation> annotations;
+
   private final @Nullable Scope parent;
 
-  private Scope(ConcurrentHashMap<Key, Binding> bindings, JustInTimeLookup.Factory jitLookupFactory,
-      Set<Annotation> annotations, @Nullable Scope parent) {
+  private Scope(
+      ConcurrentHashMap<Key, Binding> bindings,
+      JustInTimeLookup.Factory jitLookupFactory,
+      Set<Annotation> annotations,
+      @Nullable Scope parent) {
     this.bindings = bindings;
     this.jitLookupFactory = jitLookupFactory;
     this.annotations = annotations;
@@ -46,7 +50,8 @@ final class Scope {
    *
    * @param linker An optional {@link Linker} to use. One will be created if null and needed.
    */
-  @Nullable LinkedBinding<?> findBinding(Key key, @Nullable Linker linker) {
+  @Nullable
+  LinkedBinding<?> findBinding(Key key, @Nullable Linker linker) {
     Type keyType = key.type();
     if (keyType instanceof ParameterizedType) {
       ParameterizedType parameterizedKeyType = (ParameterizedType) keyType;
@@ -70,7 +75,11 @@ final class Scope {
     if (jitLookup != null) {
       LinkedBinding<?> jitBinding = putJitBinding(key, linker, jitLookup);
       if (jitBinding == null) {
-        throw new IllegalStateException("Unable to find binding for key=" + key + " and linker=" + linker); // TODO nice error message with scope chain
+        throw new IllegalStateException(
+            "Unable to find binding for key="
+                + key
+                + " and linker="
+                + linker); // TODO nice error message with scope chain
       }
       return jitBinding;
     }
@@ -92,38 +101,35 @@ final class Scope {
           : link(key, linker, (UnlinkedBinding) binding);
     }
 
-    return parent != null
-        ? parent.findExistingBinding(key, linker)
-        : null;
+    return parent != null ? parent.findExistingBinding(key, linker) : null;
   }
 
   /**
    * Attempt to insert a binding for {@code key} as a result of a just-in-time lookup.
-   * <p>
-   * If {@code lookup} does not contain a scoping annotation or it contains a scoping annotation
+   *
+   * <p>If {@code lookup} does not contain a scoping annotation or it contains a scoping annotation
    * which matches the one for this scope, the binding will be inserted, linked, and returned.
    * Otherwise, the parent scope (if any) will be recursively checked. If no matching scope
    * annotation is found by traversing the parents null will be returned.
    */
-  private @Nullable LinkedBinding<?> putJitBinding(Key key, @Nullable Linker linker,
-      JustInTimeLookup lookup) {
+  private @Nullable LinkedBinding<?> putJitBinding(
+      Key key, @Nullable Linker linker, JustInTimeLookup lookup) {
     Binding jitBinding = lookup.binding;
 
     Annotation scope = lookup.scope;
     if (scope != null) {
       if (!annotations.contains(scope)) {
-        return parent != null
-            ? parent.putJitBinding(key, linker, lookup)
-            : null;
+        return parent != null ? parent.putJitBinding(key, linker, lookup) : null;
       }
 
       jitBinding = jitBinding.asScoped();
     }
 
     Binding replaced = bindings.putIfAbsent(key, jitBinding);
-    Binding binding = replaced != null
-        ? replaced // You raced another thread and lost.
-        : jitBinding;
+    Binding binding =
+        replaced != null
+            ? replaced // You raced another thread and lost.
+            : jitBinding;
 
     return binding instanceof LinkedBinding<?>
         ? (LinkedBinding<?>) binding
@@ -170,9 +176,10 @@ final class Scope {
             }
           }
           if (duplicateScope) {
-            StringBuilder message = new StringBuilder("Detected scope annotation cycle:\n  * ")
-                .append(annotations)
-                .append('\n');
+            StringBuilder message =
+                new StringBuilder("Detected scope annotation cycle:\n  * ")
+                    .append(annotations)
+                    .append('\n');
             // Re-traverse the ancestry from our parent up to the offending ancestor for the chain.
             for (Scope visit = parent; visit != ancestor; visit = visit.parent) {
               if (visit == null) throw new AssertionError(); // Checked by outer loop.
@@ -210,10 +217,10 @@ final class Scope {
      * Adds a new element into the set specified by {@code key}.
      *
      * @param key The key defining the set into which this element will be added. The raw class of
-     * the {@linkplain Key#type() type} must be {@link Set Set.class}.
+     *     the {@linkplain Key#type() type} must be {@link Set Set.class}.
      * @param elementBinding The binding for the new element. The instance produced by this binding
-     * must be an instance of the {@code E} type parameter of {@link Set} specified
-     * {@linkplain Key#type() in <code>key</code>}.
+     *     must be an instance of the {@code E} type parameter of {@link Set} specified {@linkplain
+     *     Key#type() in <code>key</code>}.
      */
     Builder addBindingIntoSet(Key key, Binding elementBinding) {
       if (key == null) throw new NullPointerException("key == null");
@@ -237,9 +244,9 @@ final class Scope {
      * Adds a new element into the set specified by {@code key}.
      *
      * @param key The key defining the set into which this element will be added. The raw class of
-     * the {@linkplain Key#type() type} must be {@link Set Set.class}.
+     *     the {@linkplain Key#type() type} must be {@link Set Set.class}.
      * @param elementsBinding The binding for the elements. The instance produced by this binding
-     * must be an instance of {@code Set<E>} matching {@link Key#type() key.type()}.
+     *     must be an instance of {@code Set<E>} matching {@link Key#type() key.type()}.
      */
     Builder addBindingElementsIntoSet(Key key, Binding elementsBinding) {
       if (key == null) throw new NullPointerException("key == null");
@@ -263,13 +270,13 @@ final class Scope {
      * Adds a new entry into the map specified by {@code key}.
      *
      * @param key The key defining the map in which this entry will be added. The raw class of the
-     * {@linkplain Key#type() type} must be {@link Map Map.class}.
-     * @param entryKey The key of the new map entry. The argument must be an instance of the
-     * {@code K} type parameter of {@link Map} specified
-     * {@linkplain Key#type() in the <code>key</code>}.
+     *     {@linkplain Key#type() type} must be {@link Map Map.class}.
+     * @param entryKey The key of the new map entry. The argument must be an instance of the {@code
+     *     K} type parameter of {@link Map} specified {@linkplain Key#type() in the
+     *     <code>key</code>}.
      * @param entryValueBinding The value binding of the new map entry. The instance produced by
-     * this binding must be an instance of the {@code V} type parameter of {@link Map} specified
-     * {@linkplain Key#type()} in the <code>key</code>}.
+     *     this binding must be an instance of the {@code V} type parameter of {@link Map} specified
+     *     {@linkplain Key#type()} in the <code>key</code>}.
      */
     Builder addBindingIntoMap(Key key, Object entryKey, Binding entryValueBinding) {
       if (key == null) throw new NullPointerException("key == null");
@@ -342,12 +349,22 @@ final class Scope {
         Type mapKeyType = mapType.getActualTypeArguments()[0];
         Type mapValueType = mapType.getActualTypeArguments()[1];
 
-        Key mapOfProviderKey = Key.of(mapOfValueKey.qualifier(),
-            new ParameterizedTypeImpl(null, Map.class, mapKeyType,
-                new ParameterizedTypeImpl(null, Provider.class, mapValueType)));
-        Key mapOfLazyKey = Key.of(mapOfValueKey.qualifier(),
-            new ParameterizedTypeImpl(null, Map.class, mapKeyType,
-                new ParameterizedTypeImpl(null, Lazy.class, mapValueType)));
+        Key mapOfProviderKey =
+            Key.of(
+                mapOfValueKey.qualifier(),
+                new ParameterizedTypeImpl(
+                    null,
+                    Map.class,
+                    mapKeyType,
+                    new ParameterizedTypeImpl(null, Provider.class, mapValueType)));
+        Key mapOfLazyKey =
+            Key.of(
+                mapOfValueKey.qualifier(),
+                new ParameterizedTypeImpl(
+                    null,
+                    Map.class,
+                    mapKeyType,
+                    new ParameterizedTypeImpl(null, Lazy.class, mapValueType)));
 
         Binding replaced =
             allBindings.put(mapOfValueKey, new UnlinkedMapOfValueBinding(mapOfProviderKey));
@@ -360,8 +377,8 @@ final class Scope {
           throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
         }
 
-        replaced = allBindings.put(mapOfProviderKey,
-            new UnlinkedMapOfProviderBinding(entryBindings));
+        replaced =
+            allBindings.put(mapOfProviderKey, new UnlinkedMapOfProviderBinding(entryBindings));
         if (replaced != null) {
           throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
         }
@@ -376,8 +393,7 @@ final class Scope {
       /** Bindings which produce a set of elements for the target set. */
       final List<Binding> elementsBindings = new ArrayList<>();
 
-      SetBindings() {
-      }
+      SetBindings() {}
     }
   }
 }

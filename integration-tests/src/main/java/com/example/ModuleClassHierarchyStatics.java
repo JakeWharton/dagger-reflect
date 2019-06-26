@@ -9,12 +9,12 @@ interface ModuleClassHierarchyStatics {
   String string();
 
   @Module
-  abstract class Module1 extends BaseModule {
-  }
+  abstract class Module1 extends BaseModule {}
 
   @Module
   abstract class BaseModule {
-    @Provides static String string() {
+    @Provides
+    static String string() {
       return "foo";
     }
   }

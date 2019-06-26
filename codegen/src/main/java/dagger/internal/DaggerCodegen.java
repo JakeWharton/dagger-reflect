@@ -28,8 +28,9 @@ public final class DaggerCodegen {
   public static <B> B builder(Class<B> builderClass) {
     Class<?> componentClass = builderClass.getEnclosingClass();
     if (componentClass == null) {
-      throw new IllegalArgumentException(builderClass.getCanonicalName()
-          + " is not a nested type inside of a component interface");
+      throw new IllegalArgumentException(
+          builderClass.getCanonicalName()
+              + " is not a nested type inside of a component interface");
     }
     return invokeStatic(findImplementationClass(componentClass), "builder", builderClass);
   }
@@ -37,8 +38,9 @@ public final class DaggerCodegen {
   public static <F> F factory(Class<F> factoryClass) {
     Class<?> componentClass = factoryClass.getEnclosingClass();
     if (componentClass == null) {
-      throw new IllegalArgumentException(factoryClass.getCanonicalName()
-          + " is not a nested type inside of a component interface");
+      throw new IllegalArgumentException(
+          factoryClass.getCanonicalName()
+              + " is not a nested type inside of a component interface");
     }
     return invokeStatic(findImplementationClass(componentClass), "factory", factoryClass);
   }
@@ -48,14 +50,16 @@ public final class DaggerCodegen {
     try {
       // Dagger compiler guarantees this cast to succeed.
       @SuppressWarnings("unchecked")
-      Class<? extends C> implementationClass = (Class<? extends C>)
-          componentClass.getClassLoader().loadClass(implementationName);
+      Class<? extends C> implementationClass =
+          (Class<? extends C>) componentClass.getClassLoader().loadClass(implementationName);
       return implementationClass;
     } catch (ClassNotFoundException e) {
-      throw new IllegalStateException("Unable to find generated component implementation "
-          + implementationName
-          + " for component "
-          + componentClass.getName(), e);
+      throw new IllegalStateException(
+          "Unable to find generated component implementation "
+              + implementationName
+              + " for component "
+              + componentClass.getName(),
+          e);
     }
   }
 

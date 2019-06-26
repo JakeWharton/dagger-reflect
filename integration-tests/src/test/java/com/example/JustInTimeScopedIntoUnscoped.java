@@ -10,6 +10,7 @@ interface JustInTimeScopedIntoUnscoped {
 
   @Singleton
   final class Thing {
-    @Inject Thing() {}
+    @Inject
+    Thing() {}
   }
 }

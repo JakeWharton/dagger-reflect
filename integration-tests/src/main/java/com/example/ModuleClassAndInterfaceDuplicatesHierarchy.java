@@ -10,18 +10,19 @@ interface ModuleClassAndInterfaceDuplicatesHierarchy {
   Number number();
 
   @Module
-  abstract class Module1 extends BaseModule implements InterfaceModule {
-  }
+  abstract class Module1 extends BaseModule implements InterfaceModule {}
 
   @Module
   abstract class BaseModule implements InterfaceModule {
-    @Provides static Integer integer() {
+    @Provides
+    static Integer integer() {
       return 42;
     }
   }
 
   @Module
   interface InterfaceModule {
-    @Binds Number number(Integer num);
+    @Binds
+    Number number(Integer num);
   }
 }

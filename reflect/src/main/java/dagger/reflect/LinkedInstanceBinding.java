@@ -10,11 +10,13 @@ final class LinkedInstanceBinding<T> extends LinkedBinding<T> {
     this.value = value;
   }
 
-  @Override public @Nullable T get() {
+  @Override
+  public @Nullable T get() {
     return value;
   }
 
-  @Override public String toString() {
+  @Override
+  public String toString() {
     return "@BindsInstance[" + value + ']';
   }
 }

@@ -12,10 +12,12 @@ public interface OptionalBindingPrimitive {
 
   @Module
   abstract class Module1 {
-    @Provides static long five() {
+    @Provides
+    static long five() {
       return 5L;
     }
 
-    @BindsOptionalOf abstract long optionalFive();
+    @BindsOptionalOf
+    abstract long optionalFive();
   }
 }
