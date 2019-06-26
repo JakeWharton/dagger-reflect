@@ -98,6 +98,13 @@ subprojects {
       disableWarningsInGeneratedCode = true
       excludedPaths = ".*/build/generated/.*"
 
+      check('MissingFail', CheckSeverity.ERROR)
+      check('MissingOverride', CheckSeverity.ERROR)
+      check('UnusedException', CheckSeverity.ERROR)
+      check('UnusedMethod', CheckSeverity.ERROR)
+      check('UnusedNestedClass', CheckSeverity.ERROR)
+      check('UnusedVariable', CheckSeverity.ERROR)
+
       nullaway {
         annotatedPackages.add('dagger.reflect')
         severity = CheckSeverity.ERROR
