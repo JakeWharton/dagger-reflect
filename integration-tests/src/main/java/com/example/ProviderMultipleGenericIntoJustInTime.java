@@ -3,7 +3,6 @@ package com.example;
 import dagger.Component;
 import dagger.Module;
 import dagger.Provides;
-
 import javax.inject.Inject;
 import javax.inject.Provider;
 
@@ -13,11 +12,13 @@ interface ProviderMultipleGenericIntoJustInTime {
 
   @Module
   abstract class Module1 {
-    @Provides static String provideString() {
+    @Provides
+    static String provideString() {
       return "foo";
     }
 
-    @Provides static Integer provideInteger() {
+    @Provides
+    static Integer provideInteger() {
       return 1;
     }
   }
@@ -26,8 +27,10 @@ interface ProviderMultipleGenericIntoJustInTime {
     final Provider<V> valueProvider;
     final Provider<T> thingProvider;
 
-    // Constructor parameters are flipped from class declaration to ensure the implementation does not rely on ordering.
-    @Inject Thing(Provider<V> valueProvider, Provider<T> thingProvider) {
+    // Constructor parameters are flipped from class declaration to ensure the implementation does
+    // not rely on ordering.
+    @Inject
+    Thing(Provider<V> valueProvider, Provider<T> thingProvider) {
       this.thingProvider = thingProvider;
       this.valueProvider = valueProvider;
     }

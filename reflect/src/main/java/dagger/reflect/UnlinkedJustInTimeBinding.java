@@ -4,14 +4,13 @@ import static dagger.reflect.Reflection.findQualifier;
 
 import dagger.MembersInjector;
 import dagger.reflect.Binding.UnlinkedBinding;
-import org.jetbrains.annotations.Nullable;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
+import org.jetbrains.annotations.Nullable;
 
 final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
   private final Class<T> cls;
@@ -19,7 +18,8 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
   // Type arguments might be used as types for this binding's parameterized constructor parameters.
   @Nullable private Type[] concreteTypeArguments;
 
-  UnlinkedJustInTimeBinding(Class<T> cls, Constructor<T> constructor, @Nullable Type[] concreteTypeArguments) {
+  UnlinkedJustInTimeBinding(
+      Class<T> cls, Constructor<T> constructor, @Nullable Type[] concreteTypeArguments) {
     this.cls = cls;
     this.constructor = constructor;
     this.concreteTypeArguments = concreteTypeArguments;
@@ -44,42 +44,69 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
   }
 
   private Type getTypeKeyForParameter(Type parameterType) {
-    if (parameterType instanceof ParameterizedType) {
+    if (isTypeVariable(parameterType)) {
+      return matchTypeToConcreteType((TypeVariable) parameterType);
+    } else if (hasParameterizedTypeVariable(parameterType)) {
       return findKeyForParameterizedType((ParameterizedType) parameterType);
-    } else {
-      return parameterType;
     }
+    return parameterType;
+  }
+
+  private boolean isTypeVariable(Type parameterType) {
+    return parameterType instanceof TypeVariable;
+  }
+
+  private boolean hasParameterizedTypeVariable(Type parameterType) {
+    if (!(parameterType instanceof ParameterizedType)) {
+      return false;
+    }
+    Type[] actualTypeArguments = ((ParameterizedType) parameterType).getActualTypeArguments();
+    for (Type type : actualTypeArguments) {
+      if (isTypeVariable(type)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private TypeUtil.ParameterizedTypeImpl findKeyForParameterizedType(
       ParameterizedType parameterType) {
-    Type matchingType = matchingParameterizedType(parameterType);
-    return new TypeUtil.ParameterizedTypeImpl(null, parameterType.getRawType(), matchingType);
+    Type[] matchingTypes = matchingParameterizedType(parameterType.getActualTypeArguments());
+    return new TypeUtil.ParameterizedTypeImpl(null, parameterType.getRawType(), matchingTypes);
   }
 
   /**
-   * Given a parameterized type `Provider<T>` where `T` is our type parameter placeholder: We first
-   * look at this class's parameterized type declarations to see if we can find a matching `T`. When
-   * we find a matching `T`, we use `T`'s index to find the corresponding concrete type argument in
-   * this binding's concreteTypeArguments.
+   * Find matching concrete types for a list of types. For every TypeVariable like `T` in the array
+   * arg, we lookup the matching type in this class's concrete type arguments. If it is already a
+   * concrete type, just return the type. Creates a new array to match parameterizd type.
    *
-   * @param parameterizedType The parameterized type placeholder to lookup.
+   * @param typeArguments The Types and TypeVariables to find matching concrete types for.
    * @return The matching concrete type for the placeholder.
    */
-  private Type matchingParameterizedType(ParameterizedType parameterizedType) {
-    Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
-    if (actualTypeArguments.length > 1) {
-      throw new IllegalStateException(
-          "Multiple parameterized type arguments are not supported yet.");
+  private Type[] matchingParameterizedType(Type[] typeArguments) {
+    Type[] matchedTypeArguments = new Type[typeArguments.length];
+    for (int i = 0; i < typeArguments.length; i++) {
+      if (isTypeVariable(typeArguments[i])) {
+        matchedTypeArguments[i] = matchTypeToConcreteType((TypeVariable) typeArguments[i]);
+      } else {
+        matchedTypeArguments[i] = typeArguments[i];
+      }
     }
-    Type typeToLookup = actualTypeArguments[0];
-    // If this isn't a TypeVariable like <T> than we can just return the parameterized type.
-    if (!(typeToLookup instanceof TypeVariable)) {
-      return parameterizedType;
-    }
+    return matchedTypeArguments;
+  }
+
+  /**
+   * Given a TypeVariable `T`, we look at this class's parameterized type declarations to see if we
+   * can find a matching `T`. When we find a matching `T`, we use `T`'s index to find the
+   * corresponding concrete type argument in this binding's concreteTypeArguments.
+   *
+   * @param typeToLookup The parameterized type placeholder to lookup.
+   * @return The matching concrete type for the placeholder.
+   */
+  private Type matchTypeToConcreteType(TypeVariable typeToLookup) {
     if (concreteTypeArguments == null) {
       throw new IllegalStateException(
-          "No concrete type arguments for " + cls + " but needed for " + parameterizedType);
+          "No concrete type arguments for " + cls + " but needed for " + typeToLookup);
     }
     // Iterate through parameterized types declared in this class to find the matching index and
     // return the corresponding concrete type.
@@ -88,15 +115,16 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
         return concreteTypeArguments[i];
       }
     }
-    throw new IllegalStateException("Could not finding matching parameterized type arguments for "
-        + parameterizedType
-        + " in "
-        + Arrays.toString(cls.getTypeParameters()));
+    throw new IllegalStateException(
+        "Could not finding matching parameterized type arguments for "
+            + typeToLookup
+            + " in "
+            + Arrays.toString(cls.getTypeParameters()));
   }
 
   @Override
   public String toString() {
-    return "@Inject[" + cls.getName() + getTypeArgumentsStringOrEmpty() +".<init>(…)]";
+    return "@Inject[" + cls.getName() + getTypeArgumentsStringOrEmpty() + ".<init>(…)]";
   }
 
   private String getTypeArgumentsStringOrEmpty() {

@@ -262,8 +262,10 @@ public final class IntegrationTest {
     assertThat(component.thing().genericProvider.get()).isNotNull();
   }
 
-  @Test public void providerMultipleGenericIntoJustInTimeGeneric() {
-    ProviderMultipleGenericIntoJustInTime component = backend.create(ProviderMultipleGenericIntoJustInTime.class);
+  @Test
+  public void providerMultipleGenericIntoJustInTimeGeneric() {
+    ProviderMultipleGenericIntoJustInTime component =
+        backend.create(ProviderMultipleGenericIntoJustInTime.class);
     assertThat(component.thing().thingProvider.get()).isNotNull();
     assertThat(component.thing().valueProvider.get()).isNotNull();
   }
