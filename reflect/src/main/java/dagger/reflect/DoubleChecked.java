@@ -10,6 +10,7 @@ abstract class DoubleChecked<T> implements Lazy<T>, Provider<T> {
   private volatile @Nullable Object value = UNINITIALIZED;
 
   @SuppressWarnings("unchecked") // Value from getOnce() by the time the unchecked cast is reached.
+  @Override
   public @Nullable T get() {
     Object value = this.value;
     if (value == UNINITIALIZED) {

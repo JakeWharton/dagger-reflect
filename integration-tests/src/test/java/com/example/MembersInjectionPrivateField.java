@@ -10,7 +10,9 @@ public interface MembersInjectionPrivateField {
   void inject(Target instance);
 
   class Target {
-    @Inject private String privateField;
+    @SuppressWarnings("unused") // Explicitly testing private.
+    @Inject
+    private String privateField;
   }
 
   @Module

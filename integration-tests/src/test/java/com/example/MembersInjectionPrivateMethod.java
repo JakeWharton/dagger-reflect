@@ -10,6 +10,7 @@ public interface MembersInjectionPrivateMethod {
   void inject(Target instance);
 
   class Target {
+    @SuppressWarnings("unused") // Explicitly testing private.
     @Inject
     private void privateMethod(String one) {}
   }
