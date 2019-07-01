@@ -793,8 +793,6 @@ public final class IntegrationTest {
 
   @Test
   public void multibindingProviderSet() {
-    ignoreReflectionBackend();
-
     MultibindingProviderSet component = backend.create(MultibindingProviderSet.class);
     Provider<Set<String>> values = component.values();
 
