@@ -4,7 +4,6 @@ sourceSets.test.java {
   srcDir file('dagger/javatests')
   include 'dagger/functional/**'
 
-  exclude 'dagger/functional/aot/**'
   exclude 'dagger/functional/producers/**'
   exclude 'dagger/functional/tck/**'
   exclude 'dagger/functional/spi/**'
@@ -30,6 +29,7 @@ test.filter {
   excludeTest 'dagger.functional.ReusableTest', null
 
   // TODO reflect bug! Need something like ByteBuddy for proxying classes at runtime.
+  excludeTest 'dagger.functional.aot.PrunedFrameworkInstanceWithModuleInstanceTest', 'prunedBindingWithModuleInstance_doesntThrowDuringInitialization'
   excludeTest 'dagger.functional.builder.BuilderBindsInstanceParameterTest', null
   excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', null
   excludeTest 'dagger.functional.factory.FactoryBindsInstanceTest', null
@@ -54,7 +54,8 @@ test.filter {
   excludeTest 'dagger.functional.GenericTest', 'testGenericSimpleReferences'
   excludeTest 'dagger.functional.binds.BindsTest', null
 
-  // TODO reflect bug! Something with @IntoSet, set bindings, and subcomponents.
+  // TODO reflect bug! Something with multibindings and subcomponents.
+  excludeTest 'dagger.functional.aot.MapFrameworkInstanceWithContributionsInMultipleImplementationsTest', 'mapFactoryCanBeInstantiatedAcrossComponentImplementations'
   excludeTest 'dagger.functional.subcomponent.pruning.SubcomponentOnlyRequestedBySiblingTest', 'subcomponentAddedInParent_onlyUsedInSibling'
   excludeTest 'dagger.functional.subcomponent.ModuleWithSubcomponentsTest', null
 
