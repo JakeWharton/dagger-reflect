@@ -52,7 +52,8 @@ test.filter {
   excludeTest 'dagger.functional.GenericTest', 'testGenericComponentCreate'
   excludeTest 'dagger.functional.GenericTest', 'testGenericDoubleReferences'
   excludeTest 'dagger.functional.GenericTest', 'testGenericSimpleReferences'
-  excludeTest 'dagger.functional.binds.BindsTest', null
+  excludeTest 'dagger.functional.binds.BindsTest', 'bindDelegates'
+  excludeTest 'dagger.functional.binds.BindsTest', 'bindWithScope'
 
   // TODO reflect bug! Something with multibindings and subcomponents.
   excludeTest 'dagger.functional.aot.MapFrameworkInstanceWithContributionsInMultipleImplementationsTest', 'mapFactoryCanBeInstantiatedAcrossComponentImplementations'
