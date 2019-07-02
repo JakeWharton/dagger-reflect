@@ -2,17 +2,17 @@ package com.example;
 
 import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
-import static org.junit.Assume.assumeTrue;
 
 import dagger.Lazy;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Provider;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
 import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameter;
 import org.junit.runners.Parameterized.Parameters;
 
 @RunWith(Parameterized.class)
@@ -22,7 +22,13 @@ public final class IntegrationTest {
     return Backend.values();
   }
 
-  @Parameter public Backend backend;
+  private final Backend backend;
+  @Rule public final TestRule rule;
+
+  public IntegrationTest(Backend backend) {
+    this.backend = backend;
+    this.rule = new IntegrationTestRule(backend);
+  }
 
   @Test
   public void componentProvider() {
@@ -121,9 +127,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void optionalBindingNullable() {
-    ignoreCodegenBackend();
-
     OptionalBindingNullable component = backend.create(OptionalBindingNullable.class);
     try {
       component.string();
@@ -217,9 +222,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void justInTimeWrongScope() {
-    ignoreCodegenBackend();
-
     JustInTimeWrongScope component = backend.create(JustInTimeWrongScope.class);
     try {
       component.thing();
@@ -230,9 +234,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void justInTimeScopedIntoUnscoped() {
-    ignoreCodegenBackend();
-
     JustInTimeScopedIntoUnscoped component = backend.create(JustInTimeScopedIntoUnscoped.class);
     try {
       component.thing();
@@ -243,9 +246,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void justInTimeNotScopedInAncestry() {
-    ignoreCodegenBackend();
-
     JustInTimeNotScopedInAncestry.ChildComponent child =
         backend.create(JustInTimeNotScopedInAncestry.class).child();
     try {
@@ -386,9 +388,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void builderBindsInstanceOnParameterAndMethod() {
-    ignoreCodegenBackend();
-
     BuilderBindsInstanceOnParameterAndMethod.Builder builder =
         backend.builder(BuilderBindsInstanceOnParameterAndMethod.Builder.class);
     try {
@@ -755,9 +756,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void scopedWrong() {
-    ignoreCodegenBackend();
-
     try {
       backend.create(ScopedWrong.class);
       fail();
@@ -927,9 +927,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void moduleSubcomponentBindsFactoryAndBuilder() {
-    ignoreCodegenBackend();
-
     try {
       backend.create(ModuleSubcomponentBindsFactoryAndBuilder.class);
       fail();
@@ -944,9 +943,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void moduleSubcomponentNoFactoryOrBuilder() {
-    ignoreCodegenBackend();
-
     try {
       backend.create(ModuleSubcomponentNoFactoryOrBuilder.class);
       fail();
@@ -1001,9 +999,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void providerCycle() {
-    ignoreCodegenBackend();
-
     ProviderCycle component = backend.create(ProviderCycle.class);
     try {
       component.string();
@@ -1025,9 +1022,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void undeclaredModule() {
-    ignoreCodegenBackend();
-
     UndeclaredModules.Builder builder = backend.builder(UndeclaredModules.Builder.class);
     try {
       builder.module(new UndeclaredModules.Module1());
@@ -1042,9 +1038,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void undeclaredDependencies() {
-    ignoreCodegenBackend();
-
     UndeclaredDependencies.Builder builder = backend.builder(UndeclaredDependencies.Builder.class);
     try {
       builder.dep("hey");
@@ -1059,9 +1054,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void membersInjectionWrongReturnType() {
-    ignoreCodegenBackend();
-
     MembersInjectorWrongReturnType component = backend.create(MembersInjectorWrongReturnType.class);
     MembersInjectorWrongReturnType.Target instance = new MembersInjectorWrongReturnType.Target();
     try {
@@ -1078,9 +1072,8 @@ public final class IntegrationTest {
 
   @SuppressWarnings("OverridesJavaxInjectableMethod")
   @Test
+  @IgnoreCodegen
   public void membersInjectionAbstractMethod() {
-    ignoreCodegenBackend();
-
     MembersInjectionAbstractMethod component = backend.create(MembersInjectionAbstractMethod.class);
     MembersInjectionAbstractMethod.Target instance =
         new MembersInjectionAbstractMethod.Target() {
@@ -1101,9 +1094,8 @@ public final class IntegrationTest {
 
   @SuppressWarnings("OverridesJavaxInjectableMethod")
   @Test
+  @IgnoreCodegen
   public void membersInjectionInterfaceMethod() {
-    ignoreCodegenBackend();
-
     MembersInjectionInterfaceMethod component =
         backend.create(MembersInjectionInterfaceMethod.class);
     MembersInjectionInterfaceMethod.Target instance =
@@ -1124,9 +1116,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void membersInjectionPrivateField() {
-    ignoreCodegenBackend();
-
     MembersInjectionPrivateField component = backend.create(MembersInjectionPrivateField.class);
     MembersInjectionPrivateField.Target instance = new MembersInjectionPrivateField.Target();
     try {
@@ -1142,9 +1133,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void membersInjectionStaticField() {
-    ignoreCodegenBackend();
-
     MembersInjectionStaticField component = backend.create(MembersInjectionStaticField.class);
     MembersInjectionStaticField.Target instance = new MembersInjectionStaticField.Target();
     try {
@@ -1160,9 +1150,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void membersInjectionPrivateMethod() {
-    ignoreCodegenBackend();
-
     MembersInjectionPrivateMethod component = backend.create(MembersInjectionPrivateMethod.class);
     MembersInjectionPrivateMethod.Target instance = new MembersInjectionPrivateMethod.Target();
     try {
@@ -1178,9 +1167,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void membersInjectionStaticMethod() {
-    ignoreCodegenBackend();
-
     MembersInjectionStaticMethod component = backend.create(MembersInjectionStaticMethod.class);
     MembersInjectionStaticMethod.Target instance = new MembersInjectionStaticMethod.Target();
     try {
@@ -1196,9 +1184,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void abstractClassCreateFails() {
-    ignoreCodegenBackend();
-
     try {
       backend.create(AbstractComponent.class);
       fail();
@@ -1212,9 +1199,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void abstractClassBuilderFails() {
-    ignoreCodegenBackend();
-
     AbstractComponent.Builder builder = backend.builder(AbstractComponent.Builder.class);
     try {
       builder.build();
@@ -1229,9 +1215,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void noComponentAnnotationCreateFails() {
-    ignoreCodegenBackend();
-
     try {
       backend.create(NoAnnotation.class);
       fail();
@@ -1243,9 +1228,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void noComponentAnnotationBuilderFails() {
-    ignoreCodegenBackend();
-
     try {
       backend.builder(NoAnnotation.Builder.class);
       fail();
@@ -1257,9 +1241,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void packagePrivateComponentFails() {
-    ignoreCodegenBackend();
-
     try {
       backend.builder(PackagePrivateComponent.Builder.class);
       fail();
@@ -1273,9 +1256,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void abstractBuilderClassFails() {
-    ignoreCodegenBackend();
-
     try {
       backend.builder(AbstractBuilderClass.Builder.class);
       fail();
@@ -1289,9 +1271,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void noComponentBuilderAnnotationFails() {
-    ignoreCodegenBackend();
-
     try {
       backend.builder(NoBuilderAnnotation.Builder.class);
       fail();
@@ -1304,9 +1285,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void componentWithDependenciesCreateFails() {
-    ignoreCodegenBackend();
-
     try {
       backend.create(ComponentWithDependencies.class);
       fail();
@@ -1356,10 +1336,9 @@ public final class IntegrationTest {
   }
 
   @Test
+  @ReflectBug("check not implemented")
+  @IgnoreCodegen
   public void componentScopeCycle() {
-    ignoreCodegenBackend();
-    ignoreReflectionBackend(); // TODO
-
     try {
       backend.create(ComponentScopeCycle.class);
       fail();
@@ -1369,10 +1348,9 @@ public final class IntegrationTest {
   }
 
   @Test
+  @ReflectBug("check not implemented")
+  @IgnoreCodegen
   public void componentScopeCycleWithMultipleAnnotations() {
-    ignoreCodegenBackend();
-    ignoreReflectionBackend(); // TODO
-
     try {
       backend.create(ComponentScopeCycleWithMultipleAnnotations.class);
       fail();
@@ -1382,10 +1360,9 @@ public final class IntegrationTest {
   }
 
   @Test
+  @ReflectBug("check not implemented")
+  @IgnoreCodegen
   public void componentAndSubcomponentScopeCycle() {
-    ignoreCodegenBackend();
-    ignoreReflectionBackend(); // TODO
-
     ComponentAndSubcomponentScopeCycle component =
         backend.create(ComponentAndSubcomponentScopeCycle.class);
     try {
@@ -1397,10 +1374,9 @@ public final class IntegrationTest {
   }
 
   @Test
+  @ReflectBug("check not implemented")
+  @IgnoreCodegen
   public void componentScopeDependsOnUnscoped() {
-    ignoreCodegenBackend();
-    ignoreReflectionBackend(); // TODO
-
     try {
       backend.create(ComponentScopedDependsOnUnscoped.class);
       fail();
@@ -1410,9 +1386,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void subcomponentScopeCycle() {
-    ignoreCodegenBackend();
-
     SubcomponentScopeCycle.RequestComponent requestComponent =
         backend.create(SubcomponentScopeCycle.class).request();
     try {
@@ -1430,9 +1405,8 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
   public void subcomponentScopeDependsOnUnscoped() {
-    ignoreCodegenBackend();
-
     SubcomponentScopedDependsOnUnscoped unscoped =
         backend.create(SubcomponentScopedDependsOnUnscoped.class);
     try {
@@ -1444,13 +1418,5 @@ public final class IntegrationTest {
           .isEqualTo(
               "Scope with annotations [@javax.inject.Singleton()] may not depend on unscoped");
     }
-  }
-
-  private void ignoreReflectionBackend() {
-    assumeTrue("Not yet implemented for reflection backend", backend != Backend.REFLECT);
-  }
-
-  private void ignoreCodegenBackend() {
-    assumeTrue("Not supported for codegen backend", backend != Backend.CODEGEN);
   }
 }
