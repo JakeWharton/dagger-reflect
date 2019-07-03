@@ -28,13 +28,15 @@ interface MultibindingMapClassKey {
     static I two() {
       return Impl2.INSTANCE;
     }
-
   }
-
 }
 
 interface I {}
 
-enum Impl1 implements I { INSTANCE }
+enum Impl1 implements I {
+  INSTANCE
+}
 
-enum Impl2 implements I { INSTANCE }
+enum Impl2 implements I {
+  INSTANCE
+}

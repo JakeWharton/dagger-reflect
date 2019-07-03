@@ -1,13 +1,6 @@
 package dagger.reflect;
 
-import static dagger.reflect.Reflection.boxIfNecessary;
-import static dagger.reflect.Reflection.findAnnotation;
-import static dagger.reflect.Reflection.findMapKey;
-import static dagger.reflect.Reflection.findQualifier;
-import static dagger.reflect.Reflection.findScope;
-import static dagger.reflect.Reflection.findScopes;
-import static dagger.reflect.Reflection.maybeInstantiate;
-import static dagger.reflect.Reflection.requireAnnotation;
+import static dagger.reflect.Reflection.*;
 
 import dagger.Binds;
 import dagger.BindsOptionalOf;

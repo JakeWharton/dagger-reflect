@@ -813,7 +813,8 @@ public final class IntegrationTest {
   @Test
   public void multibindingMapClassKey() {
     MultibindingMapClassKey c = backend.create(MultibindingMapClassKey.class);
-    assertThat(c.values()).containsExactly(Impl1.class, Impl1.INSTANCE, Impl2.class, Impl2.INSTANCE);
+    assertThat(c.values())
+        .containsExactly(Impl1.class, Impl1.INSTANCE, Impl2.class, Impl2.INSTANCE);
   }
 
   @Test
