@@ -811,6 +811,13 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void multibindingMapClassKey() {
+    MultibindingMapClassKey c = backend.create(MultibindingMapClassKey.class);
+    assertThat(c.values())
+        .containsExactly(Impl1.class, Impl1.INSTANCE, Impl2.class, Impl2.INSTANCE);
+  }
+
+  @Test
   public void multibindingMapPrimitiveKey() {
     MultibindingMapPrimitiveKey component = backend.create(MultibindingMapPrimitiveKey.class);
     assertThat(component.values()).containsExactly(1L, "one", 2L, "two");

@@ -171,7 +171,7 @@ final class ReflectiveModuleParser {
       }
       Method method = methods[0];
 
-      entryKeyType = boxIfNecessary(method.getReturnType());
+      entryKeyType = boxIfNecessary(method.getGenericReturnType());
       entryKey = Reflection.tryInvoke(entryKeyAnnotation, method);
       if (entryKey == null) {
         throw new AssertionError(); // Not allowed by the Java language specification.
