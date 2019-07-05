@@ -75,7 +75,8 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
   private TypeUtil.ParameterizedTypeImpl findKeyForParameterizedType(
       ParameterizedType parameterType) {
     Type[] matchingTypes = matchingParameterizedType(parameterType.getActualTypeArguments());
-    return new TypeUtil.ParameterizedTypeImpl(null, parameterType.getRawType(), matchingTypes);
+    return new TypeUtil.ParameterizedTypeImpl(
+        parameterType.getOwnerType(), parameterType.getRawType(), matchingTypes);
   }
 
   /**

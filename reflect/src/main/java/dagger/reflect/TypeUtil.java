@@ -83,9 +83,7 @@ final class TypeUtil {
                 "unexpected owner type for " + rawType + ": " + ownerType);
           }
         } else if (enclosingClass != null) {
-          // TODO ?
-          //          throw new IllegalArgumentException("unexpected owner type for " + rawType + ":
-          // null");
+          throw new IllegalArgumentException("unexpected owner type for " + rawType + ": null");
         }
       }
 
