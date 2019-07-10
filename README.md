@@ -36,7 +36,8 @@ For an Android build, configure your dependencies:
 dependencies {
   if (properties.containsKey('android.injected.invoked.from.ide')) {
     debugAnnotationProcessor 'com.jakewharton.dagger:dagger-reflect-compiler:0.1.0'
-    debugApi 'com.jakewharton.dagger:dagger-reflect:0.1.0' // or debugImplementation  
+    debugApi 'com.jakewharton.dagger:dagger-reflect:0.1.0' // or debugImplementation
+    lintChecks 'com.jakewharton.dagger:dagger-reflect-lint:0.1.0'
   } else {
     debugAnnotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
   }
@@ -64,6 +65,7 @@ having to change your production Dagger code. In order to avoid the need to
 dependencies {
   if (properties.containsKey('android.injected.invoked.from.ide')) {
     debugApi 'com.jakewharton.dagger:dagger-reflect:0.1.0' // or debugImplementation  
+    lintChecks 'com.jakewharton.dagger:dagger-reflect-lint:0.1.0'
   } else {
     debugAnnotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
     debugApi 'com.jakewharton.dagger:dagger-codegen:0.1.0' // or debugImplementation
