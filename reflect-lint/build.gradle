@@ -13,7 +13,7 @@ dependencies {
 
 jar {
   manifest {
-    attributes('Lint-Registry-v2': 'dagger.reflect.lint.IssueRegistry')
+    attributes('Lint-Registry-v2': 'dagger.reflect.lint.DaggerReflectIssueRegistry')
   }
 }
 
