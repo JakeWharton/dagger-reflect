@@ -1343,6 +1343,12 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void componentBindingInstance() {
+    ComponentBindingInstance instance = backend.create(ComponentBindingInstance.class);
+    assertThat(instance).isEqualTo(instance.result().foo);
+  }
+
+  @Test
   @ReflectBug("check not implemented")
   @IgnoreCodegen
   public void componentScopeCycle() {
