@@ -1345,7 +1345,7 @@ public final class IntegrationTest {
   @Test
   public void componentBindingInstance() {
     ComponentBindingInstance instance = backend.create(ComponentBindingInstance.class);
-    assertThat(instance).isEqualTo(instance.result().foo);
+    assertThat(instance).isSameAs(instance.result().foo);
   }
 
   @Test
