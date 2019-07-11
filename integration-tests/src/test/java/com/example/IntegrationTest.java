@@ -1350,7 +1350,6 @@ public final class IntegrationTest {
   }
 
   @Test
-  @ReflectBug("feature not implemented")
   public void subcomponentBindingInstance() {
     SubcomponentBindingInstance component = backend.create(SubcomponentBindingInstance.class);
     SubcomponentBindingInstance.Sub subcomponent = component.sub();

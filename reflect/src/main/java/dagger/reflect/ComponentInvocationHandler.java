@@ -171,7 +171,9 @@ final class ComponentInvocationHandler implements InvocationHandler {
     public Object invoke(Object[] args) {
       ComponentScopeBuilder scopeBuilder = ComponentScopeBuilder.buildSubcomponent(cls, scope);
       ComponentFactoryInvocationHandler.parseFactoryMethod(method, args, scopeBuilder);
-      return create(cls, scopeBuilder.build());
+      Object component = create(cls, scopeBuilder.build());
+      scopeBuilder.setScopeComponent(component);
+      return component;
     }
   }
 
