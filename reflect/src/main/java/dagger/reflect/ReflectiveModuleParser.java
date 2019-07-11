@@ -12,6 +12,7 @@ import static dagger.reflect.Reflection.requireAnnotation;
 import dagger.Binds;
 import dagger.BindsOptionalOf;
 import dagger.MapKey;
+import dagger.Module;
 import dagger.Provides;
 import dagger.android.AndroidInjector;
 import dagger.android.ContributesAndroidInjector;
@@ -23,6 +24,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -66,7 +68,7 @@ final class ReflectiveModuleParser {
                 method.getAnnotation(ContributesAndroidInjector.class);
             if (contributesAndroidInjector != null) {
               // TODO check return type is a supported type? not parameterized? something else?
-              Class<?>[] modules = contributesAndroidInjector.modules();
+              Class<?>[] modules = collectIncludedModules(contributesAndroidInjector.modules());
               Class<?> androidType = (Class<?>) returnType;
               Binding.UnlinkedBinding binding =
                   new UnlinkedAndroidInjectorFactoryBinding(
@@ -90,6 +92,23 @@ final class ReflectiveModuleParser {
             addBinding(scopeBuilder, key, binding, annotations);
           }
         }
+      }
+    }
+  }
+
+  private static Class<?>[] collectIncludedModules(Class<?>[] modules) {
+    Set<Class<?>> result = new HashSet<>();
+    traverseModules(result, modules);
+    return result.toArray(new Class<?>[0]);
+  }
+
+  private static void traverseModules(Set<Class<?>> result, Class<?>[] modules) {
+    for (Class<?> module : modules) {
+      result.add(module);
+      Module annotation = module.getAnnotation(Module.class);
+      Class<?>[] includedModules = annotation.includes();
+      if (includedModules.length > 0) {
+        traverseModules(result, includedModules);
       }
     }
   }
