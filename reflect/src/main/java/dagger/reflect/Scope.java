@@ -4,6 +4,9 @@ import dagger.Lazy;
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
 import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
+import org.jetbrains.annotations.Nullable;
+
+import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -13,8 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import javax.inject.Provider;
-import org.jetbrains.annotations.Nullable;
 
 final class Scope {
   private final ConcurrentHashMap<Key, Binding> bindings;
@@ -23,16 +24,26 @@ final class Scope {
   private final Set<Annotation> annotations;
 
   private final @Nullable Scope parent;
+  private final @Nullable MutableInstanceBinding scopeComponentBinding;
 
   private Scope(
       ConcurrentHashMap<Key, Binding> bindings,
       JustInTimeLookup.Factory jitLookupFactory,
       Set<Annotation> annotations,
-      @Nullable Scope parent) {
+      @Nullable Scope parent,
+      @Nullable MutableInstanceBinding scopeComponentBinding) {
     this.bindings = bindings;
     this.jitLookupFactory = jitLookupFactory;
     this.annotations = annotations;
     this.parent = parent;
+    this.scopeComponentBinding = scopeComponentBinding;
+  }
+
+  void setScopeComponentInstance(Object component) {
+    if (scopeComponentBinding == null) {
+      throw new IllegalStateException("missing scope component binding.");
+    }
+    scopeComponentBinding.setInstance(component);
   }
 
   LinkedBinding<?> getBinding(Key key) {
@@ -158,6 +169,7 @@ final class Scope {
     private final Map<Key, SetBindings> keyToSetBindings = new LinkedHashMap<>();
     private final Map<Key, Map<Object, Binding>> keyToMapBindings = new LinkedHashMap<>();
     private JustInTimeLookup.Factory jitLookupFactory = JustInTimeLookup.Factory.NONE;
+    private @Nullable MutableInstanceBinding scopeComponentBinding;
 
     Builder(@Nullable Scope parent, Set<Annotation> annotations) {
       if (!annotations.isEmpty() && parent != null) {
@@ -194,8 +206,11 @@ final class Scope {
       this.annotations = annotations;
     }
 
-    Builder addScopeComponentBinding(Key key, Binding binding) {
-      keyToBinding.put(key, binding);
+    Builder addScopeComponentBinding(Key key) {
+      if (key == null) throw new NullPointerException("key == null");
+      scopeComponentBinding = new MutableInstanceBinding();
+
+      keyToBinding.put(key, scopeComponentBinding);
       return this;
     }
 
@@ -389,7 +404,7 @@ final class Scope {
         }
       }
 
-      return new Scope(allBindings, jitLookupFactory, annotations, parent);
+      return new Scope(allBindings, jitLookupFactory, annotations, parent, scopeComponentBinding);
     }
 
     private static final class SetBindings {

@@ -70,8 +70,6 @@ final class ComponentScopeBuilder {
   private final Set<Annotation> scopeAnnotations;
   private final @Nullable Scope parent;
 
-  private final MutableInstanceBinding scopeComponentBinding = new MutableInstanceBinding();
-
   private ComponentScopeBuilder(
       Class<?> componentClass,
       Map<Class<?>, Object> moduleInstances,
@@ -117,16 +115,12 @@ final class ComponentScopeBuilder {
     }
   }
 
-  void setScopeComponent(Object component) {
-    scopeComponentBinding.setInstance(component);
-  }
-
   Scope build() {
     Scope.Builder scopeBuilder =
         new Scope.Builder(parent, scopeAnnotations)
             .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
 
-    scopeBuilder.addScopeComponentBinding(Key.of(null, componentClass), scopeComponentBinding);
+    scopeBuilder.addScopeComponentBinding(Key.of(null, componentClass));
 
     for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
       scopeBuilder.addInstance(entry.getKey(), entry.getValue());

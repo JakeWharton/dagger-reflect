@@ -96,9 +96,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         throw new IllegalStateException(); // TODO must be no-arg
       }
       Scope scope = scopeBuilder.build();
-      Object object = ComponentInvocationHandler.create(componentClass, scope);
-      scopeBuilder.setScopeComponent(object);
-      return object;
+      return ComponentInvocationHandler.create(componentClass, scope);
     }
 
     // TODO these are allowed to be void or a supertype
