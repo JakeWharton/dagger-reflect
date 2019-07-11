@@ -76,7 +76,7 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
       @NotNull UClass node,
       @NotNull UAnnotation reflectRelatedAnnotation) {
     context.report(
-        ISSUE_MISSING_RETENTION,
+        ISSUE_WRONG_RETENTION,
         node,
         context.getNameLocation(node),
         "Annotation used by Dagger Reflect must be annotated with `@Retention(RUNTIME)`.",
@@ -164,17 +164,6 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
     }
     return null;
   }
-
-  public static final Issue ISSUE_MISSING_RETENTION =
-      Issue.create(
-          "MissingRetention",
-          "Dagger annotations need to have Runtime Retention",
-          "To make annotation accessible during runtime for Dagger Reflect, "
-              + "the need to have the Retention annotation with the runtime RetentionPolicy.",
-          Category.CORRECTNESS,
-          10,
-          Severity.ERROR,
-          new Implementation(WrongRetentionDetector.class, Scope.JAVA_FILE_SCOPE));
 
   public static final Issue ISSUE_WRONG_RETENTION =
       Issue.create(

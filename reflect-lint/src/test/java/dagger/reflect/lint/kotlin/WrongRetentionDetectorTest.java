@@ -20,9 +20,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Target(AnnotationTarget.ANNOTATION_CLASS)\n"
                     + "internal annotation class OtherAnnotation"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -51,9 +49,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(AnnotationRetention.RUNTIME)\n"
                     + "internal annotation class MyQualifier"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -72,9 +68,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(RUNTIME)\n"
                     + "internal annotation class MyQualifier"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -93,9 +87,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(SOURCE)\n"
                     + "internal annotation class MyQualifier"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
             "src/foo/MyQualifier.kt:7: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
@@ -122,9 +114,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(AnnotationRetention.SOURCE)\n"
                     + "internal annotation class MyQualifier"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
             "src/foo/MyQualifier.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
@@ -151,9 +141,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(value = AnnotationRetention.SOURCE)\n"
                     + "internal annotation class MyQualifier"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
             "src/foo/MyQualifier.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
@@ -179,12 +167,10 @@ public final class WrongRetentionDetectorTest {
                     + "@Qualifier\n"
                     + "internal annotation class MyQualifier"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
-            "src/foo/MyQualifier.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [MissingRetention]\n"
+            "src/foo/MyQualifier.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [WrongRetention]\n"
                 + "internal annotation class MyQualifier\n"
                 + "                          ~~~~~~~~~~~\n"
                 + "1 errors, 0 warnings")
@@ -217,9 +203,7 @@ public final class WrongRetentionDetectorTest {
                     + "@MapKey\n"
                     + "internal annotation class MyMapKey"),
             MAP_KEY_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -238,9 +222,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(RUNTIME)\n"
                     + "internal annotation class MyMapKey"),
             MAP_KEY_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -258,9 +240,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(AnnotationRetention.SOURCE)\n"
                     + "internal annotation class MyMapKey"),
             MAP_KEY_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
             "src/foo/MyMapKey.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
@@ -286,12 +266,10 @@ public final class WrongRetentionDetectorTest {
                     + "@MapKey\n"
                     + "internal annotation class MyMapKey"),
             MAP_KEY_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
-            "src/foo/MyMapKey.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [MissingRetention]\n"
+            "src/foo/MyMapKey.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [WrongRetention]\n"
                 + "internal annotation class MyMapKey\n"
                 + "                          ~~~~~~~~\n"
                 + "1 errors, 0 warnings")

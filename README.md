@@ -97,7 +97,7 @@ Using specific Lint rules
 
 There are Lint rules for Dagger reflect to simplify the usage:
 
-  * `MissingRetention` / `WrongRetention`:  
+  * `WrongRetention`:  
     When using a Dagger related custom annotation (e.g. `MapKey`, `Qualifier`), they require
     a runtime retention by adding `@Retention(RUNTIME)`.
 

@@ -23,9 +23,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Target(ANNOTATION_TYPE)\n"
                     + "public @interface OtherAnnotation {}"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -54,9 +52,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(RUNTIME)\n"
                     + "public @interface MyQualifier {}"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -77,9 +73,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(RUNTIME)\n"
                     + "public @interface MyQualifier {}"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -100,9 +94,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(SOURCE)\n"
                     + "public @interface MyQualifier {}"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
             "src/foo/MyQualifier.java:9: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
@@ -131,9 +123,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(RetentionPolicy.SOURCE)\n"
                     + "public @interface MyQualifier {}"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
             "src/foo/MyQualifier.java:8: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
@@ -162,9 +152,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(value = RetentionPolicy.SOURCE)\n"
                     + "public @interface MyQualifier {}"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
             "src/foo/MyQualifier.java:8: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
@@ -190,12 +178,10 @@ public final class WrongRetentionDetectorTest {
                     + "@Qualifier\n"
                     + "public @interface MyQualifier {}"),
             QUALIFIER_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
-            "src/foo/MyQualifier.java:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [MissingRetention]\n"
+            "src/foo/MyQualifier.java:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [WrongRetention]\n"
                 + "public @interface MyQualifier {}\n"
                 + "                  ~~~~~~~~~~~\n"
                 + "1 errors, 0 warnings")
@@ -228,9 +214,7 @@ public final class WrongRetentionDetectorTest {
                     + "@MapKey\n"
                     + "public @interface MyMapKey {}"),
             MAP_KEY_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -251,9 +235,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(RUNTIME)\n"
                     + "public @interface MyMapKey {}"),
             MAP_KEY_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expectClean();
   }
@@ -274,9 +256,7 @@ public final class WrongRetentionDetectorTest {
                     + "@Retention(SOURCE)\n"
                     + "public @interface MyMapKey {}"),
             MAP_KEY_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
             "src/foo/MyMapKey.java:9: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
@@ -302,12 +282,10 @@ public final class WrongRetentionDetectorTest {
                     + "@MapKey\n"
                     + "public @interface MyMapKey {}"),
             MAP_KEY_STUB)
-        .issues(
-            WrongRetentionDetector.ISSUE_MISSING_RETENTION,
-            WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
-            "src/foo/MyMapKey.java:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [MissingRetention]\n"
+            "src/foo/MyMapKey.java:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [WrongRetention]\n"
                 + "public @interface MyMapKey {}\n"
                 + "                  ~~~~~~~~\n"
                 + "1 errors, 0 warnings")

@@ -4,7 +4,7 @@ buildscript {
   ext.versions = [
       'dagger': '2.23.2',
       'incap': '0.2',
-      'androidTools': '26.4.1'
+      'androidTools': '26.4.1',
   ]
 
   ext.deps = [
@@ -43,7 +43,7 @@ buildscript {
           'core': "com.android.tools.lint:lint:${versions.androidTools}",
           'api': "com.android.tools.lint:lint-api:${versions.androidTools}",
           'checks': "com.android.tools.lint:lint-checks:${versions.androidTools}",
-          'tests': "com.android.tools.lint:lint-tests:${versions.androidTools}"
+          'tests': "com.android.tools.lint:lint-tests:${versions.androidTools}",
       ],
       'incap': [
           'runtime': "net.ltgt.gradle.incap:incap:${versions.incap}",
