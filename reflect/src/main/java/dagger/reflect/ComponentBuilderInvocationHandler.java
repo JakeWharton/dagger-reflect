@@ -72,13 +72,13 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
 
   private final Class<?> componentClass;
   private final Class<?> builderClass;
-  private final ComponentScopeBuilder scopeBuilder;
+  private final ComponentScopeBuilder componentScopeBuilder;
 
   private ComponentBuilderInvocationHandler(
-      Class<?> componentClass, Class<?> builderClass, ComponentScopeBuilder scopeBuilder) {
+      Class<?> componentClass, Class<?> builderClass, ComponentScopeBuilder componentScopeBuilder) {
     this.componentClass = componentClass;
     this.builderClass = builderClass;
-    this.scopeBuilder = scopeBuilder;
+    this.componentScopeBuilder = componentScopeBuilder;
   }
 
   @Override
@@ -95,7 +95,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
       if (parameterTypes.length != 0) {
         throw new IllegalStateException(); // TODO must be no-arg
       }
-      return ComponentInvocationHandler.create(componentClass, scopeBuilder.build());
+      return ComponentInvocationHandler.create(componentClass, componentScopeBuilder.get());
     }
 
     // TODO these are allowed to be void or a supertype
@@ -124,7 +124,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
         // if (argument == null && !hasNullable(parameterAnnotations[0])) {
         //  throw new NullPointerException(); // TODO message
         // }
-        scopeBuilder.putBoundInstance(key, argument);
+        componentScopeBuilder.putBoundInstance(key, argument);
       } else {
         Type parameterType = parameterTypes[0];
         if (parameterType instanceof Class<?>) {
@@ -135,7 +135,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
           }
           if (parameterClass.getAnnotation(Module.class) != null) {
             try {
-              scopeBuilder.setModule(parameterClass, argument);
+              componentScopeBuilder.setModule(parameterClass, argument);
             } catch (IllegalArgumentException e) {
               throw new IllegalStateException(
                   "@Component.Builder has setters for modules that aren't required: "
@@ -146,7 +146,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
             }
           } else {
             try {
-              scopeBuilder.setDependency(parameterClass, argument);
+              componentScopeBuilder.setDependency(parameterClass, argument);
             } catch (IllegalArgumentException e) {
               throw new IllegalStateException(
                   "@Component.Builder has setters for dependencies that aren't required: "

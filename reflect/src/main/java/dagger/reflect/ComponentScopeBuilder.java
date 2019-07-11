@@ -111,7 +111,7 @@ final class ComponentScopeBuilder {
     }
   }
 
-  Scope build() {
+  Scope.Builder get() {
     Scope.Builder scopeBuilder =
         new Scope.Builder(parent, scopeAnnotations)
             .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
@@ -165,6 +165,6 @@ final class ComponentScopeBuilder {
       }
     }
 
-    return scopeBuilder.build();
+    return scopeBuilder;
   }
 }
