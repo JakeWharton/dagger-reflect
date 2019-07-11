@@ -7,6 +7,7 @@ import android.support.annotation.Nullable;
 import android.view.ViewGroup.LayoutParams;
 import android.widget.TextView;
 import dagger.Module;
+import dagger.Provides;
 import dagger.android.AndroidInjection;
 import dagger.android.ContributesAndroidInjector;
 import javax.inject.Inject;
@@ -17,6 +18,8 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 public final class ExampleActivity extends Activity {
   @Inject String string;
+  @Inject long aLong;
+  @Inject int anInt;
 
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -35,7 +38,27 @@ public final class ExampleActivity extends Activity {
 
   @Module
   static abstract class ExampleActivityModule {
-    @ContributesAndroidInjector
+    @ContributesAndroidInjector(modules = LongModule.class)
     abstract ExampleActivity activity();
   }
+
+  @Module(includes = IntegerModule.class)
+  static class LongModule {
+
+    @Provides
+    static long provideLong() {
+      return 10L;
+    }
+
+  }
+
+  @Module
+  static class IntegerModule {
+
+    @Provides
+    static int provideInt() {
+      return 20;
+    }
+  }
+
 }

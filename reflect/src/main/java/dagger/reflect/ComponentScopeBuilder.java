@@ -30,7 +30,7 @@ final class ComponentScopeBuilder {
     return create(subcomponent.modules(), new Class<?>[0], scopeAnnotation, parent);
   }
 
-  private static ComponentScopeBuilder create(
+  static ComponentScopeBuilder create(
       Class<?>[] moduleClasses,
       Class<?>[] dependencyClasses,
       Set<Annotation> scopeAnnotations,
