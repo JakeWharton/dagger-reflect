@@ -78,7 +78,9 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
 
     ComponentScopeBuilder scopeBuilder = scopeBuilderProvider.get();
     parseFactoryMethod(method, args, scopeBuilder);
-    return ComponentInvocationHandler.create(componentClass, scopeBuilder.build());
+    Object component = ComponentInvocationHandler.create(componentClass, scopeBuilder.build());
+    scopeBuilder.setScopeComponent(component);
+    return component;
   }
 
   static void parseFactoryMethod(Method method, Object[] args, ComponentScopeBuilder scopeBuilder) {

@@ -29,8 +29,10 @@ import org.jetbrains.annotations.Nullable;
 
 final class ComponentInvocationHandler implements InvocationHandler {
   static <C> C forComponent(Class<C> cls) {
-    Scope scope = ComponentScopeBuilder.buildComponent(cls).build();
-    return create(cls, scope);
+    ComponentScopeBuilder scopeBuilder = ComponentScopeBuilder.buildComponent(cls);
+    C c = create(cls, scopeBuilder.build());
+    scopeBuilder.setScopeComponent(c);
+    return c;
   }
 
   static <C> C create(Class<C> cls, Scope scope) {

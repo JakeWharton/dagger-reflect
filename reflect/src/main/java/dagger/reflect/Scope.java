@@ -194,6 +194,11 @@ final class Scope {
       this.annotations = annotations;
     }
 
+    Builder addScopeComponentBinding(Key key, Binding binding) {
+      keyToBinding.put(key, binding);
+      return this;
+    }
+
     Builder justInTimeLookupFactory(JustInTimeLookup.Factory jitLookupFactory) {
       if (jitLookupFactory == null) throw new NullPointerException("jitLookupFactory == null");
       this.jitLookupFactory = jitLookupFactory;

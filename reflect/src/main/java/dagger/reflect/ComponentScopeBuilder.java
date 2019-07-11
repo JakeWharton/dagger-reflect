@@ -21,16 +21,17 @@ final class ComponentScopeBuilder {
   static ComponentScopeBuilder buildComponent(Class<?> componentClass) {
     Component component = requireAnnotation(componentClass, Component.class);
     Set<Annotation> scopeAnnotation = findScopes(componentClass.getDeclaredAnnotations());
-    return create(component.modules(), component.dependencies(), scopeAnnotation, null);
+    return create(componentClass, component.modules(), component.dependencies(), scopeAnnotation, null);
   }
 
   static ComponentScopeBuilder buildSubcomponent(Class<?> subcomponentClass, Scope parent) {
     Subcomponent subcomponent = requireAnnotation(subcomponentClass, Subcomponent.class);
     Set<Annotation> scopeAnnotation = findScopes(subcomponentClass.getDeclaredAnnotations());
-    return create(subcomponent.modules(), new Class<?>[0], scopeAnnotation, parent);
+    return create(subcomponentClass, subcomponent.modules(), new Class<?>[0], scopeAnnotation, parent);
   }
 
   private static ComponentScopeBuilder create(
+      Class<?> componentClass,
       Class<?>[] moduleClasses,
       Class<?>[] dependencyClasses,
       Set<Annotation> scopeAnnotations,
@@ -58,9 +59,10 @@ final class ComponentScopeBuilder {
     }
 
     return new ComponentScopeBuilder(
-        moduleInstances, dependencyInstances, subcomponentClasses, scopeAnnotations, parent);
+        componentClass, moduleInstances, dependencyInstances, subcomponentClasses, scopeAnnotations, parent);
   }
 
+  private final Class<?> componentClass;
   private final Map<Key, Object> boundInstances = new LinkedHashMap<>();
   private final Map<Class<?>, Object> moduleInstances;
   private final Map<Class<?>, Object> dependencyInstances;
@@ -68,12 +70,16 @@ final class ComponentScopeBuilder {
   private final Set<Annotation> scopeAnnotations;
   private final @Nullable Scope parent;
 
+  private final MutableInstanceBinding scopeComponentBinding = new MutableInstanceBinding();
+
   private ComponentScopeBuilder(
+      Class<?> componentClass,
       Map<Class<?>, Object> moduleInstances,
       Map<Class<?>, Object> dependencyInstances,
       Set<Class<?>> subcomponentClasses,
       Set<Annotation> scopeAnnotations,
       @Nullable Scope parent) {
+    this.componentClass = componentClass;
     this.moduleInstances = moduleInstances;
     this.dependencyInstances = dependencyInstances;
     this.subcomponentClasses = subcomponentClasses;
@@ -111,10 +117,16 @@ final class ComponentScopeBuilder {
     }
   }
 
+  void setScopeComponent(Object component) {
+    scopeComponentBinding.setInstance(component);
+  }
+
   Scope build() {
     Scope.Builder scopeBuilder =
         new Scope.Builder(parent, scopeAnnotations)
             .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
+
+    scopeBuilder.addScopeComponentBinding(Key.of(null, componentClass), scopeComponentBinding);
 
     for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
       scopeBuilder.addInstance(entry.getKey(), entry.getValue());

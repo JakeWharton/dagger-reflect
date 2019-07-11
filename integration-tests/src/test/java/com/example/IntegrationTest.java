@@ -1343,7 +1343,6 @@ public final class IntegrationTest {
   }
 
   @Test
-  @ReflectBug("feature not implemented")
   public void componentBindingInstance() {
     ComponentBindingInstance instance = backend.create(ComponentBindingInstance.class);
     assertThat(instance).isSameInstanceAs(instance.self());
