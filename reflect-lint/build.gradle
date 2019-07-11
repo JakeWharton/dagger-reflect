@@ -1,0 +1,20 @@
+apply plugin: 'java-library'
+
+targetCompatibility = JavaVersion.VERSION_1_8
+sourceCompatibility = JavaVersion.VERSION_1_8
+
+dependencies {
+  compileOnly deps.lint.api
+  compileOnly deps.lint.checks
+
+  testImplementation deps.lint.core
+  testImplementation deps.lint.tests
+}
+
+jar {
+  manifest {
+    attributes('Lint-Registry-v2': 'dagger.reflect.lint.DaggerReflectIssueRegistry')
+  }
+}
+
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

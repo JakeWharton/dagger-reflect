@@ -36,7 +36,7 @@ For an Android build, configure your dependencies:
 dependencies {
   if (properties.containsKey('android.injected.invoked.from.ide')) {
     debugAnnotationProcessor 'com.jakewharton.dagger:dagger-reflect-compiler:0.1.0'
-    debugApi 'com.jakewharton.dagger:dagger-reflect:0.1.0' // or debugImplementation  
+    debugApi 'com.jakewharton.dagger:dagger-reflect:0.1.0' // or debugImplementation
   } else {
     debugAnnotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
   }
@@ -92,6 +92,36 @@ calls into the static `Dagger` factory with the associated class literal.
 +MyComponent.Builder builder = Dagger.builder(MyComponent.Builder.class);
 ```
 
+Using specific Lint rules
+-------------------------
+
+There are Lint rules for Dagger reflect to simplify the usage:
+
+  * `WrongRetention`:  
+    When using a Dagger related custom annotation (e.g. `MapKey`, `Qualifier`), they require
+    a runtime retention by adding `@Retention(RUNTIME)`.
+
+They can be enabled in an Android-project by adding
+
+```groovy
+dependencies {
+  lintChecks 'com.jakewharton.dagger:dagger-reflect-lint:0.1.0'
+}
+```
+
+To use them in a non-Android project (blocked by [this issue](https://issuetracker.google.com/issues/112526243)),
+you'd need to add the (Android) Lint Gradle Plugin:
+```groovy
+buildscript {
+  repositories {
+    google()
+  }
+  dependencies {
+    classpath "com.android.tools.build:gradle:3.1.0" // or higher
+  }
+}
+apply plugin: "com.android.lint"
+```
 
 Unsupported Features and Limitations
 ------------------------------------
