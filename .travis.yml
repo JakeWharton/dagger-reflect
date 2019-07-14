@@ -2,7 +2,8 @@ language: android
 
 jdk:
   - oraclejdk8
-  - openjdk11
+  # TODO Java 11 is currently disabled because R8 and ProGuard (in codegen build) require rt.jar
+  #- openjdk11
 
 before_install:
   # Install SDK license so Android Gradle plugin can install deps.

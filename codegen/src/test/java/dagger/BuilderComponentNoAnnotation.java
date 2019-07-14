@@ -16,6 +16,7 @@
 package dagger;
 
 interface BuilderComponentNoAnnotation {
+  @Keep
   interface Builder {
     BuilderComponentNoAnnotation build();
   }
