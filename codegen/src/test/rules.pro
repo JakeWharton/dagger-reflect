@@ -14,5 +14,5 @@
 # Annotation to preserve conditions required for tests which otherwise aren't automatically kept.
 -keep @dagger.Keep class *
 
-# For Mac OS and it's case-insensitive (by default) filesystem.
+# For Mac OS and its case-insensitive (by default) filesystem.
 -dontusemixedcaseclassnames
