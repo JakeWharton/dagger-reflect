@@ -1343,10 +1343,23 @@ public final class IntegrationTest {
   }
 
   @Test
-  @ReflectBug("check not implemented")
+  @ReflectBug("feature not implemented")
   public void componentBindingInstance() {
     ComponentBindingInstance instance = backend.create(ComponentBindingInstance.class);
-    assertThat(instance).isSameInstanceAs(instance.result().foo);
+    assertThat(instance).isSameInstanceAs(instance.self());
+    assertThat(instance).isSameInstanceAs(instance.target().component);
+  }
+
+  @Test
+  @ReflectBug("feature not implemented")
+  public void subcomponentBindingInstance() {
+    SubcomponentBindingInstance component = backend.create(SubcomponentBindingInstance.class);
+    SubcomponentBindingInstance.Sub subcomponent = component.sub();
+    // TODO https://github.com/google/dagger/issues/1550
+    // assertThat(subcomponent).isSameInstanceAs(subcomponent.self());
+    SubcomponentBindingInstance.Target target = subcomponent.target();
+    assertThat(component).isSameInstanceAs(target.component);
+    assertThat(subcomponent).isSameInstanceAs(target.subcomponent);
   }
 
   @Test

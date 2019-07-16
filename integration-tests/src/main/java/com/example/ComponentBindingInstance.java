@@ -1,27 +1,20 @@
 package com.example;
 
 import dagger.Component;
-import dagger.Module;
-import dagger.Provides;
+import javax.inject.Inject;
 
-@Component(modules = ComponentBindingInstance.Module1.class)
+@Component
 interface ComponentBindingInstance {
+  ComponentBindingInstance self();
 
-  Result result();
+  Target target();
 
-  final class Result {
-    public final ComponentBindingInstance foo;
+  final class Target {
+    public final ComponentBindingInstance component;
 
-    public Result(ComponentBindingInstance foo) {
-      this.foo = foo;
-    }
-  }
-
-  @Module
-  abstract class Module1 {
-    @Provides
-    static Result foo(ComponentBindingInstance component) {
-      return new Result(component);
+    @Inject
+    Target(ComponentBindingInstance component) {
+      this.component = component;
     }
   }
 }
