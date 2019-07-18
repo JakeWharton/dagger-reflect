@@ -22,7 +22,10 @@ import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -30,9 +33,11 @@ import org.jetbrains.annotations.Nullable;
 
 final class ReflectiveModuleParser {
   static void parse(Class<?> moduleClass, @Nullable Object instance, Scope.Builder scopeBuilder) {
-    for (Class<?> target : Reflection.getDistinctTypeHierarchy(moduleClass)) {
+    Set<Class<?>> hierarchy = Reflection.getDistinctTypeHierarchy(moduleClass);
+    for (Class<?> target : hierarchy) {
       for (Method method : target.getDeclaredMethods()) {
         Type returnType = method.getGenericReturnType();
+
         Annotation[] annotations = method.getAnnotations();
         Annotation qualifier = findQualifier(annotations);
 
@@ -85,13 +90,54 @@ final class ReflectiveModuleParser {
 
           if (method.getAnnotation(Provides.class) != null) {
             ensureNotPrivate(method);
-            Key key = Key.of(qualifier, returnType);
+
+            Key key = Key.of(qualifier, resolveType(hierarchy, target, returnType));
             Binding binding = new UnlinkedProvidesBinding(instance, method);
             addBinding(scopeBuilder, key, binding, annotations);
           }
         }
       }
     }
+  }
+
+  private static Type resolveType(Set<Class<?>> moduleClass, Class<?> target, Type type) {
+      if (type instanceof ParameterizedType) {
+        ParameterizedType parameterizedType = (ParameterizedType) type;
+
+        Type[] typeArguments = new Type[parameterizedType.getActualTypeArguments().length];
+
+        int index = 0;
+        for (Type typeArgument : parameterizedType.getActualTypeArguments()) {
+          if (typeArgument instanceof TypeVariable) {
+            for (Class<?> possibility : moduleClass) {
+              if (target != possibility && target.isAssignableFrom(possibility)) {
+                ParameterizedType genericSuperclass = ((ParameterizedType) possibility.getGenericSuperclass());
+                if (genericSuperclass.getRawType() == target) {
+                  int typeIndex = 0;
+                  TypeVariable<? extends Class<?>>[] typeParameters = target.getTypeParameters();
+                  for (int i = 0; i < typeParameters.length; i++) {
+                    if (typeArgument == typeParameters[i]) {
+                      typeIndex = i;
+                    }
+                  }
+
+                  typeArguments[index] = genericSuperclass.getActualTypeArguments()[typeIndex];
+
+                }
+              }
+            }
+          } else {
+            typeArguments[index] = typeArgument;
+          }
+
+
+          index += 1;
+        }
+
+        return new ParameterizedTypeImpl(parameterizedType.getOwnerType(), parameterizedType.getRawType(), typeArguments);
+      }
+
+      return type;
   }
 
   private static void addBinding(
