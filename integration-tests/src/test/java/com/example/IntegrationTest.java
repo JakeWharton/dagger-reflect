@@ -61,6 +61,22 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
+  @ReflectBug("check not implemented")
+  public void bindsProviderNullabilityMismatch() {
+    BindsProviderNullabilityMismatch component =
+        backend.create(BindsProviderNullabilityMismatch.class);
+    try {
+      assertThat(component.string()).isNull();
+      fail();
+    } catch (Exception e) {
+      // TODO assert some error message similar to "java.lang.String is not nullable, but is being
+      // provided by @Provides @Nullable String
+      // com.example.BindsProviderNull.Module1.provideString()"
+    }
+  }
+
+  @Test
   public void bindsProviderNull() {
     BindsProviderNull component = backend.create(BindsProviderNull.class);
     assertThat(component.string()).isNull();
