@@ -4,9 +4,6 @@ import dagger.Lazy;
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
 import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
-import org.jetbrains.annotations.Nullable;
-
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -16,6 +13,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import javax.inject.Provider;
+import org.jetbrains.annotations.Nullable;
 
 final class Scope {
   private final ConcurrentHashMap<Key, Binding> bindings;

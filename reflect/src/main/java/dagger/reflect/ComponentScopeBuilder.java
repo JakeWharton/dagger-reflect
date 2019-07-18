@@ -21,13 +21,15 @@ final class ComponentScopeBuilder {
   static ComponentScopeBuilder buildComponent(Class<?> componentClass) {
     Component component = requireAnnotation(componentClass, Component.class);
     Set<Annotation> scopeAnnotation = findScopes(componentClass.getDeclaredAnnotations());
-    return create(componentClass, component.modules(), component.dependencies(), scopeAnnotation, null);
+    return create(
+        componentClass, component.modules(), component.dependencies(), scopeAnnotation, null);
   }
 
   static ComponentScopeBuilder buildSubcomponent(Class<?> subcomponentClass, Scope parent) {
     Subcomponent subcomponent = requireAnnotation(subcomponentClass, Subcomponent.class);
     Set<Annotation> scopeAnnotation = findScopes(subcomponentClass.getDeclaredAnnotations());
-    return create(subcomponentClass, subcomponent.modules(), new Class<?>[0], scopeAnnotation, parent);
+    return create(
+        subcomponentClass, subcomponent.modules(), new Class<?>[0], scopeAnnotation, parent);
   }
 
   private static ComponentScopeBuilder create(
@@ -59,7 +61,12 @@ final class ComponentScopeBuilder {
     }
 
     return new ComponentScopeBuilder(
-        componentClass, moduleInstances, dependencyInstances, subcomponentClasses, scopeAnnotations, parent);
+        componentClass,
+        moduleInstances,
+        dependencyInstances,
+        subcomponentClasses,
+        scopeAnnotations,
+        parent);
   }
 
   private final Class<?> componentClass;
