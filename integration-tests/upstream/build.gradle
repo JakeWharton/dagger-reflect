@@ -102,9 +102,10 @@ def ensureDaggerSubmodule = tasks.create('ensureDaggerSubmodule') {
       System.err.println(describe.errorStream.text)
       throw new RuntimeException("Could not run 'git describe' in 'dagger' git submodule clone")
     }
-    if ("dagger-${versions.dagger}" != describe.inputStream.text.trim()) {
+    def expectedTag = "dagger-${versions.dagger}"
+    if (expectedTag != describe.inputStream.text.trim()) {
       throw new RuntimeException(
-          "Wrong tag checked out for 'dagger' git submodule clone. Should be 'dagger-${versions.dagger}'.")
+          "Wrong tag checked out for 'dagger' git submodule clone. Should be '$expectedTag'.")
     }
   }
 }
