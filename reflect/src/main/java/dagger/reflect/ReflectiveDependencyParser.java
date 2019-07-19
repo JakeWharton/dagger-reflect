@@ -1,6 +1,7 @@
 package dagger.reflect;
 
 import static dagger.reflect.Reflection.findQualifier;
+import static dagger.reflect.Reflection.hasNullable;
 
 import dagger.reflect.Binding.LinkedBinding;
 import java.lang.annotation.Annotation;
@@ -21,7 +22,9 @@ final class ReflectiveDependencyParser {
         Type type = method.getGenericReturnType();
         Key key = Key.of(qualifier, type);
 
-        Binding binding = new LinkedProvidesBinding<>(instance, method, NO_BINDINGS);
+        Binding binding =
+            new LinkedProvidesBinding<>(
+                instance, method, NO_BINDINGS, hasNullable(method.getDeclaredAnnotations()));
 
         scopeBuilder.addBinding(key, binding);
       }

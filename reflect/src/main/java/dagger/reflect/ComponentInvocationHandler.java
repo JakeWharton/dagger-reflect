@@ -16,6 +16,7 @@
 package dagger.reflect;
 
 import static dagger.reflect.Reflection.findQualifier;
+import static dagger.reflect.Reflection.hasNullable;
 import static dagger.reflect.Reflection.newProxy;
 
 import dagger.MembersInjector;
@@ -89,7 +90,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
     if (parameterTypes.length == 0) {
       Key key = Key.of(findQualifier(method.getDeclaredAnnotations()), returnType);
       LinkedBinding<?> binding = scope.getBinding(key);
-      return new ProvisionMethodInvocationHandler(binding);
+      return new ProvisionMethodInvocationHandler(
+          binding, hasNullable(method.getDeclaredAnnotations()));
     }
 
     if (parameterTypes.length == 1) {
@@ -123,13 +125,22 @@ final class ComponentInvocationHandler implements InvocationHandler {
 
   private static final class ProvisionMethodInvocationHandler implements MethodInvocationHandler {
     private final LinkedBinding<?> binding;
+    private final boolean nullable;
 
-    ProvisionMethodInvocationHandler(LinkedBinding<?> binding) {
+    ProvisionMethodInvocationHandler(LinkedBinding<?> binding, boolean nullable) {
       this.binding = binding;
+      this.nullable = nullable;
     }
 
     @Override
     public @Nullable Object invoke(Object[] args) {
+      if (binding instanceof LinkedProvidesBinding) {
+        LinkedProvidesBinding binding = (LinkedProvidesBinding) this.binding;
+        if (!binding.nullableMatch(nullable)) {
+          // TODO add details about requestor.
+          throw new IllegalStateException(binding + " nullability did not match");
+        }
+      }
       return binding.get();
     }
   }

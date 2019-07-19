@@ -1,6 +1,7 @@
 package dagger.reflect;
 
 import static dagger.reflect.Reflection.findQualifier;
+import static dagger.reflect.Reflection.hasNullable;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -25,7 +26,8 @@ final class UnlinkedProvidesBinding extends Binding.UnlinkedBinding {
       Key key = Key.of(findQualifier(parameterAnnotations[i]), parameterTypes[i]);
       dependencies[i] = linker.get(key);
     }
-    return new LinkedProvidesBinding<>(instance, method, dependencies);
+    return new LinkedProvidesBinding<>(
+        instance, method, dependencies, hasNullable(method.getDeclaredAnnotations()));
   }
 
   @Override
