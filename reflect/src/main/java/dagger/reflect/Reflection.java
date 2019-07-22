@@ -207,7 +207,9 @@ final class Reflection {
     Set<Class<?>> types = new LinkedHashSet<>();
     do {
       types.add(target);
-      Collections.addAll(types, target.getInterfaces());
+      for (Class<?> type : target.getInterfaces()) {
+        types.addAll(getDistinctTypeHierarchy(type));
+      }
       target = target.getSuperclass();
     } while (target != null && target != Object.class);
     return types;
