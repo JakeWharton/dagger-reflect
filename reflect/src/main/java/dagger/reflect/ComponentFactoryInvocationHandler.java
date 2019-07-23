@@ -57,12 +57,12 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
   }
 
   private final Class<?> componentClass;
-  private final Provider<ComponentScopeBuilder> scopeBuilderProvider;
+  private final Provider<ComponentScopeBuilder> componentScopeBuilderProvider;
 
   private ComponentFactoryInvocationHandler(
-      Class<?> componentClass, Provider<ComponentScopeBuilder> scopeBuilderProvider) {
+      Class<?> componentClass, Provider<ComponentScopeBuilder> componentScopeBuilderProvider) {
     this.componentClass = componentClass;
-    this.scopeBuilderProvider = scopeBuilderProvider;
+    this.componentScopeBuilderProvider = componentScopeBuilderProvider;
   }
 
   @Override
@@ -76,9 +76,9 @@ final class ComponentFactoryInvocationHandler implements InvocationHandler {
       throw new IllegalStateException(); // TODO must be assignable
     }
 
-    ComponentScopeBuilder scopeBuilder = scopeBuilderProvider.get();
-    parseFactoryMethod(method, args, scopeBuilder);
-    return ComponentInvocationHandler.create(componentClass, scopeBuilder.build());
+    ComponentScopeBuilder componentScopeBuilder = componentScopeBuilderProvider.get();
+    parseFactoryMethod(method, args, componentScopeBuilder);
+    return ComponentInvocationHandler.create(componentClass, componentScopeBuilder.get());
   }
 
   static void parseFactoryMethod(Method method, Object[] args, ComponentScopeBuilder scopeBuilder) {
