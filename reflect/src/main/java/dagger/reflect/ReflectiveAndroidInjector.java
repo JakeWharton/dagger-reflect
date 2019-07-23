@@ -36,16 +36,11 @@ final class ReflectiveAndroidInjector<T> implements AndroidInjector<T> {
 
     @Override
     public AndroidInjector<T> create(T instance) {
-      Scope.Builder scopeBuilder =
-          new Scope.Builder(parent, annotations)
-              .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory())
-              .addInstance(Key.of(null, instanceClass), instance);
-
-      for (Class<?> moduleClass : moduleClasses) {
-        scopeBuilder.addModule(moduleClass);
-      }
-
-      Scope scope = scopeBuilder.build();
+      Scope scope =
+          ComponentScopeBuilder.create(moduleClasses, new Class<?>[0], annotations, parent)
+              .get()
+              .addInstance(Key.of(null, instanceClass), instance)
+              .build();
 
       MembersInjector<T> membersInjector = ReflectiveMembersInjector.create(instanceClass, scope);
       return new ReflectiveAndroidInjector<>(membersInjector);
