@@ -127,7 +127,8 @@ final class ReflectiveModuleParser {
   private static void addSetElementsBinding(
       Scope.Builder scopeBuilder, Key setKey, Binding elementsBinding) {
     if (Types.getRawType(setKey.type()) != Set.class) {
-      throw new IllegalStateException(); // TODO must be set
+      throw new IllegalArgumentException(
+          "@BindsIntoSet must return Set. Found " + setKey.type() + ".");
     }
     scopeBuilder.addBindingElementsIntoSet(setKey, elementsBinding);
   }
