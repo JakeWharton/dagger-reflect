@@ -74,10 +74,6 @@ test.filter {
 
   // TODO reflect bug! Subcomponent multibindings propagation does not work.
   excludeTest 'dagger.functional.subcomponent.SubcomponentMultibindingsTest', null
-
-  // Uses @MapKey which does not have runtime retention.
-  excludeTest 'dagger.functional.multibindings.ComplexMapKeysInDifferentOrderTest', 'test'
-  excludeTest 'dagger.functional.multibindings.MapKeyWithDefaultTest', 'test'
 }
 
 dependencies {
