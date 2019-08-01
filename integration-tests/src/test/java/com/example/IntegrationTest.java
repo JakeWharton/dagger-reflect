@@ -288,6 +288,19 @@ public final class IntegrationTest {
     assertThat(component.thing().valueProvider.get()).isNotNull();
   }
 
+  @IgnoreCodegen
+  @Test
+  public void test() {
+    ProviderMultipleGenericIntoJustInTime1 c = backend.create(ProviderMultipleGenericIntoJustInTime1.class);
+    ProviderMultipleGenericIntoJustInTime1.ThingImpl instance = new ProviderMultipleGenericIntoJustInTime1.ThingImpl();
+    c.inject(instance);
+    assertThat(instance.valueProvider.get()).isNotNull();
+    assertThat(instance.tProvider.get()).isNotNull();
+    assertThat(instance.value).isNotNull();
+    assertThat(instance.t).isNotNull();
+    assertThat(instance.dep2.get()).isNotNull();
+  }
+
   @Test
   public void providerUnscopedBinding() {
     ProviderUnscopedBinding component = backend.create(ProviderUnscopedBinding.class);

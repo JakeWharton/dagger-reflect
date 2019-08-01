@@ -1,10 +1,9 @@
 package dagger.reflect;
 
-import dagger.Lazy;
-import dagger.reflect.Binding.LinkedBinding;
-import dagger.reflect.Binding.UnlinkedBinding;
-import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
+import org.jetbrains.annotations.Nullable;
+
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
@@ -13,8 +12,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+
+import javax.inject.Inject;
 import javax.inject.Provider;
-import org.jetbrains.annotations.Nullable;
+
+import dagger.Lazy;
+import dagger.reflect.Binding.LinkedBinding;
+import dagger.reflect.Binding.UnlinkedBinding;
+import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
 
 final class Scope {
   private final ConcurrentHashMap<Key, Binding> bindings;
@@ -24,15 +29,18 @@ final class Scope {
 
   private final @Nullable Scope parent;
 
+  final Scope.Builder builder;
+
   private Scope(
-      ConcurrentHashMap<Key, Binding> bindings,
-      JustInTimeLookup.Factory jitLookupFactory,
-      Set<Annotation> annotations,
-      @Nullable Scope parent) {
+          ConcurrentHashMap<Key, Binding> bindings,
+          JustInTimeLookup.Factory jitLookupFactory,
+          Set<Annotation> annotations,
+          @Nullable Scope parent, Builder builder) {
     this.bindings = bindings;
     this.jitLookupFactory = jitLookupFactory;
     this.annotations = annotations;
     this.parent = parent;
+    this.builder = builder;
   }
 
   LinkedBinding<?> getBinding(Key key) {
@@ -66,7 +74,9 @@ final class Scope {
       }
     }
 
-    LinkedBinding<?> binding = findExistingBinding(key, linker);
+    boolean hasInjectConstructor = hasInjectConstructor(key);
+
+    LinkedBinding<?> binding = findExistingBinding(key, linker, !hasInjectConstructor);
     if (binding != null) {
       return binding;
     }
@@ -87,21 +97,45 @@ final class Scope {
     return null;
   }
 
+  private static boolean hasInjectConstructor(Key key) {
+    Type type = key.type();
+    Class<Object> cls;
+    if (type instanceof ParameterizedType) {
+      cls = (Class<Object>) ((ParameterizedType) type).getRawType();
+    } else if (type instanceof Class<?>) {
+      cls = (Class<Object>) type;
+    } else {
+      return false;
+    }
+
+    Constructor<?>[] constructors = cls.getDeclaredConstructors();
+    for (Constructor<?> constructor : constructors) {
+      if (constructor.getAnnotation(Inject.class) != null) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
   /**
    * Look for an existing linked binding for {@code key} in this scope or anywhere in the parent
    * scope chain. If an unlinked binding is found for the key, perform linking before returning it.
    *
    * @param linker An optional {@link Linker} to use. One will be created if null and needed.
    */
-  private @Nullable LinkedBinding<?> findExistingBinding(Key key, @Nullable Linker linker) {
+  private @Nullable LinkedBinding<?> findExistingBinding(Key key, @Nullable Linker linker,
+                                                         boolean shouldLookInParent) {
     Binding binding = bindings.get(key);
     if (binding != null) {
       return binding instanceof LinkedBinding<?>
           ? (LinkedBinding<?>) binding
           : link(key, linker, (UnlinkedBinding) binding);
+    } else if (shouldLookInParent) {
+      return parent != null ? parent.findExistingBinding(key, linker, true) : null;
+    } else {
+      return null;
     }
-
-    return parent != null ? parent.findExistingBinding(key, linker) : null;
   }
 
   /**
@@ -167,7 +201,7 @@ final class Scope {
         }
 
         // Traverse ancestry chain looking for a duplicate annotation declaration.
-        for (Scope ancestor = parent; ancestor != null; ancestor = ancestor.parent) {
+        /*for (Scope ancestor = parent; ancestor != null; ancestor = ancestor.parent) {
           boolean duplicateScope = false;
           for (Annotation ancestorAnnotation : ancestor.annotations) {
             if (annotations.contains(ancestorAnnotation)) {
@@ -188,7 +222,7 @@ final class Scope {
             message.append("  * ").append(ancestor.annotations);
             throw new IllegalStateException(message.toString());
           }
-        }
+        }*/
       }
       this.parent = parent;
       this.annotations = annotations;
@@ -339,6 +373,23 @@ final class Scope {
       }
 
       // Coalesce all of the bindings for each key into a single map binding.
+      Scope parentScope = parent;
+      int added = 0;
+      while (parentScope != null) {
+        Scope.Builder parentBuilder = parentScope.builder;
+        for (Map.Entry<Key, Map<Object, Binding>> entry : parentBuilder.keyToMapBindings.entrySet()) {
+          Key key = entry.getKey();
+          if (keyToMapBindings.containsKey(key)) {
+            Map<Object, Binding> objectBindingMap = keyToMapBindings.get(key);
+            objectBindingMap.putAll(entry.getValue());
+            added += entry.getValue().size();
+          }
+        }
+        parentScope = parentScope.parent;
+      }
+
+      System.out.println("$$$ ADDED " + added + " BINDINGS!");
+
       for (Map.Entry<Key, Map<Object, Binding>> entry : keyToMapBindings.entrySet()) {
         Key mapOfValueKey = entry.getKey();
 
@@ -384,7 +435,7 @@ final class Scope {
         }
       }
 
-      return new Scope(allBindings, jitLookupFactory, annotations, parent);
+      return new Scope(allBindings, jitLookupFactory, annotations, parent, this);
     }
 
     private static final class SetBindings {
