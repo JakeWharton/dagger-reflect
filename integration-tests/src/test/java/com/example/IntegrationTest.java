@@ -358,6 +358,14 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void implicitModuleInstanceNotCreatedWhenUnnecessary() {
+    ImplicitModuleInstanceCannotBeCreated component =
+        backend.create(ImplicitModuleInstanceCannotBeCreated.class);
+
+    assertThat(component.string()).isEqualTo("one");
+  }
+
+  @Test
   public void builderBindsInstance() {
     BuilderBindsInstance component =
         backend.builder(BuilderBindsInstance.Builder.class).string("foo").build();
@@ -923,6 +931,41 @@ public final class IntegrationTest {
   public void moduleInterfaceHierarchy() {
     ModuleInterfaceHierarchy component = backend.create(ModuleInterfaceHierarchy.class);
     assertThat(component.number()).isEqualTo(42);
+  }
+
+  @Test
+  public void moduleInterfaceWithDefaultMethodUnrelatedDoesNotAffectDagger() {
+    ModuleInterfaceDefaultMethodUnrelated component =
+        backend.create(ModuleInterfaceDefaultMethodUnrelated.class);
+    assertThat(component.string()).isEqualTo("foo");
+  }
+
+  @Test
+  @IgnoreCodegen
+  public void moduleAbstractClassInstanceMethodNotAllowed() {
+    try {
+      backend.create(ModuleAbstractInstanceProvidesMethod.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "com.example.ModuleAbstractInstanceProvidesMethod.Module1 is abstract and has instance @Provides methods. Consider making the methods static or including a non-abstract subclass of the module instead.");
+    }
+  }
+
+  @Test
+  @IgnoreCodegen
+  public void moduleInterfaceWithDefaultMethodNotAllowed() {
+    try {
+      backend.create(ModuleInterfaceDefaultProvidesMethod.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "com.example.ModuleInterfaceDefaultProvidesMethod.Module1 is abstract and has instance @Provides methods. Consider making the methods static or including a non-abstract subclass of the module instead.");
+    }
   }
 
   @Test
