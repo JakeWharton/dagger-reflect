@@ -6,6 +6,7 @@ import static dagger.reflect.Reflection.newProxy;
 import static dagger.reflect.Reflection.requireAnnotation;
 import static dagger.reflect.Reflection.requireEnclosingClass;
 
+import com.jakewharton.obelisk.Key;
 import dagger.BindsInstance;
 import dagger.Component;
 import dagger.Module;

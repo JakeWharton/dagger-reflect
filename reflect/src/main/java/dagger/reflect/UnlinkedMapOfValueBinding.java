@@ -1,5 +1,6 @@
 package dagger.reflect;
 
+import com.jakewharton.obelisk.Key;
 import dagger.reflect.Binding.UnlinkedBinding;
 import java.util.Map;
 import javax.inject.Provider;

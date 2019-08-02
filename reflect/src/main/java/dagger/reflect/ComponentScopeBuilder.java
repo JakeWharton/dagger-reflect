@@ -4,6 +4,7 @@ import static dagger.reflect.Reflection.findEnclosedAnnotatedClass;
 import static dagger.reflect.Reflection.findScopes;
 import static dagger.reflect.Reflection.requireAnnotation;
 
+import com.jakewharton.obelisk.Key;
 import dagger.Component;
 import dagger.Module;
 import dagger.Subcomponent;

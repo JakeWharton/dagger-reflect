@@ -9,6 +9,7 @@ import static dagger.reflect.Reflection.findScopes;
 import static dagger.reflect.Reflection.maybeInstantiate;
 import static dagger.reflect.Reflection.requireAnnotation;
 
+import com.jakewharton.obelisk.Key;
 import dagger.Binds;
 import dagger.BindsOptionalOf;
 import dagger.MapKey;

@@ -1,5 +1,6 @@
 package dagger.reflect;
 
+import com.jakewharton.obelisk.Key;
 import dagger.MembersInjector;
 import dagger.android.AndroidInjector;
 import java.lang.annotation.Annotation;

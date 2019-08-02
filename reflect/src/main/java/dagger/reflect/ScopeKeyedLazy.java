@@ -1,5 +1,6 @@
 package dagger.reflect;
 
+import com.jakewharton.obelisk.Key;
 import org.jetbrains.annotations.Nullable;
 
 final class ScopeKeyedLazy<T> extends DoubleChecked<T> {

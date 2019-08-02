@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package dagger.reflect;
+package com.jakewharton.obelisk;
 
-import static dagger.reflect.Reflection.boxIfNecessary;
-import static dagger.reflect.TypeUtil.canonicalize;
+import static com.jakewharton.obelisk.Reflection.boxIfNecessary;
+import static com.jakewharton.obelisk.TypeUtil.canonicalize;
 
 import com.google.auto.value.AutoValue;
 import java.lang.annotation.Annotation;
@@ -24,14 +24,14 @@ import java.lang.reflect.Type;
 import org.jetbrains.annotations.Nullable;
 
 @AutoValue
-abstract class Key {
-  static Key of(@Nullable Annotation qualifier, Type type) {
+public abstract class Key {
+  public static Key of(@Nullable Annotation qualifier, Type type) {
     return new AutoValue_Key(qualifier, canonicalize(boxIfNecessary(type)));
   }
 
-  abstract @Nullable Annotation qualifier();
+  public abstract @Nullable Annotation qualifier();
 
-  abstract Type type();
+  public abstract Type type();
 
   @Override
   public final String toString() {

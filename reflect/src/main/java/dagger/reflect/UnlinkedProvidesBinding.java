@@ -2,6 +2,7 @@ package dagger.reflect;
 
 import static dagger.reflect.Reflection.findQualifier;
 
+import com.jakewharton.obelisk.Key;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;

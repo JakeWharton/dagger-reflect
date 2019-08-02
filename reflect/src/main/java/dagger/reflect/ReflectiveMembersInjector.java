@@ -19,6 +19,7 @@ import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.tryInvoke;
 import static dagger.reflect.Reflection.trySet;
 
+import com.jakewharton.obelisk.Key;
 import dagger.MembersInjector;
 import dagger.reflect.Binding.LinkedBinding;
 import java.lang.annotation.Annotation;

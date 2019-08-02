@@ -1,5 +1,6 @@
 package dagger.reflect;
 
+import com.jakewharton.obelisk.Key;
 import dagger.reflect.Binding.LinkedBinding;
 import javax.inject.Provider;
 

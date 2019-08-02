@@ -1,5 +1,6 @@
 package dagger.reflect;
 
+import com.jakewharton.obelisk.Key;
 import java.lang.annotation.Annotation;
 import org.jetbrains.annotations.Nullable;
 

@@ -2,6 +2,7 @@ package dagger.reflect;
 
 import static dagger.reflect.Reflection.findScope;
 
+import com.jakewharton.obelisk.Key;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.ParameterizedType;

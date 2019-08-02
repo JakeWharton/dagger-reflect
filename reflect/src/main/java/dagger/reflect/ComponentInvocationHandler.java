@@ -18,6 +18,7 @@ package dagger.reflect;
 import static dagger.reflect.Reflection.findQualifier;
 import static dagger.reflect.Reflection.newProxy;
 
+import com.jakewharton.obelisk.Key;
 import dagger.MembersInjector;
 import dagger.Subcomponent;
 import dagger.reflect.Binding.LinkedBinding;
