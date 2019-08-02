@@ -1,11 +1,15 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="com.example"
     >
 
   <application
       android:name=".ExampleApp"
       android:label="Dagger Reflect"
+      android:icon="@android:drawable/sym_def_app_icon"
+      android:allowBackup="false"
+      tools:ignore="GoogleAppIndexingWarning"
       >
     <activity android:name=".ExampleActivity">
       <intent-filter>
