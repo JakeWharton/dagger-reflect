@@ -134,7 +134,7 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
       @NotNull JavaContext context, @Nullable UExpression annotationValue) {
     final Object evaluatedAnnotationValue = ConstantEvaluator.evaluate(context, annotationValue);
     if (evaluatedAnnotationValue instanceof kotlin.Pair) {
-      final kotlin.Pair value = (kotlin.Pair) evaluatedAnnotationValue;
+      final kotlin.Pair<?, ?> value = (kotlin.Pair<?, ?>) evaluatedAnnotationValue;
       final String qualifiedName = (value.getFirst() + "." + value.getSecond());
       return qualifiedName.replace("/", ".");
     }
