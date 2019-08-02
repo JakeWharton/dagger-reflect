@@ -75,16 +75,17 @@ final class ReflectiveModuleParser {
             }
           }
         } else {
-          if (!Modifier.isStatic(method.getModifiers()) && instance == null) {
-            // Try to just-in-time create an instance of the module using a default constructor.
-            instance = maybeInstantiate(moduleClass);
-            if (instance == null) {
-              throw new IllegalStateException(moduleClass.getCanonicalName() + " must be set");
-            }
-          }
-
           if (method.getAnnotation(Provides.class) != null) {
             ensureNotPrivate(method);
+            if (!Modifier.isStatic(method.getModifiers()) && instance == null) {
+              ensureNotAbstract(moduleClass);
+              // Try to just-in-time create an instance of the module using a default constructor.
+              instance = maybeInstantiate(moduleClass);
+              if (instance == null) {
+                throw new IllegalStateException(moduleClass.getCanonicalName() + " must be set");
+              }
+            }
+
             Key key = Key.of(qualifier, returnType);
             Binding binding = new UnlinkedProvidesBinding(instance, method);
             addBinding(scopeBuilder, key, binding, annotations);
@@ -203,6 +204,15 @@ final class ReflectiveModuleParser {
   private static void ensureNotPrivate(Method method) {
     if (Modifier.isPrivate(method.getModifiers())) {
       throw new IllegalArgumentException("Provides methods may not be private: " + method);
+    }
+  }
+
+  private static void ensureNotAbstract(Class<?> moduleClass) {
+    if (Modifier.isAbstract(moduleClass.getModifiers())) {
+      throw new IllegalStateException(
+          moduleClass.getCanonicalName()
+              + " is abstract and has instance @Provides methods."
+              + " Consider making the methods static or including a non-abstract subclass of the module instead.");
     }
   }
 }
