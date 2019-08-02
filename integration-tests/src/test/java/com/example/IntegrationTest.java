@@ -1462,4 +1462,12 @@ public final class IntegrationTest {
               "Scope with annotations [@javax.inject.Singleton()] may not depend on unscoped");
     }
   }
+
+  @Test
+  @IgnoreCodegen
+  public void nestedDependencyInterfaceTest() {
+    String value = "my-value";
+    String result = backend.factory(NestedDependencyInterfaceTest.Factory.class).create(() -> value).value();
+    assertThat(result).isSameInstanceAs(value);
+  }
 }
