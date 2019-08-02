@@ -101,6 +101,8 @@ subprojects {
   }
 
   tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+
     options.errorprone {
       disableWarningsInGeneratedCode = true
       excludedPaths = ".*/build/generated/.*"

@@ -106,3 +106,7 @@ def ensureDaggerSubmodule = tasks.create('ensureDaggerSubmodule') {
   }
 }
 compileTestJava.dependsOn(ensureDaggerSubmodule)
+
+tasks.withType(JavaCompile).configureEach {
+  options.encoding = 'UTF-8'
+}
