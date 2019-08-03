@@ -273,7 +273,11 @@ public final class IntegrationTest {
       component.thing();
       fail();
     } catch (IllegalStateException e) {
-      // TODO assert some message
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Unable to find binding for key=com.example.JustInTimeWrongScope$Thing"
+                  + " with linker=null");
     }
   }
 
@@ -285,7 +289,11 @@ public final class IntegrationTest {
       component.thing();
       fail();
     } catch (IllegalStateException e) {
-      // TODO assert some message
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Unable to find binding for key=com.example.JustInTimeScopedIntoUnscoped$Thing"
+                  + " with linker=null");
     }
   }
 
@@ -298,7 +306,11 @@ public final class IntegrationTest {
       child.thing();
       fail();
     } catch (IllegalStateException e) {
-      // TODO assert some message
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Unable to find binding for key=com.example.JustInTimeNotScopedInAncestry$Thing"
+                  + " with linker=null");
     }
   }
 
