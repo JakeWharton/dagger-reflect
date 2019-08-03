@@ -836,6 +836,27 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
+  public void multibindingSetConflictingExplicitAndImplicit() {
+    try {
+      backend.create(MultibindingSetConflict.class);
+      fail();
+    } catch (IllegalStateException e) {
+      // Note: using only one of each IntoSet and ElementsIntoSet to make sure the test is stable,
+      // because Class.getDeclaredMethods() doesn't guarantee ordering.
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "java.util.Set<java.lang.String> has incompatible bindings or declarations:\n"
+                  + "  Set bindings and declarations:\n"
+                  + "    [single  ] @Provides[com.example.MultibindingSetConflict$Module1.one(…)]\n"
+                  + "    [multiple] @Provides[com.example.MultibindingSetConflict$Module1.two(…)]\n"
+                  + "  Unique bindings and declarations:\n"
+                  + "    @Provides[com.example.MultibindingSetConflict$Module1.explicit(…)]\n");
+    }
+  }
+
+  @Test
   public void multibindingSetPrimitive() {
     MultibindingSetPrimitive component = backend.create(MultibindingSetPrimitive.class);
     assertThat(component.values()).containsExactly(1L, 2L);
