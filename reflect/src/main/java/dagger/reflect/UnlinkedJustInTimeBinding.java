@@ -16,7 +16,7 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
   private final Class<T> cls;
   private final Constructor<T> constructor;
   // Type arguments might be used as types for this binding's parameterized constructor parameters.
-  @Nullable private Type[] concreteTypeArguments;
+  private @Nullable Type[] concreteTypeArguments;
 
   UnlinkedJustInTimeBinding(
       Class<T> cls, Constructor<T> constructor, @Nullable Type[] concreteTypeArguments) {
