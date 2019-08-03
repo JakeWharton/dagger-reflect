@@ -40,6 +40,20 @@ final class Linker {
 
   private RuntimeException failure(Key key, String reason, String cause) {
     StringBuilder builder = new StringBuilder(reason).append(" for ").append(key).append('\n');
+    appendChain(builder);
+    builder.append(" * Requested: ").append(key).append("\n     which ").append(cause).append('.');
+    throw new IllegalStateException(builder.toString());
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder();
+    builder.append("Linker with ").append(scope).append("\n");
+    appendChain(builder);
+    return builder.toString();
+  }
+
+  private void appendChain(StringBuilder builder) {
     for (Map.Entry<Key, Binding> entry : chain.entrySet()) {
       builder
           .append(" * Requested: ")
@@ -48,7 +62,5 @@ final class Linker {
           .append(entry.getValue())
           .append('\n');
     }
-    builder.append(" * Requested: ").append(key).append("\n     which ").append(cause).append('.');
-    throw new IllegalStateException(builder.toString());
   }
 }
