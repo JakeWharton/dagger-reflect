@@ -17,18 +17,27 @@ final class ReflectiveJustInTimeLookupFactory implements JustInTimeLookup.Factor
     }
 
     Type type = key.type();
-    Class<Object> cls;
+    return getJustInTimeLookup(type);
+  }
+
+  private @Nullable <T> JustInTimeLookup getJustInTimeLookup(Type type) {
+    Class<T> cls;
     Type[] typeArguments = null;
     if (type instanceof ParameterizedType) {
-      cls = (Class<Object>) ((ParameterizedType) type).getRawType();
+      // Assume that "representing the class or interface that declared this type" is a Class<?>.
+      @SuppressWarnings("unchecked")
+      Class<T> rawType = (Class<T>) ((ParameterizedType) type).getRawType();
+      cls = rawType;
       typeArguments = ((ParameterizedType) type).getActualTypeArguments();
     } else if (type instanceof Class<?>) {
-      cls = (Class<Object>) type;
+      @SuppressWarnings("unchecked")
+      Class<T> directClass = (Class<T>) type;
+      cls = directClass;
     } else {
       return null; // Array types can't be just-in-time satisfied.
     }
 
-    Constructor<Object> target = findSingleInjectConstructor(cls);
+    Constructor<T> target = findSingleInjectConstructor(cls);
     if (target == null) {
       return null; // Types without an @Inject constructor cannot be just-in-time satisfied.
     }
