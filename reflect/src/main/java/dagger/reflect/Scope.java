@@ -35,6 +35,11 @@ final class Scope {
     this.parent = parent;
   }
 
+  @Override
+  public String toString() {
+    return "Scope" + annotations;
+  }
+
   LinkedBinding<?> getBinding(Key key) {
     LinkedBinding<?> binding = findBinding(key, null);
     if (binding != null) {
@@ -76,10 +81,7 @@ final class Scope {
       LinkedBinding<?> jitBinding = putJitBinding(key, linker, jitLookup);
       if (jitBinding == null) {
         throw new IllegalStateException(
-            "Unable to find binding for key="
-                + key
-                + " with linker="
-                + linker); // TODO nice error message with scope chain
+            "Unable to find binding for key=" + key + " with linker=" + linker);
       }
       return jitBinding;
     }
