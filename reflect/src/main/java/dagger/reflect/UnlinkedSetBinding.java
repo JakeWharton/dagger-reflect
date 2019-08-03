@@ -18,13 +18,22 @@ final class UnlinkedSetBinding extends UnlinkedBinding {
   public LinkedBinding<?> link(Linker linker, Scope scope) {
     List<LinkedBinding<Object>> linkedElementBindings = new ArrayList<>(elementBindings.size());
     for (Binding elementBinding : elementBindings) {
-      linkedElementBindings.add((LinkedBinding<Object>) elementBinding.link(linker, scope));
+      @SuppressWarnings("unchecked")
+      LinkedBinding<Object> binding = (LinkedBinding<Object>) elementBinding.link(linker, scope);
+      linkedElementBindings.add(binding);
     }
+
     List<LinkedBinding<Set<Object>>> linkedElementsBindings =
         new ArrayList<>(elementsBindings.size());
     for (Binding elementsBinding : elementsBindings) {
-      linkedElementsBindings.add((LinkedBinding<Set<Object>>) elementsBinding.link(linker, scope));
+      @SuppressWarnings("unchecked")
+      LinkedBinding<Set<Object>> bindings =
+          (LinkedBinding<Set<Object>>) elementsBinding.link(linker, scope);
+      linkedElementsBindings.add(bindings);
     }
+
+    // `elementBinding` and `elementBindings` came from the same key so we can use Object as T;
+    // hence their types will match, this is why unchecked warnings are OK above.
     return new LinkedSetBinding<>(linkedElementBindings, linkedElementsBindings);
   }
 
