@@ -778,7 +778,12 @@ public final class IntegrationTest {
       backend.create(ScopedWrong.class);
       fail();
     } catch (IllegalStateException e) {
-      // TODO some message indicating wrong scope
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "[Dagger/IncompatiblyScopedBindings] "
+                  + "(sub)component scoped with [@javax.inject.Singleton()] may not reference bindings with different scopes:\n"
+                  + "@com.example.ScopedWrong.Unrelated @Provides[com.example.ScopedWrong$Module1.value(…)]");
     }
   }
 
