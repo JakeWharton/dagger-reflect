@@ -28,17 +28,7 @@ final class ReflectiveJustInTimeLookupFactory implements JustInTimeLookup.Factor
       return null; // Array types can't be just-in-time satisfied.
     }
 
-    Constructor<?>[] constructors = cls.getDeclaredConstructors();
-    Constructor<Object> target = null;
-    for (Constructor<?> constructor : constructors) {
-      if (constructor.getAnnotation(Inject.class) != null) {
-        if (target != null) {
-          throw new IllegalStateException(
-              cls.getCanonicalName() + " defines multiple @Inject-annotations constructors");
-        }
-        target = (Constructor<Object>) constructor;
-      }
-    }
+    Constructor<Object> target = findSingleInjectConstructor(cls);
     if (target == null) {
       return null; // Types without an @Inject constructor cannot be just-in-time satisfied.
     }
@@ -46,5 +36,22 @@ final class ReflectiveJustInTimeLookupFactory implements JustInTimeLookup.Factor
     Annotation scope = findScope(cls.getAnnotations());
     Binding binding = new UnlinkedJustInTimeBinding<>(cls, target, typeArguments);
     return new JustInTimeLookup(scope, binding);
+  }
+
+  private static <T> @Nullable Constructor<T> findSingleInjectConstructor(Class<T> cls) {
+    // Not modifying it, safe to use generics; see Class#getConstructors() for more info.
+    @SuppressWarnings("unchecked")
+    Constructor<T>[] constructors = (Constructor<T>[]) cls.getDeclaredConstructors();
+    Constructor<T> target = null;
+    for (Constructor<T> constructor : constructors) {
+      if (constructor.getAnnotation(Inject.class) != null) {
+        if (target != null) {
+          throw new IllegalStateException(
+              cls.getCanonicalName() + " defines multiple @Inject-annotations constructors");
+        }
+        target = constructor;
+      }
+    }
+    return target;
   }
 }
