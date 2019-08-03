@@ -357,22 +357,9 @@ final class Scope {
                     Map.class,
                     mapKeyType,
                     new ParameterizedTypeImpl(null, Provider.class, mapValueType)));
-        Key mapOfLazyKey =
-            Key.of(
-                mapOfValueKey.qualifier(),
-                new ParameterizedTypeImpl(
-                    null,
-                    Map.class,
-                    mapKeyType,
-                    new ParameterizedTypeImpl(null, Lazy.class, mapValueType)));
 
         Binding replaced =
             allBindings.put(mapOfValueKey, new UnlinkedMapOfValueBinding(mapOfProviderKey));
-        if (replaced != null) {
-          throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
-        }
-
-        replaced = allBindings.put(mapOfLazyKey, new UnlinkedMapOfLazyBinding(mapOfProviderKey));
         if (replaced != null) {
           throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
         }
