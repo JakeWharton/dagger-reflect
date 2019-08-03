@@ -78,7 +78,7 @@ final class Scope {
         throw new IllegalStateException(
             "Unable to find binding for key="
                 + key
-                + " and linker="
+                + " with linker="
                 + linker); // TODO nice error message with scope chain
       }
       return jitBinding;
