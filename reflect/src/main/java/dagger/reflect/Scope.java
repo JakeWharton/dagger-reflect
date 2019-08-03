@@ -362,7 +362,8 @@ final class Scope {
         Binding replaced =
             allBindings.put(mapOfValueKey, new UnlinkedMapOfValueBinding(mapOfProviderKey));
         if (replaced != null) {
-          throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
+          throw new IllegalStateException(
+              buildDuplicateMapBindingMessage(mapOfValueKey, entryBindings, replaced));
         }
 
         replaced =
@@ -385,6 +386,24 @@ final class Scope {
       }
       for (Binding elementsBinding : setBindings.elementsBindings) {
         builder.append("    [multiple] ").append(elementsBinding).append("\n");
+      }
+      builder.append("  Unique bindings and declarations:\n");
+      builder.append("    ").append(replaced).append("\n");
+      return builder.toString();
+    }
+
+    private static String buildDuplicateMapBindingMessage(
+        Key key, Map<Object, Binding> entryBindings, Binding replaced) {
+      StringBuilder builder = new StringBuilder();
+      builder.append(key).append(" has incompatible bindings or declarations:\n");
+      builder.append("  Map bindings and declarations:\n");
+      for (Map.Entry<Object, Binding> entry : entryBindings.entrySet()) {
+        builder
+            .append("    ")
+            .append(entry.getKey())
+            .append(" = ")
+            .append(entry.getValue())
+            .append("\n");
       }
       builder.append("  Unique bindings and declarations:\n");
       builder.append("    ").append(replaced).append("\n");

@@ -917,6 +917,26 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
+  public void multibindingMapConflictingExplicitAndImplicit() {
+    try {
+      backend.create(MultibindingMapConflict.class);
+      fail();
+    } catch (IllegalStateException e) {
+      // Note: using only one IntoMap to make sure the test is stable,
+      // because Class.getDeclaredMethods() doesn't guarantee ordering.
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "java.util.Map<java.lang.String, java.lang.Integer> has incompatible bindings or declarations:\n"
+                  + "  Map bindings and declarations:\n"
+                  + "    first = @Provides[com.example.MultibindingMapConflict$Module1.one(…)]\n"
+                  + "  Unique bindings and declarations:\n"
+                  + "    @Provides[com.example.MultibindingMapConflict$Module1.explicit(…)]\n");
+    }
+  }
+
+  @Test
   public void multibindingProviderMap() {
     MultibindingProviderMap component = backend.create(MultibindingProviderMap.class);
     Provider<Map<String, String>> values = component.values();
