@@ -369,7 +369,8 @@ final class Scope {
         replaced =
             allBindings.put(mapOfProviderKey, new UnlinkedMapOfProviderBinding(entryBindings));
         if (replaced != null) {
-          throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
+          throw new IllegalStateException(
+              buildDuplicateMapBindingMessage(mapOfProviderKey, entryBindings, replaced));
         }
       }
 
