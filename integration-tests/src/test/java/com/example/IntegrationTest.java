@@ -108,6 +108,21 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
+  public void bindElementsIntoSetGenericWrongReturn() {
+    try {
+      backend.create(BindsElementsIntoSetGenericWrongReturn.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "@Binds methods must return a primitive, an array, a type variable, or a "
+                  + "declared type. Found java.util.Set<? extends java.lang.String>.");
+    }
+  }
+
+  @Test
   public void bindIntoMap() {
     BindsIntoMap component = backend.create(BindsIntoMap.class);
     assertThat(component.strings()).containsExactly("bar", "foo");
