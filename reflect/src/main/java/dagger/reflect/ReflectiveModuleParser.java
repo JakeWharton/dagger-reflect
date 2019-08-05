@@ -99,7 +99,18 @@ final class ReflectiveModuleParser {
     Annotation scope = findScope(annotations);
     if (scope != null) {
       if (!scopeBuilder.annotations.contains(scope)) {
-        throw new IllegalStateException(); // TODO wrong scope
+        throw new IllegalStateException(
+            "[Dagger/IncompatiblyScopedBindings] "
+                // TODO clarify which "(sub)component" failed
+                // (method when UnlinkedAndroidInjectorFactoryBinding is being created)
+                // ([sub]componentClass in when calling ComponentScopeBuilder is calling create)
+                + "(sub)component scoped with "
+                + scopeBuilder.annotations
+                + " may not reference bindings with different scopes:\n"
+                + "@"
+                + scope.annotationType().getCanonicalName()
+                + " "
+                + binding);
       } else {
         binding = binding.asScoped();
       }
