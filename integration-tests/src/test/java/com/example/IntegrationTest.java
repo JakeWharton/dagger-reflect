@@ -95,6 +95,19 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
+  public void bindElementsIntoSetWrongReturn() {
+    try {
+      backend.create(BindsElementsIntoSetWrongReturn.class);
+      fail();
+    } catch (IllegalArgumentException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("@BindsIntoSet must return Set. Found class java.lang.String.");
+    }
+  }
+
+  @Test
   public void bindIntoMap() {
     BindsIntoMap component = backend.create(BindsIntoMap.class);
     assertThat(component.strings()).containsExactly("bar", "foo");

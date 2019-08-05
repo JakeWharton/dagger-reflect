@@ -241,7 +241,7 @@ final class Scope {
     }
 
     /**
-     * Adds a new element into the set specified by {@code key}.
+     * Adds a new set of elements into the set specified by {@code key}.
      *
      * @param key The key defining the set into which this element will be added. The raw class of
      *     the {@linkplain Key#type() type} must be {@link Set Set.class}.
