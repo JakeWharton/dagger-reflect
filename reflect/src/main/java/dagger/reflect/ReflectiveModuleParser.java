@@ -22,7 +22,9 @@ import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.WildcardType;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -141,6 +143,12 @@ final class ReflectiveModuleParser {
     if (Types.getRawType(setKey.type()) != Set.class) {
       throw new IllegalArgumentException(
           "@BindsIntoSet must return Set. Found " + setKey.type() + ".");
+    }
+    if (((ParameterizedType) setKey.type()).getActualTypeArguments()[0] instanceof WildcardType) {
+      throw new IllegalArgumentException(
+          "@Binds methods must return a primitive, an array, a type variable, or a declared type. Found "
+              + setKey.type()
+              + ".");
     }
     scopeBuilder.addBindingElementsIntoSet(setKey, elementsBinding);
   }
