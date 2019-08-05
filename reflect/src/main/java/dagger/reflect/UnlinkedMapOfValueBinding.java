@@ -13,6 +13,8 @@ final class UnlinkedMapOfValueBinding extends UnlinkedBinding {
 
   @Override
   public LinkedBinding<?> link(Linker linker, Scope scope) {
+    // Assume that mapOfProviderKey is Map<K, Provider<V>> and linker returns the correct Binding.
+    @SuppressWarnings("unchecked")
     LinkedBinding<Map<Object, Provider<Object>>> mapOfProviderBinding =
         (LinkedBinding<Map<Object, Provider<Object>>>) linker.get(mapOfProviderKey);
     return new LinkedMapOfValueBinding<>(mapOfProviderBinding);
