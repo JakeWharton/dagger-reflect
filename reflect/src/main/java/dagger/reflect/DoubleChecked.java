@@ -25,17 +25,4 @@ abstract class DoubleChecked<T> implements Lazy<T>, Provider<T> {
   }
 
   abstract @Nullable T compute();
-
-  static final class OfProvider<T> extends DoubleChecked<T> {
-    private final Provider<T> provider;
-
-    OfProvider(Provider<T> provider) {
-      this.provider = provider;
-    }
-
-    @Override
-    T compute() {
-      return provider.get();
-    }
-  }
 }
