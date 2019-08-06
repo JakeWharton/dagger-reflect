@@ -17,7 +17,8 @@ final class UnlinkedAndroidInjectorFactoryBinding extends Binding.UnlinkedBindin
 
   @Override
   public LinkedBinding<?> link(Linker linker, Scope scope) {
-    return new LinkedAndroidInjectorFactoryBinding<>(
-        scope, moduleClasses, instanceClass, annotations);
+    ReflectiveAndroidInjector.Factory<?> factory =
+        new ReflectiveAndroidInjector.Factory<>(scope, moduleClasses, instanceClass, annotations);
+    return new LinkedInstanceBinding<>(factory);
   }
 }
