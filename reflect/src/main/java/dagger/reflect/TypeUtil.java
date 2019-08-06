@@ -20,6 +20,7 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.WildcardType;
 import java.util.Arrays;
+import java.util.Objects;
 import org.jetbrains.annotations.Nullable;
 
 final class TypeUtil {
@@ -55,10 +56,6 @@ final class TypeUtil {
     } else {
       return type; // This type is unsupported!
     }
-  }
-
-  static int hashCodeOrZero(@Nullable Object o) {
-    return o != null ? o.hashCode() : 0;
   }
 
   static String typeToString(Type type) {
@@ -122,7 +119,7 @@ final class TypeUtil {
 
     @Override
     public int hashCode() {
-      return Arrays.hashCode(typeArguments) ^ rawType.hashCode() ^ hashCodeOrZero(ownerType);
+      return Arrays.hashCode(typeArguments) ^ rawType.hashCode() ^ Objects.hashCode(ownerType);
     }
 
     @Override
