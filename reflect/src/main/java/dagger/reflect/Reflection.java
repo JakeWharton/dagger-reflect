@@ -121,6 +121,19 @@ final class Reflection {
     return findAnnotation(annotations, annotation) != null;
   }
 
+  /**
+   * Check for any annotation which is named "Nullable". Warning: many Nullable annotations do not
+   * have runtime retention.
+   */
+  static boolean hasNullable(Annotation[] annotations) {
+    for (Annotation annotation : annotations) {
+      if (annotation.annotationType().getSimpleName().equals("Nullable")) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   @SuppressWarnings("StringConcatenationInLoop") // Only occurs when about to throw an exception.
   static <T extends Annotation> T requireAnnotation(Class<?> cls, Class<T> annotationClass) {
     T annotation = cls.getAnnotation(annotationClass);

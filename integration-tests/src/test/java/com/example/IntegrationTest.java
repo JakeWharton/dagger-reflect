@@ -62,7 +62,6 @@ public final class IntegrationTest {
 
   @Test
   @IgnoreCodegen
-  @ReflectBug("check not implemented")
   public void bindsProviderNullabilityMismatch() {
     BindsProviderNullabilityMismatch component =
         backend.create(BindsProviderNullabilityMismatch.class);
@@ -181,7 +180,7 @@ public final class IntegrationTest {
       assertThat(e)
           .hasMessageThat()
           .isEqualTo(
-              "@Provides[com.example.OptionalBindingNullable$Module1.foo(…)] "
+              "@Nullable @Provides[com.example.OptionalBindingNullable$Module1.foo(…)] "
                   + "returned null which is not allowed for optional bindings");
     }
   }
