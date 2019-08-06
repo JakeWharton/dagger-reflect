@@ -34,7 +34,7 @@ final class TypeUtil {
   static Type canonicalize(Type type) {
     if (type instanceof Class) {
       Class<?> c = (Class<?>) type;
-      return c.isArray() ? new GenericArrayTypeImpl(canonicalize(c.getComponentType())) : c;
+      return c.isArray() ? new GenericArrayTypeImpl(c.getComponentType()) : c;
 
     } else if (type instanceof ParameterizedType) {
       if (type instanceof ParameterizedTypeImpl) return type;
