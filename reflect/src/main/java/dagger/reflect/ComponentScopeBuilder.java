@@ -121,12 +121,7 @@ final class ComponentScopeBuilder {
     }
 
     for (Map.Entry<Class<?>, Object> entry : moduleInstances.entrySet()) {
-      Object instance = entry.getValue();
-      if (instance != null) {
-        scopeBuilder.addModule(instance);
-      } else {
-        scopeBuilder.addModule(entry.getKey());
-      }
+      ReflectiveModuleParser.parse(entry.getKey(), entry.getValue(), scopeBuilder);
     }
 
     for (Map.Entry<Class<?>, Object> entry : dependencyInstances.entrySet()) {
@@ -135,7 +130,7 @@ final class ComponentScopeBuilder {
       if (instance == null) {
         throw new IllegalStateException(type.getCanonicalName() + " must be set");
       }
-      scopeBuilder.addDependency(type, instance);
+      ReflectiveDependencyParser.parse(type, instance, scopeBuilder);
     }
 
     for (Class<?> subcomponentClass : subcomponentClasses) {

@@ -304,21 +304,6 @@ final class Scope {
       return addBinding(key, new LinkedInstanceBinding<>(instance));
     }
 
-    Builder addModule(Object module) {
-      ReflectiveModuleParser.parse(module.getClass(), module, this);
-      return this;
-    }
-
-    Builder addModule(Class<?> module) {
-      ReflectiveModuleParser.parse(module, null, this);
-      return this;
-    }
-
-    Builder addDependency(Class<?> cls, Object instance) {
-      ReflectiveDependencyParser.parse(cls, instance, this);
-      return this;
-    }
-
     Scope build() {
       ConcurrentHashMap<Key, Binding> allBindings = new ConcurrentHashMap<>(keyToBinding);
 
