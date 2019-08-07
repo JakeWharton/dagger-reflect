@@ -329,6 +329,20 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void providerMultipleNestedGenericIntoField() {
+    ProviderMultipleNestedGenericIntoField c =
+        backend.create(ProviderMultipleNestedGenericIntoField.class);
+    ProviderMultipleNestedGenericIntoField.ThingImpl instance =
+        new ProviderMultipleNestedGenericIntoField.ThingImpl();
+    c.inject(instance);
+    assertThat(instance.vProvider.get()).isNotNull();
+    assertThat(instance.tProvider.get()).isNotNull();
+    assertThat(instance.value).isNotNull();
+    assertThat(instance.t).isNotNull();
+    assertThat(instance.dep2.get()).isNotNull();
+  }
+
+  @Test
   public void providerUnscopedBinding() {
     ProviderUnscopedBinding component = backend.create(ProviderUnscopedBinding.class);
     Provider<String> value = component.value();
