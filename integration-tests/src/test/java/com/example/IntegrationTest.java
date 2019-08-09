@@ -1565,7 +1565,10 @@ public final class IntegrationTest {
   public void multipleInterfacesRequestSameDependency() {
     String value = "my-value";
     String result =
-        backend.factory(MultipleInterfacesRequestSameDependency.Factory.class).create(() -> value).value();
+        backend
+            .factory(MultipleInterfacesRequestSameDependency.Factory.class)
+            .create(() -> value)
+            .value();
     assertThat(result).isSameInstanceAs(value);
   }
 }

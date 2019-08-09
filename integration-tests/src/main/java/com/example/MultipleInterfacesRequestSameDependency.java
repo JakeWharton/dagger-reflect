@@ -2,9 +2,7 @@ package com.example;
 
 import dagger.Component;
 
-@Component(
-    dependencies = MultipleInterfacesRequestSameDependency.Aggregate.class
-)
+@Component(dependencies = MultipleInterfacesRequestSameDependency.Aggregate.class)
 public interface MultipleInterfacesRequestSameDependency {
   String value();
 
@@ -14,7 +12,8 @@ public interface MultipleInterfacesRequestSameDependency {
   }
 
   interface Aggregate extends Host1, Host2 {
-    @Override String value();
+    @Override
+    String value();
   }
 
   interface Host1 {

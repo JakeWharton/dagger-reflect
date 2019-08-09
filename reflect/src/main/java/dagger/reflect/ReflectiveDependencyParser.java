@@ -24,8 +24,7 @@ final class ReflectiveDependencyParser {
         Type type = method.getGenericReturnType();
         Key key = Key.of(qualifier, type);
 
-        if (!alreadySeen.contains(key)) {
-          alreadySeen.add(key);
+        if (alreadySeen.add(key)) {
           Binding binding = new LinkedProvidesBinding<>(instance, method, NO_BINDINGS);
           scopeBuilder.addBinding(key, binding);
         }
