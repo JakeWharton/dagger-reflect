@@ -1451,6 +1451,14 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void genericComponentBuilderInterface() {
+    GenericComponentBuilderInterface component =
+        backend.builder(GenericComponentBuilderInterface.Builder.class).bindString("one").build();
+
+    assertThat(component.value()).isEqualTo("one");
+  }
+
+  @Test
   public void componentBindingInstance() {
     ComponentBindingInstance instance = backend.create(ComponentBindingInstance.class);
     assertThat(instance).isSameInstanceAs(instance.self());
