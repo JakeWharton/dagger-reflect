@@ -1560,4 +1560,12 @@ public final class IntegrationTest {
         backend.factory(NestedDependencyInterfaceTest.Factory.class).create(() -> value).value();
     assertThat(result).isSameInstanceAs(value);
   }
+
+  @Test
+  public void multipleInterfacesRequestSameDependency() {
+    String value = "my-value";
+    String result =
+        backend.factory(MultipleInterfacesRequestSameDependency.Factory.class).create(() -> value).value();
+    assertThat(result).isSameInstanceAs(value);
+  }
 }
