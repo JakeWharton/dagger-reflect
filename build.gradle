@@ -2,7 +2,7 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 
 buildscript {
   ext.versions = [
-      'dagger': '2.24',
+      'dagger': '2.25.2',
       'incap': '0.2',
       'androidTools': '26.4.1',
   ]
