@@ -18,6 +18,7 @@ import dagger.android.ContributesAndroidInjector;
 import dagger.multibindings.ElementsIntoSet;
 import dagger.multibindings.IntoMap;
 import dagger.multibindings.IntoSet;
+import dagger.multibindings.Multibinds;
 import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -62,6 +63,16 @@ final class ReflectiveModuleParser {
               Binding binding = new UnlinkedGuavaOptionalBinding(method);
               addBinding(scopeBuilder, key, binding, annotations);
             } catch (NoClassDefFoundError ignored) {
+            }
+          } else if (method.getAnnotation(Multibinds.class) != null) {
+            Key key = Key.of(qualifier, returnType);
+            if (method.getReturnType() == Set.class) {
+              scopeBuilder.createSetBinding(key);
+            } else if (method.getReturnType() == Map.class) {
+              scopeBuilder.createMapBinding(key);
+            } else {
+              throw new IllegalStateException(
+                  "@Multibinds return type must be Set or Map: " + returnType);
             }
           } else {
             ContributesAndroidInjector contributesAndroidInjector =
