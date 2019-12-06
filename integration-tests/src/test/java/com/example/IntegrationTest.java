@@ -848,6 +848,27 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
+  public void multibindingSetConflictingExplicitAndImplicit() {
+    try {
+      backend.create(MultibindingSetConflict.class);
+      fail();
+    } catch (IllegalStateException e) {
+      // Note: using only one of each IntoSet and ElementsIntoSet to make sure the test is stable,
+      // because Class.getDeclaredMethods() doesn't guarantee ordering.
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "java.util.Set<java.lang.String> has incompatible bindings or declarations:\n"
+                  + "  Set bindings and declarations:\n"
+                  + "    [single  ] @Provides[com.example.MultibindingSetConflict$Module1.one(…)]\n"
+                  + "    [multiple] @Provides[com.example.MultibindingSetConflict$Module1.two(…)]\n"
+                  + "  Unique bindings and declarations:\n"
+                  + "    @Provides[com.example.MultibindingSetConflict$Module1.explicit(…)]\n");
+    }
+  }
+
+  @Test
   public void multibindingSetPrimitive() {
     MultibindingSetPrimitive component = backend.create(MultibindingSetPrimitive.class);
     assertThat(component.values()).containsExactly(1L, 2L);
@@ -908,6 +929,26 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
+  public void multibindingMapConflictingExplicitAndImplicit() {
+    try {
+      backend.create(MultibindingMapConflict.class);
+      fail();
+    } catch (IllegalStateException e) {
+      // Note: using only one IntoMap to make sure the test is stable,
+      // because Class.getDeclaredMethods() doesn't guarantee ordering.
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "java.util.Map<java.lang.String, java.lang.Integer> has incompatible bindings or declarations:\n"
+                  + "  Map bindings and declarations:\n"
+                  + "    first = @Provides[com.example.MultibindingMapConflict$Module1.one(…)]\n"
+                  + "  Unique bindings and declarations:\n"
+                  + "    @Provides[com.example.MultibindingMapConflict$Module1.explicit(…)]\n");
+    }
+  }
+
+  @Test
   public void multibindingProviderMap() {
     MultibindingProviderMap component = backend.create(MultibindingProviderMap.class);
     Provider<Map<String, String>> values = component.values();
@@ -932,6 +973,26 @@ public final class IntegrationTest {
 
     MultibindingMapProvider.Module1.oneValue.set("one");
     assertThat(values.get("1").get()).isEqualTo("one");
+  }
+
+  @Test
+  @IgnoreCodegen
+  public void multibindingMapProviderConflictingExplicitAndImplicit() {
+    try {
+      backend.create(MultibindingMapProviderConflict.class);
+      fail();
+    } catch (IllegalStateException e) {
+      // Note: using only one IntoMap to make sure the test is stable,
+      // because Class.getDeclaredMethods() doesn't guarantee ordering.
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "java.util.Map<java.lang.String, javax.inject.Provider<java.lang.Integer>> has incompatible bindings or declarations:\n"
+                  + "  Map bindings and declarations:\n"
+                  + "    first = @Provides[com.example.MultibindingMapProviderConflict$Module1.one(…)]\n"
+                  + "  Unique bindings and declarations:\n"
+                  + "    @Provides[com.example.MultibindingMapProviderConflict$Module1.explicit(…)]\n");
+    }
   }
 
   @Test

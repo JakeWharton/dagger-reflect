@@ -321,7 +321,8 @@ final class Scope {
         Binding replaced =
             allBindings.put(key, new UnlinkedSetBinding(elementBindings, elementsBindings));
         if (replaced != null) {
-          throw new IllegalStateException(); // TODO implicit set binding duplicates explicit one.
+          throw new IllegalStateException(
+              buildDuplicateSetBindingMessage(key, setBindings, replaced));
         }
       }
 
@@ -348,17 +349,53 @@ final class Scope {
         Binding replaced =
             allBindings.put(mapOfValueKey, new UnlinkedMapOfValueBinding(mapOfProviderKey));
         if (replaced != null) {
-          throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
+          throw new IllegalStateException(
+              buildDuplicateMapBindingMessage(mapOfValueKey, entryBindings, replaced));
         }
 
         replaced =
             allBindings.put(mapOfProviderKey, new UnlinkedMapOfProviderBinding(entryBindings));
         if (replaced != null) {
-          throw new IllegalStateException(); // TODO implicit map binding duplicates explicit one.
+          throw new IllegalStateException(
+              buildDuplicateMapBindingMessage(mapOfProviderKey, entryBindings, replaced));
         }
       }
 
       return new Scope(allBindings, jitLookupFactory, annotations, parent);
+    }
+
+    private static String buildDuplicateSetBindingMessage(
+        Key key, SetBindings setBindings, Binding replaced) {
+      StringBuilder builder = new StringBuilder();
+      builder.append(key).append(" has incompatible bindings or declarations:\n");
+      builder.append("  Set bindings and declarations:\n");
+      for (Binding elementBinding : setBindings.elementBindings) {
+        builder.append("    [single  ] ").append(elementBinding).append("\n");
+      }
+      for (Binding elementsBinding : setBindings.elementsBindings) {
+        builder.append("    [multiple] ").append(elementsBinding).append("\n");
+      }
+      builder.append("  Unique bindings and declarations:\n");
+      builder.append("    ").append(replaced).append("\n");
+      return builder.toString();
+    }
+
+    private static String buildDuplicateMapBindingMessage(
+        Key key, Map<Object, Binding> entryBindings, Binding replaced) {
+      StringBuilder builder = new StringBuilder();
+      builder.append(key).append(" has incompatible bindings or declarations:\n");
+      builder.append("  Map bindings and declarations:\n");
+      for (Map.Entry<Object, Binding> entry : entryBindings.entrySet()) {
+        builder
+            .append("    ")
+            .append(entry.getKey())
+            .append(" = ")
+            .append(entry.getValue())
+            .append("\n");
+      }
+      builder.append("  Unique bindings and declarations:\n");
+      builder.append("    ").append(replaced).append("\n");
+      return builder.toString();
     }
 
     private static final class SetBindings {
