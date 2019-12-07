@@ -842,6 +842,12 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void multibindingSetEmpty() {
+    MultibindingSetEmpty component = backend.create(MultibindingSetEmpty.class);
+    assertThat(component.values()).isEmpty();
+  }
+
+  @Test
   public void multibindingSetElements() {
     MultibindingSetElements component = backend.create(MultibindingSetElements.class);
     assertThat(component.values()).containsExactly("one", "two");
@@ -877,6 +883,12 @@ public final class IntegrationTest {
   public void multibindingMap() {
     MultibindingMap component = backend.create(MultibindingMap.class);
     assertThat(component.values()).containsExactly("1", "one", "2", "two");
+  }
+
+  @Test
+  public void multibindingMapEmpty() {
+    MultibindingMapEmpty component = backend.create(MultibindingMapEmpty.class);
+    assertThat(component.values()).isEmpty();
   }
 
   @Test
@@ -932,6 +944,19 @@ public final class IntegrationTest {
 
     MultibindingMapProvider.Module1.oneValue.set("one");
     assertThat(values.get("1").get()).isEqualTo("one");
+  }
+
+  @Test
+  @IgnoreCodegen
+  public void multibindsAnnotationWrongType() {
+    try {
+      backend.create(MultibindsAnnotationWrongType.class);
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo("@Multibinds return type must be Set or Map: class java.lang.String");
+    }
   }
 
   @Test

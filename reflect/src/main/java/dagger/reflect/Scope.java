@@ -216,6 +216,25 @@ final class Scope {
     }
 
     /**
+     * Create an empty set binding specified by {@code key} if it does not already exist.
+     *
+     * @param key The key defining the set. The raw class of the {@linkplain Key#type() type} must
+     *     be {@link Set Set.class}.
+     */
+    Builder createSetBinding(Key key) {
+      if (key == null) throw new NullPointerException("key == null");
+      if (Types.getRawType(key.type()) != Set.class) {
+        throw new IllegalArgumentException("key.type() must be Set");
+      }
+
+      if (!keyToSetBindings.containsKey(key)) {
+        keyToSetBindings.put(key, new SetBindings());
+      }
+
+      return this;
+    }
+
+    /**
      * Adds a new element into the set specified by {@code key}.
      *
      * @param key The key defining the set into which this element will be added. The raw class of
@@ -264,6 +283,25 @@ final class Scope {
         keyToSetBindings.put(key, setBindings);
       }
       setBindings.elementsBindings.add(elementsBinding);
+
+      return this;
+    }
+
+    /**
+     * Create an empty map binding specified by {@code key} if it does not already exist.
+     *
+     * @param key The key defining the set. The raw class of the {@linkplain Key#type() type} must
+     *     be {@link Map Map.class}.
+     */
+    Builder createMapBinding(Key key) {
+      if (key == null) throw new NullPointerException("key == null");
+      if (Types.getRawType(key.type()) != Map.class) {
+        throw new IllegalArgumentException("key.type() must be Map");
+      }
+
+      if (!keyToMapBindings.containsKey(key)) {
+        keyToMapBindings.put(key, new LinkedHashMap<>());
+      }
 
       return this;
     }
