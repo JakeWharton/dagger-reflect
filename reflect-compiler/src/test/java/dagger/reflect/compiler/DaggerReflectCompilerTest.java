@@ -23,6 +23,18 @@ import javax.tools.JavaFileObject;
 import org.junit.Test;
 
 public final class DaggerReflectCompilerTest {
+  private static final String generatedAnnotationImport;
+
+  static {
+    String line = "import javax.annotation.processing.Generated;\n";
+    try {
+      Class.forName("javax.annotation.processing.Generated");
+    } catch (ClassNotFoundException ignored) {
+      line = "import javax.annotation.Generated;\n";
+    }
+    generatedAnnotationImport = line;
+  }
+
   @Test
   public void simple() {
     JavaFileObject component =
@@ -45,7 +57,12 @@ public final class DaggerReflectCompilerTest {
                 + "\n"
                 + "import dagger.reflect.DaggerReflect;\n"
                 + "import java.lang.AssertionError;\n"
+                + generatedAnnotationImport
                 + "\n"
+                + "@Generated(\n"
+                + "    value = \"dagger.reflect.compiler.DaggerReflectCompiler\",\n"
+                + "    comments = \"https://github.com/JakeWharton/dagger-reflect\"\n"
+                + ")\n"
                 + "public final class DaggerTestComponent {\n"
                 + "  private DaggerTestComponent() {\n"
                 + "    throw new AssertionError();\n"
@@ -89,7 +106,12 @@ public final class DaggerReflectCompilerTest {
                 + "\n"
                 + "import dagger.reflect.DaggerReflect;\n"
                 + "import java.lang.AssertionError;\n"
+                + generatedAnnotationImport
                 + "\n"
+                + "@Generated(\n"
+                + "    value = \"dagger.reflect.compiler.DaggerReflectCompiler\",\n"
+                + "    comments = \"https://github.com/JakeWharton/dagger-reflect\"\n"
+                + ")\n"
                 + "public final class DaggerOne_Two_TestComponent {\n"
                 + "  private DaggerOne_Two_TestComponent() {\n"
                 + "    throw new AssertionError();\n"
@@ -132,7 +154,12 @@ public final class DaggerReflectCompilerTest {
                 + "\n"
                 + "import dagger.reflect.DaggerReflect;\n"
                 + "import java.lang.AssertionError;\n"
+                + generatedAnnotationImport
                 + "\n"
+                + "@Generated(\n"
+                + "    value = \"dagger.reflect.compiler.DaggerReflectCompiler\",\n"
+                + "    comments = \"https://github.com/JakeWharton/dagger-reflect\"\n"
+                + ")\n"
                 + "public final class DaggerTestComponent {\n"
                 + "  private DaggerTestComponent() {\n"
                 + "    throw new AssertionError();\n"
@@ -178,7 +205,12 @@ public final class DaggerReflectCompilerTest {
                 + "\n"
                 + "import dagger.reflect.DaggerReflect;\n"
                 + "import java.lang.AssertionError;\n"
+                + generatedAnnotationImport
                 + "\n"
+                + "@Generated(\n"
+                + "    value = \"dagger.reflect.compiler.DaggerReflectCompiler\",\n"
+                + "    comments = \"https://github.com/JakeWharton/dagger-reflect\"\n"
+                + ")\n"
                 + "public final class DaggerTestComponent {\n"
                 + "  private DaggerTestComponent() {\n"
                 + "    throw new AssertionError();\n"
