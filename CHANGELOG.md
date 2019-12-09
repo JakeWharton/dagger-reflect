@@ -4,6 +4,8 @@ Change Log
 Version 0.2.0
 -------------
 
+*2019-12-08*
+
  * New: Add lint artifact `dagger-reflect-lint` which will validate that qualifiers and map keys correctly specify runtime retention.
  * New: Include `@Generated` annotation on types created by `reflect-compiler`.
  * Fix: Support binding to a component or subcomponent instance inside that component or subcomponent.
