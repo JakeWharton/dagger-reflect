@@ -13,11 +13,10 @@ final class UnlinkedMapOfProviderBinding extends UnlinkedBinding {
   }
 
   @Override
-  public LinkedBinding<Map<Object, Provider<Object>>> link(Linker linker, Scope scope) {
-    Map<Object, Provider<Object>> mapOfProviders = new LinkedHashMap<>(entryBindings.size());
+  public LinkedBinding<?> link(Linker linker, Scope scope) {
+    Map<Object, Provider<?>> mapOfProviders = new LinkedHashMap<>(entryBindings.size());
     for (Map.Entry<Object, Binding> entryBinding : entryBindings.entrySet()) {
-      LinkedBinding<Object> binding =
-          (LinkedBinding<Object>) entryBinding.getValue().link(linker, scope);
+      LinkedBinding<?> binding = entryBinding.getValue().link(linker, scope);
       mapOfProviders.put(entryBinding.getKey(), binding);
     }
     return new LinkedInstanceBinding<>(mapOfProviders);

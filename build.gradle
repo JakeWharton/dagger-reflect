@@ -120,6 +120,24 @@ subprojects {
         assertsEnabled = true
       }
     }
+
+    options.compilerArgs += [
+        // enable all warnings
+        '-Xlint:all',
+        // hide warning: No processor claimed any of these annotations: dagger.*,org.junit.Test
+        '-Xlint:-processing',
+        // hide warning: MethodParameters attribute introduced in version 52.0 class files is ignored in version 51.0 class files
+        '-Xlint:-classfile',
+        // hide warning: auxiliary class C in full/path/to/C.java should not be accessed from outside its own source file
+        '-Xlint:-auxiliaryclass'
+    ]
+
+    if (project.findProperty("strict.compilation") == "true") {
+      options.compilerArgs += [
+          // strict compilation, treat all warnings as errors, including errorprone
+          '-Werror'
+      ]
+    }
   }
 
   plugins.withId('java-library') {
