@@ -30,8 +30,6 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
       "kotlin.annotation.AnnotationRetention.RUNTIME";
   private static final String FIX_ANNOTATION_RETENTION_JAVA =
       "@java.lang.annotation.Retention(" + FIX_RETENTION_TYPE_JAVA + ")\n";
-  private static final String FIX_ANNOTATION_RETENTION_KOTLIN =
-      "@kotlin.annotation.Retention(" + FIX_RETENTION_TYPE_KOTLIN + ")\n";
 
   @Override
   public List<Class<? extends UElement>> getApplicableUastTypes() {
@@ -56,15 +54,15 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
         final boolean isKotlin = Lint.isKotlin(node);
         final UAnnotation retentionAnnotation =
             node.findAnnotation(isKotlin ? ANNOTATION_RETENTION_KOTLIN : ANNOTATION_RETENTION_JAVA);
-        if (retentionAnnotation == null) {
-          final UAnnotation reflectRelatedAnnotation =
-              qualifierAnnotation != null ? qualifierAnnotation : mapKeyAnnotation;
-          reportMissingRetention(context, isKotlin, node, reflectRelatedAnnotation);
-        } else {
+        if (retentionAnnotation != null) {
           final String retentionPolicy = getRetentionPolicy(context, isKotlin, retentionAnnotation);
           if (!"RUNTIME".equals(retentionPolicy)) {
             reportWrongRetentionType(context, isKotlin, retentionAnnotation, retentionPolicy);
           }
+        } else if (!isKotlin) {
+          final UAnnotation reflectRelatedAnnotation =
+              qualifierAnnotation != null ? qualifierAnnotation : mapKeyAnnotation;
+          reportMissingRetention(context, node, reflectRelatedAnnotation);
         }
       }
     };
@@ -72,20 +70,19 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
 
   private static void reportMissingRetention(
       @NotNull JavaContext context,
-      boolean isKotlin,
       @NotNull UClass node,
       @NotNull UAnnotation reflectRelatedAnnotation) {
     context.report(
         ISSUE_WRONG_RETENTION,
         node,
         context.getNameLocation(node),
-        "Annotation used by Dagger Reflect must be annotated with `@Retention(RUNTIME)`.",
+        "Java annotations used by Dagger Reflect must be annotated with `@Retention(RUNTIME)`.",
         LintFix.create()
             .replace()
             .name("Add: `@Retention(RUNTIME)`")
             .range(context.getLocation(reflectRelatedAnnotation))
             .beginning()
-            .with(isKotlin ? FIX_ANNOTATION_RETENTION_KOTLIN : FIX_ANNOTATION_RETENTION_JAVA)
+            .with(FIX_ANNOTATION_RETENTION_JAVA)
             .reformat(true)
             .shortenNames()
             .build());
@@ -102,7 +99,7 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
         retentionAnnotation,
         context.getLocation(retentionAnnotation),
         String.format(
-            "Annotation used by Dagger Reflect must be annotated with `@Retention(RUNTIME)` but is `@Retention(%s)`.",
+            "Annotations used by Dagger Reflect must have RUNTIME retention. Found %s.",
             actualRetention),
         LintFix.create()
             .name("Replace with: `@Retention(RUNTIME)`")
@@ -168,9 +165,8 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
   public static final Issue ISSUE_WRONG_RETENTION =
       Issue.create(
           "WrongRetention",
-          "Dagger annotations need to have Runtime Retention",
-          "To make annotation accessible during runtime for Dagger Reflect, "
-              + "the need to have the Retention annotation with the runtime RetentionPolicy.",
+          "Annotations used by Dagger Reflect must have RUNTIME retention",
+          "Annotations with SOURCE or CLASS/BINARY retention are not visible to reflection",
           Category.CORRECTNESS,
           10,
           Severity.ERROR,
