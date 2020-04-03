@@ -79,7 +79,7 @@ public final class WrongRetentionDetectorTest {
   }
 
   @Test
-  public void reportsQualifierAnnotationWithWrongRetentionAsStaticImport() {
+  public void reportsQualifierAnnotationWithSourceRetentionAsStaticImport() {
     lint()
         .files(
             java(
@@ -105,6 +105,36 @@ public final class WrongRetentionDetectorTest {
             "Fix for src/foo/MyQualifier.java line 9: Replace with: `@Retention(RUNTIME)`:\n"
                 + "@@ -9 +9\n"
                 + "- @Retention(SOURCE)\n"
+                + "+ @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)");
+  }
+
+  @Test
+  public void reportsQualifierAnnotationWithClassRetentionAsStaticImport() {
+    lint()
+        .files(
+            java(
+                "package foo;\n"
+                    + "\n"
+                    + "import static java.lang.annotation.RetentionPolicy.CLASS;\n"
+                    + "\n"
+                    + "import javax.inject.Qualifier;\n"
+                    + "import java.lang.annotation.Retention;\n"
+                    + "\n"
+                    + "@Qualifier\n"
+                    + "@Retention(CLASS)\n"
+                    + "public @interface MyQualifier {}"),
+            QUALIFIER_STUB)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .run()
+        .expect(
+            "src/foo/MyQualifier.java:9: Error: Annotations used by Dagger Reflect must have RUNTIME retention. Found CLASS. [WrongRetention]\n"
+                + "@Retention(CLASS)\n"
+                + "~~~~~~~~~~~~~~~~~\n"
+                + "1 errors, 0 warnings")
+        .expectFixDiffs(
+            "Fix for src/foo/MyQualifier.java line 9: Replace with: `@Retention(RUNTIME)`:\n"
+                + "@@ -9 +9\n"
+                + "- @Retention(CLASS)\n"
                 + "+ @Retention(java.lang.annotation.RetentionPolicy.RUNTIME)");
   }
 

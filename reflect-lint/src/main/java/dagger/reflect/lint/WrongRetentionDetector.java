@@ -6,6 +6,7 @@ import com.intellij.psi.PsiEnumConstant;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.List;
+import kotlin.annotation.AnnotationRetention;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UAnnotation;
@@ -115,51 +116,43 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
   private static String getRetentionPolicy(
       @NotNull JavaContext context, boolean isKotlin, @NotNull UAnnotation retentationAnnotation) {
     final UExpression annotationValue = UastLintUtils.getAnnotationValue(retentationAnnotation);
-    final String retentionPolicyQualifiedName =
-        isKotlin
-            ? getQualifiedNameForValueKotlin(context, annotationValue)
-            : getQualifiedNameForValueJava(context, annotationValue);
-    final String retentionPolicy = getRetentionPolicyForQualifiedName(retentionPolicyQualifiedName);
-    if (retentionPolicy != null) {
-      return retentionPolicy;
+    if (isKotlin) {
+      return getRetentionPolicyKotlin(context, annotationValue);
+    } else {
+      return getRetentionPolicyJava(context, annotationValue);
     }
-    throw new IllegalStateException("RetentionPolicy must not be null if @Retention is present");
   }
 
   @NotNull
-  private static String getQualifiedNameForValueKotlin(
+  private static String getRetentionPolicyKotlin(
       @NotNull JavaContext context, @Nullable UExpression annotationValue) {
     final Object evaluatedAnnotationValue = ConstantEvaluator.evaluate(context, annotationValue);
     if (evaluatedAnnotationValue instanceof kotlin.Pair) {
       final kotlin.Pair<?, ?> value = (kotlin.Pair<?, ?>) evaluatedAnnotationValue;
-      final String qualifiedName = (value.getFirst() + "." + value.getSecond());
-      return qualifiedName.replace("/", ".");
+      final String qualifiedName = (value.getFirst() + "." + value.getSecond()).replace("/", ".");
+      for (AnnotationRetention retention : AnnotationRetention.values()) {
+        if (qualifiedName.equals(CLASS_KOTLIN_RETENTION_POLICY + "." + retention.name())) {
+          return retention.name();
+        }
+      }
     }
-    throw new IllegalStateException("RetentionPolicy must not be null if @Retention is present");
+    throw new IllegalStateException("AnnotationRetention not found");
   }
 
   @NotNull
-  private static String getQualifiedNameForValueJava(
+  private static String getRetentionPolicyJava(
       @NotNull JavaContext context, @Nullable UExpression annotationValue) {
     final Object evaluatedAnnotationValue = ConstantEvaluator.evaluate(context, annotationValue);
     if (evaluatedAnnotationValue instanceof PsiEnumConstant) {
-      return UastLintUtils.getQualifiedName((PsiEnumConstant) evaluatedAnnotationValue);
-    }
-    throw new IllegalStateException("RetentionPolicy must not be null if @Retention is present");
-  }
-
-  @Nullable
-  private static String getRetentionPolicyForQualifiedName(@NotNull String retentionPolicy) {
-    // Values are same for Kotlin and Java
-    for (RetentionPolicy policy : RetentionPolicy.values()) {
-      final String javaQualifiedName = CLASS_JAVA_RETENTION_POLICY + "." + policy.name();
-      final String kotlinQualifiedName = CLASS_KOTLIN_RETENTION_POLICY + "." + policy.name();
-      if (javaQualifiedName.equals(retentionPolicy)
-          || kotlinQualifiedName.equals(retentionPolicy)) {
-        return policy.name();
+      final String qualifiedName = UastLintUtils.getQualifiedName(
+          (PsiEnumConstant) evaluatedAnnotationValue);
+      for (RetentionPolicy policy : RetentionPolicy.values()) {
+        if (qualifiedName.equals(CLASS_JAVA_RETENTION_POLICY + "." + policy.name())) {
+          return policy.name();
+        }
       }
     }
-    return null;
+    throw new IllegalStateException("RetentionPolicy must not be null if @Retention is present");
   }
 
   public static final Issue ISSUE_WRONG_RETENTION =

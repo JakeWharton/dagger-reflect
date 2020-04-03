@@ -91,7 +91,7 @@ public final class WrongRetentionDetectorTest {
   }
 
   @Test
-  public void reportsQualifierAnnotationWithWrongRetentionAsStaticImport() {
+  public void reportsQualifierAnnotationWithSourceRetentionAsStaticImport() {
     lint()
         .files(
             kotlin(
@@ -115,6 +115,34 @@ public final class WrongRetentionDetectorTest {
             "Fix for src/foo/MyQualifier.kt line 7: Replace with: `@Retention(RUNTIME)`:\n"
                 + "@@ -7 +7\n"
                 + "- @Retention(SOURCE)\n"
+                + "+ @Retention(kotlin.annotation.AnnotationRetention.RUNTIME)");
+  }
+
+  @Test
+  public void reportsQualifierAnnotationWithBinaryRetentionAsStaticImport() {
+    lint()
+        .files(
+            kotlin(
+                "package foo\n"
+                    + "\n"
+                    + "import javax.inject.Qualifier\n"
+                    + "import kotlin.annotation.AnnotationRetention.BINARY\n"
+                    + "\n"
+                    + "@Qualifier\n"
+                    + "@Retention(BINARY)\n"
+                    + "internal annotation class MyQualifier"),
+            QUALIFIER_STUB)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .run()
+        .expect(
+            "src/foo/MyQualifier.kt:7: Error: Annotations used by Dagger Reflect must have RUNTIME retention. Found BINARY. [WrongRetention]\n"
+                + "@Retention(BINARY)\n"
+                + "~~~~~~~~~~~~~~~~~~\n"
+                + "1 errors, 0 warnings")
+        .expectFixDiffs(
+            "Fix for src/foo/MyQualifier.kt line 7: Replace with: `@Retention(RUNTIME)`:\n"
+                + "@@ -7 +7\n"
+                + "- @Retention(BINARY)\n"
                 + "+ @Retention(kotlin.annotation.AnnotationRetention.RUNTIME)");
   }
 
