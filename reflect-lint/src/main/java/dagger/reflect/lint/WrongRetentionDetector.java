@@ -114,8 +114,8 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
 
   @NotNull
   private static String getRetentionPolicy(
-      @NotNull JavaContext context, boolean isKotlin, @NotNull UAnnotation retentationAnnotation) {
-    final UExpression annotationValue = UastLintUtils.getAnnotationValue(retentationAnnotation);
+      @NotNull JavaContext context, boolean isKotlin, @NotNull UAnnotation retentionAnnotation) {
+    final UExpression annotationValue = UastLintUtils.getAnnotationValue(retentionAnnotation);
     if (isKotlin) {
       return getRetentionPolicyKotlin(context, annotationValue);
     } else {
