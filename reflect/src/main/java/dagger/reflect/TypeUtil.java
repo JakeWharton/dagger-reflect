@@ -15,6 +15,8 @@
  */
 package dagger.reflect;
 
+
+import dagger.android.DispatchingAndroidInjector;
 import java.lang.reflect.GenericArrayType;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -27,6 +29,15 @@ final class TypeUtil {
   private static final Type[] EMPTY_TYPE_ARRAY = new Type[] {};
 
   private TypeUtil() {}
+
+  static boolean isAndroidInjectorFactory(Type type) {
+    if (type instanceof ParameterizedType) {
+      ParameterizedType parameterizedKeyType = (ParameterizedType) type;
+      Type rawKeyType = parameterizedKeyType.getRawType();
+      return DispatchingAndroidInjector.class.equals(rawKeyType);
+    }
+    return false;
+  }
 
   /**
    * Returns a type that is functionally equal but not necessarily equal according to {@link
