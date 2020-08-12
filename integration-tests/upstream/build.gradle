@@ -69,9 +69,6 @@ test.filter {
   // TODO reflect bug! Injecting MembersInjector<T> does not work.
   excludeTest 'dagger.functional.NestedTest', 'nestedBar'
 
-  // TODO reflect bug! Map<Key, Provider<Value>> cycles do not work.
-  excludeTest 'dagger.functional.cycle.CycleTest', 'providerMapIndirectionCycle'
-
   // TODO reflect bug! Subcomponent multibindings propagation does not work.
   excludeTest 'dagger.functional.subcomponent.SubcomponentMultibindingsTest', null
 }
