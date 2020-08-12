@@ -8,6 +8,9 @@ sourceSets.test.java {
   exclude 'dagger/functional/tck/**'
   exclude 'dagger/functional/spi/**'
 
+  // TODO fix our build so these work
+  exclude 'dagger/functional/kotlin/**'
+
   // These tests contains a reference to a generated types directly.
   exclude 'dagger/functional/gwt/GwtIncompatiblesTest.java'
   exclude 'dagger/functional/membersinject/MembersInjectTest.java'
@@ -27,6 +30,10 @@ sourceSets.test.java {
 test.filter {
   // dagger-reflect does not produce the exact same behavior as dagger-compiler for @Reusable.
   excludeTest 'dagger.functional.ReusableTest', null
+
+  // Uses nested component interfaces which are not public and thus cannot be proxied.
+  excludeTest 'dagger.functional.ComponentDependenciesTest', 'testPolymorphicOverridesStillCompiles'
+  excludeTest 'dagger.functional.ComponentDependenciesTest', 'testSameMethodTwice'
 
   // TODO reflect bug! Need something like ByteBuddy for proxying classes at runtime.
   excludeTest 'dagger.functional.aot.PrunedFrameworkInstanceWithModuleInstanceTest', 'prunedBindingWithModuleInstance_doesntThrowDuringInitialization'
