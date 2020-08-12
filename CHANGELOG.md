@@ -1,6 +1,16 @@
 Change Log
 ==========
 
+Version 0.3.0
+-------------
+
+*2020-08-12*
+
+ * New: Update to Dagger 2.28.3
+ * Fix: Injecting a `Map<K, Provider<V>>` now correctly lazily resolves the provider values such
+   that you can break dependency cycles with it.
+
+
 Version 0.2.0
 -------------
 

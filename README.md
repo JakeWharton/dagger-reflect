@@ -7,7 +7,7 @@ IDE builds and tests.
 More info soon...
 
 
-**Current release**: [0.2.0](CHANGELOG.md)
+**Current release**: [0.3.0](CHANGELOG.md)
 
 Snapshots of the next development version are available in [Sonatype's `snapshots` repository][snap].
 
@@ -35,8 +35,8 @@ For an Android build, configure your dependencies:
 ```groovy
 dependencies {
   if (properties.containsKey('android.injected.invoked.from.ide')) {
-    debugAnnotationProcessor 'com.jakewharton.dagger:dagger-reflect-compiler:0.2.0'
-    debugApi 'com.jakewharton.dagger:dagger-reflect:0.2.0' // or debugImplementation
+    debugAnnotationProcessor 'com.jakewharton.dagger:dagger-reflect-compiler:0.3.0'
+    debugApi 'com.jakewharton.dagger:dagger-reflect:0.3.0' // or debugImplementation
   } else {
     debugAnnotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
   }
@@ -63,13 +63,13 @@ having to change your production Dagger code. In order to avoid the need to
 ```groovy
 dependencies {
   if (properties.containsKey('android.injected.invoked.from.ide')) {
-    debugApi 'com.jakewharton.dagger:dagger-reflect:0.2.0' // or debugImplementation  
+    debugApi 'com.jakewharton.dagger:dagger-reflect:0.3.0' // or debugImplementation  
   } else {
     debugAnnotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
-    debugApi 'com.jakewharton.dagger:dagger-codegen:0.2.0' // or debugImplementation
+    debugApi 'com.jakewharton.dagger:dagger-codegen:0.3.0' // or debugImplementation
   }
   releaseAnnotationProcessor "com.google.dagger:dagger-compiler:$daggerVersion"
-  releaseApi 'com.jakewharton.dagger:dagger-codegen:0.2.0' // or releaseImplementation
+  releaseApi 'com.jakewharton.dagger:dagger-codegen:0.3.0' // or releaseImplementation
   api "com.google.dagger:dagger:$daggerVersion" // or implementation
 }
 ```
@@ -105,7 +105,7 @@ They can be enabled in an Android-project by adding
 
 ```groovy
 dependencies {
-  lintChecks 'com.jakewharton.dagger:dagger-reflect-lint:0.2.0'
+  lintChecks 'com.jakewharton.dagger:dagger-reflect-lint:0.3.0'
 }
 ```
 
