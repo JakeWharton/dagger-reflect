@@ -16,9 +16,10 @@ final class UnlinkedMapOfProviderBinding extends UnlinkedBinding {
   public LinkedBinding<Map<Object, Provider<Object>>> link(Linker linker, Scope scope) {
     Map<Object, Provider<Object>> mapOfProviders = new LinkedHashMap<>(entryBindings.size());
     for (Map.Entry<Object, Binding> entryBinding : entryBindings.entrySet()) {
-      LinkedBinding<Object> binding =
-          (LinkedBinding<Object>) entryBinding.getValue().link(linker, scope);
-      mapOfProviders.put(entryBinding.getKey(), binding);
+      // Despite linking, this is a Map to Provider<V> which should be lazy. Thus, we capture the
+      // scope and create a Map<K, Provider<V>> instance whose providers are lazy-linked.
+      Provider<Object> provider = new ScopeBindingProvider<>(scope, entryBinding.getValue());
+      mapOfProviders.put(entryBinding.getKey(), provider);
     }
     return new LinkedInstanceBinding<>(mapOfProviders);
   }
