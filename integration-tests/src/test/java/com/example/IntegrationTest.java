@@ -187,6 +187,24 @@ public final class IntegrationTest {
   }
 
   @Test
+  @IgnoreCodegen
+  public void optionalBindingWrongScope() {
+    OptionalBindingWrongScope component = backend.create(OptionalBindingWrongScope.class);
+    try {
+      component.thing();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Unable to find binding for key=com.example.OptionalBindingWrongScope$Thing"
+                  + " with linker=Linker with Scope[@javax.inject.Singleton()]\n"
+                  + " * Requested: java.util.Optional<com.example.OptionalBindingWrongScope$Thing>\n"
+                  + "     from @Optional[com.example.OptionalBindingWrongScope$Module1.optionalThing(…)]\n");
+    }
+  }
+
+  @Test
   public void optionalBindingAbsent() {
     OptionalBindingAbsent component = backend.create(OptionalBindingAbsent.class);
     assertThat(component.string()).isEqualTo(Optional.empty());
