@@ -1616,6 +1616,32 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void scopedMultibindingProviderMapIndirectionCycle() {
+    ScopedCycleIndirection.D d = backend.create(ScopedCycleIndirection.class).d();
+    assertThat(d).isNotNull();
+    assertThat(d.providerMap.get("a")).isNotNull();
+    assertThat(d.providerMap.get("a").get()).isEqualTo("a");
+  }
+
+  @Test
+  public void scopedBindsIndirectionCycle() {
+    ScopedCycleIndirection.D d = backend.create(ScopedCycleIndirection.class).d();
+    assertThat(d).isNotNull();
+    assertThat(d.provider.get()).isEqualTo("a");
+  }
+
+  @Test
+  public void scopedIndirectionCycle() {
+    ScopedCycleIndirection component = backend.create(ScopedCycleIndirection.class);
+    String s = component.s();
+    ScopedCycleIndirection.C c = component.c();
+    assertThat(s).isEqualTo("a");
+    assertThat(c.provider.get()).isEqualTo("a");
+    assertThat(c.lazy.get()).isEqualTo("a");
+    assertThat(c.lazyProvider.get().get()).isEqualTo("a");
+  }
+
+  @Test
   public void multipleInterfacesRequestSameDependency() {
     String value = "my-value";
     String result =
