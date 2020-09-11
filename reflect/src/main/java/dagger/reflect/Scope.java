@@ -1,6 +1,7 @@
 package dagger.reflect;
 
 import dagger.Lazy;
+import dagger.MembersInjector;
 import dagger.reflect.Binding.LinkedBinding;
 import dagger.reflect.Binding.UnlinkedBinding;
 import dagger.reflect.TypeUtil.ParameterizedTypeImpl;
@@ -68,6 +69,10 @@ final class Scope {
       if (rawKeyType == Lazy.class) {
         Key realKey = Key.of(key.qualifier(), parameterizedKeyType.getActualTypeArguments()[0]);
         return new LinkedLazyBinding<>(this, realKey);
+      }
+      if (rawKeyType == MembersInjector.class) {
+        Class<?> clazz = parameterizedKeyType.getActualTypeArguments()[0].getClass();
+        return new LinkedMembersInjectorBinding<>(clazz, this);
       }
     }
 
