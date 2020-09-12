@@ -4,6 +4,7 @@ import static com.google.common.truth.Truth.assertThat;
 import static org.junit.Assert.fail;
 
 import dagger.Lazy;
+import dagger.MembersInjector;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -1196,8 +1197,9 @@ public final class IntegrationTest {
   @Test
   @IgnoreCodegen
   public void membersInjectionWrongReturnType() {
-    MembersInjectorWrongReturnType component = backend.create(MembersInjectorWrongReturnType.class);
-    MembersInjectorWrongReturnType.Target instance = new MembersInjectorWrongReturnType.Target();
+    MembersInjectionWrongReturnType component =
+        backend.create(MembersInjectionWrongReturnType.class);
+    MembersInjectionWrongReturnType.Target instance = new MembersInjectionWrongReturnType.Target();
     try {
       component.inject(instance);
       fail();
@@ -1206,7 +1208,7 @@ public final class IntegrationTest {
           .hasMessageThat()
           .isEqualTo(
               "Members injection methods may only return the injected type or void: "
-                  + "com.example.MembersInjectorWrongReturnType.inject");
+                  + "com.example.MembersInjectionWrongReturnType.inject");
     }
   }
 
@@ -1595,5 +1597,50 @@ public final class IntegrationTest {
             .create(() -> value)
             .value();
     assertThat(result).isSameInstanceAs(value);
+  }
+
+  @Test
+  public void membersInjectorComponent() {
+    MembersInjector<MemberInjectorComponent.Target> injector =
+        backend.create(MemberInjectorComponent.class).targetInjector();
+    MemberInjectorComponent.Target target = new MemberInjectorComponent.Target();
+    assertThat(target.foo).isNull();
+    injector.injectMembers(target);
+    assertThat(target.foo).isEqualTo("foo");
+  }
+
+  @Test
+  public void membersInjectorInjected() {
+    MembersInjector<MemberInjectorInjected.Target> injector =
+        backend.create(MemberInjectorInjected.class).holder().targetInjector;
+    MemberInjectorInjected.Target target = new MemberInjectorInjected.Target();
+    assertThat(target.foo).isNull();
+    injector.injectMembers(target);
+    assertThat(target.foo).isEqualTo("foo");
+  }
+
+  @Test
+  @ReflectBug
+  public void membersInjectorGenericType() {
+    MembersInjector<MemberInjectorGenericType.Target<String>> injector =
+        backend.create(MemberInjectorGenericType.class).targetInjector();
+    MemberInjectorGenericType.Target<String> target = new MemberInjectorGenericType.Target<>();
+    assertThat(target.foo).isNull();
+    injector.injectMembers(target);
+    assertThat(target.foo).isEqualTo("foo");
+  }
+
+  @Test
+  @IgnoreCodegen
+  public void membersInjectorWildcardType() {
+    try {
+      backend.create(MemberInjectorWildcardType.class).targetInjector();
+      fail();
+    } catch (IllegalStateException e) {
+      assertThat(e)
+          .hasMessageThat()
+          .isEqualTo(
+              "Cannot inject members into types with unbounded type arguments: dagger.MembersInjector<com.example.MemberInjectorWildcardType$Target<? extends java.lang.String>>");
+    }
   }
 }

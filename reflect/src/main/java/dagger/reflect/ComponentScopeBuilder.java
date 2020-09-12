@@ -114,7 +114,8 @@ final class ComponentScopeBuilder {
   Scope.Builder get() {
     Scope.Builder scopeBuilder =
         new Scope.Builder(parent, scopeAnnotations)
-            .justInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory());
+            .addJustInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory())
+            .addJustInTimeLookupFactory(new MembersInjectorJustInTimeFactory());
 
     for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {
       scopeBuilder.addInstance(entry.getKey(), entry.getValue());

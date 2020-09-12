@@ -18,7 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 final class Scope {
   private final ConcurrentHashMap<Key, Binding> bindings;
-  private final JustInTimeLookup.Factory jitLookupFactory;
+  private final List<JustInTimeLookup.Factory> jitLookupFactories;
   /** The annotations denoting {@linkplain javax.inject.Scope scoped} bindings for this instance. */
   private final Set<Annotation> annotations;
 
@@ -26,11 +26,11 @@ final class Scope {
 
   private Scope(
       ConcurrentHashMap<Key, Binding> bindings,
-      JustInTimeLookup.Factory jitLookupFactory,
+      List<JustInTimeLookup.Factory> jitLookupFactories,
       Set<Annotation> annotations,
       @Nullable Scope parent) {
     this.bindings = bindings;
-    this.jitLookupFactory = jitLookupFactory;
+    this.jitLookupFactories = jitLookupFactories;
     this.annotations = annotations;
     this.parent = parent;
   }
@@ -76,14 +76,16 @@ final class Scope {
       return binding;
     }
 
-    JustInTimeLookup jitLookup = jitLookupFactory.create(key);
-    if (jitLookup != null) {
-      LinkedBinding<?> jitBinding = putJitBinding(key, linker, jitLookup);
-      if (jitBinding == null) {
-        throw new IllegalStateException(
-            "Unable to find binding for key=" + key + " with linker=" + linker);
+    for (JustInTimeLookup.Factory jitLookupFactory : jitLookupFactories) {
+      JustInTimeLookup jitLookup = jitLookupFactory.create(key);
+      if (jitLookup != null) {
+        LinkedBinding<?> jitBinding = putJitBinding(key, linker, jitLookup);
+        if (jitBinding == null) {
+          throw new IllegalStateException(
+              "Unable to find binding for key=" + key + " with linker=" + linker);
+        }
+        return jitBinding;
       }
-      return jitBinding;
     }
 
     return null;
@@ -159,7 +161,7 @@ final class Scope {
     private final Map<Key, Binding> keyToBinding = new LinkedHashMap<>();
     private final Map<Key, SetBindings> keyToSetBindings = new LinkedHashMap<>();
     private final Map<Key, Map<Object, Binding>> keyToMapBindings = new LinkedHashMap<>();
-    private JustInTimeLookup.Factory jitLookupFactory = JustInTimeLookup.Factory.NONE;
+    private final List<JustInTimeLookup.Factory> jitLookupFactories = new ArrayList<>();
 
     Builder(@Nullable Scope parent, Set<Annotation> annotations) {
       if (!annotations.isEmpty() && parent != null) {
@@ -196,9 +198,9 @@ final class Scope {
       this.annotations = annotations;
     }
 
-    Builder justInTimeLookupFactory(JustInTimeLookup.Factory jitLookupFactory) {
+    Builder addJustInTimeLookupFactory(JustInTimeLookup.Factory jitLookupFactory) {
       if (jitLookupFactory == null) throw new NullPointerException("jitLookupFactory == null");
-      this.jitLookupFactory = jitLookupFactory;
+      this.jitLookupFactories.add(jitLookupFactory);
       return this;
     }
 
@@ -396,7 +398,7 @@ final class Scope {
         }
       }
 
-      return new Scope(allBindings, jitLookupFactory, annotations, parent);
+      return new Scope(allBindings, jitLookupFactories, annotations, parent);
     }
 
     private static final class SetBindings {

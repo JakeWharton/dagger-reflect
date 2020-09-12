@@ -73,9 +73,6 @@ test.filter {
   excludeTest 'dagger.functional.jdk8.OptionalBindingComponentsEmptyTest', null
   excludeTest 'dagger.functional.jdk8.OptionalBindingComponentsPresentTest', null
 
-  // TODO reflect bug! Injecting MembersInjector<T> does not work.
-  excludeTest 'dagger.functional.NestedTest', 'nestedBar'
-
   // TODO reflect bug! Subcomponent multibindings propagation does not work.
   excludeTest 'dagger.functional.subcomponent.SubcomponentMultibindingsTest', null
 }

@@ -3,7 +3,7 @@ package com.example;
 import dagger.Component;
 
 @Component
-public interface MembersInjectorWrongReturnType {
+public interface MembersInjectionWrongReturnType {
   String inject(Target instance);
 
   class Target {}
