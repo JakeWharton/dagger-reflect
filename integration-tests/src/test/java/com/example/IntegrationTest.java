@@ -1589,6 +1589,61 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void multibindingProviderMapIndirectionCycle() {
+    MultibindingProviderMapIndirectionCycle.Factory factory =
+        backend.create(MultibindingProviderMapIndirectionCycle.class).factory();
+    assertThat(factory).isNotNull();
+    assertThat(factory.providerMap.get("1")).isNotNull();
+    assertThat(factory.providerMap.get("1").get()).isEqualTo(1L);
+  }
+
+  @Test
+  public void bindsIndirectionCycle() {
+    BindsIndirectionCycle.B b = backend.create(BindsIndirectionCycle.class).b();
+    assertThat(b).isNotNull();
+    assertThat(b.providerObject.get()).isNotNull();
+    assertThat(b.lazyObject.get()).isNotNull();
+    assertThat(b.lazyProviderObject.get()).isNotNull();
+  }
+
+  @Test
+  public void indirectionCycle() {
+    IndirectionCycle component = backend.create(IndirectionCycle.class);
+    IndirectionCycle.A a = component.a();
+    IndirectionCycle.C c = component.c();
+    assertThat(a).isNotNull();
+    assertThat(c.providerA.get()).isNotNull();
+    assertThat(c.lazyA.get()).isNotNull();
+    assertThat(c.lazyProviderA.get()).isNotNull();
+  }
+
+  @Test
+  public void scopedMultibindingProviderMapIndirectionCycle() {
+    ScopedCycleIndirection.D d = backend.create(ScopedCycleIndirection.class).d();
+    assertThat(d).isNotNull();
+    assertThat(d.providerMap.get("a")).isNotNull();
+    assertThat(d.providerMap.get("a").get()).isEqualTo("a");
+  }
+
+  @Test
+  public void scopedBindsIndirectionCycle() {
+    ScopedCycleIndirection.D d = backend.create(ScopedCycleIndirection.class).d();
+    assertThat(d).isNotNull();
+    assertThat(d.provider.get()).isEqualTo("a");
+  }
+
+  @Test
+  public void scopedIndirectionCycle() {
+    ScopedCycleIndirection component = backend.create(ScopedCycleIndirection.class);
+    String s = component.s();
+    ScopedCycleIndirection.C c = component.c();
+    assertThat(s).isEqualTo("a");
+    assertThat(c.provider.get()).isEqualTo("a");
+    assertThat(c.lazy.get()).isEqualTo("a");
+    assertThat(c.lazyProvider.get().get()).isEqualTo("a");
+  }
+
+  @Test
   public void multipleInterfacesRequestSameDependency() {
     String value = "my-value";
     String result =
