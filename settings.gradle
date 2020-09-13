@@ -1,6 +1,7 @@
 include ':codegen'
 include ':integration-tests'
-include ':integration-tests:android'
+include ':integration-tests:android-base-class'
+include ':integration-tests:android-has-interface'
 include ':integration-tests:upstream'
 include ':reflect'
 include ':reflect-compiler'
