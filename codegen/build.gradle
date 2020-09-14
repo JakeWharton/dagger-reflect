@@ -1,13 +1,118 @@
+import org.gradle.internal.jvm.Jvm
+
 apply plugin: 'java-library'
 
 sourceCompatibility = JavaVersion.VERSION_1_8
 targetCompatibility = JavaVersion.VERSION_1_8
+
+configurations {
+  r8
+  proGuard
+}
+
+// TODO Remove when R8 is updated to 1.5 or newer which pulls kotlinx.metadata from Maven Central.
+repositories {
+  maven {
+    url 'https://kotlin.bintray.com/kotlinx'
+  }
+}
 
 dependencies {
   testImplementation deps.junit
   testImplementation deps.truth
   testImplementation deps.dagger.runtime
   testAnnotationProcessor deps.dagger.compiler
+
+  r8 'com.android.tools:r8:1.4.93'
+  proGuard 'net.sf.proguard:proguard-base:6.1.1'
 }
+
+def r8Classes = new File(buildDir, 'classes/java/testR8')
+task runR8(type: JavaExec, dependsOn: 'testClasses') {
+  classpath = configurations.r8
+  main = 'com.android.tools.r8.R8'
+
+  doFirst {
+    if (r8Classes.exists()) {
+      r8Classes.deleteDir()
+    }
+    r8Classes.mkdirs()
+
+    def arguments = [
+        '--release',
+        '--classfile',
+        '--output', r8Classes.absolutePath,
+        '--pg-conf', file('src/test/rules.pro').absolutePath,
+        '--pg-conf', file('src/main/resources/META-INF/proguard/dagger-reflect.pro').absolutePath,
+        '--lib', new File(Jvm.current().getJavaHome(), "jre/lib/rt.jar").absolutePath
+    ]
+    sourceSets.test.compileClasspath.each {
+      if (it.exists()) {
+        arguments.add('--lib')
+        arguments.add(it.absolutePath)
+      }
+    }
+    arguments.addAll(sourceSets.test.output.classesDirs.asFileTree)
+
+    args = arguments
+  }
+}
+
+task testR8(type: Test, dependsOn: 'runR8') {
+  description = 'Run tests after optimizing with R8'
+  group = 'verification'
+
+  testClassesDirs = files(r8Classes)
+  classpath = files(r8Classes, sourceSets.test.compileClasspath)
+
+  inputs.dir(r8Classes)
+}
+check.dependsOn('testR8')
+
+def proguardClasses = new File(buildDir, 'classes/java/testProGuard')
+task runProGuard(type: JavaExec, dependsOn: 'testClasses') {
+  classpath = configurations.proGuard
+  main = 'proguard.ProGuard'
+
+  doFirst {
+    if (proguardClasses.exists()) {
+      proguardClasses.deleteDir()
+    }
+    proguardClasses.mkdirs()
+
+    def arguments = [
+        '-include', file('src/test/rules.pro').absolutePath,
+        '-include', file('src/main/resources/META-INF/proguard/dagger-reflect.pro').absolutePath,
+        '-libraryjars', new File(Jvm.current().getJavaHome(), "jre/lib/rt.jar").absolutePath,
+    ]
+    sourceSets.test.compileClasspath.each {
+      if (it.exists()) {
+        arguments.add('-libraryjars')
+        arguments.add(it.absolutePath)
+      }
+    }
+    sourceSets.test.output.classesDirs.each {
+      if (it.exists()) {
+        arguments.add('-injars')
+        arguments.add(it.absolutePath)
+      }
+    }
+    arguments.add('-outjars')
+    arguments.add(proguardClasses.absolutePath)
+
+    args = arguments
+  }
+}
+
+task testProGuard(type: Test, dependsOn: 'runProGuard') {
+  description = 'Run tests after optimizing with ProGuard'
+  group = 'verification'
+
+  testClassesDirs = files(proguardClasses)
+  classpath = files(proguardClasses, sourceSets.test.compileClasspath)
+
+  inputs.dir(proguardClasses)
+}
+check.dependsOn('testProGuard')
 
 apply from: rootProject.file('gradle/gradle-mvn-push.gradle')

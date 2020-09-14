@@ -23,8 +23,8 @@ import org.junit.Test;
 public final class DaggerCodegenTest {
   @Test
   public void create() {
-    JustComponent actual = Dagger.create(JustComponent.class);
-    assertThat(actual).isInstanceOf(JustComponent.class);
+    JustComponent component = Dagger.create(JustComponent.class);
+    assertThat(component).isInstanceOf(JustComponent.class);
   }
 
   @Test
@@ -37,15 +37,20 @@ public final class DaggerCodegenTest {
           .hasMessageThat()
           .isEqualTo(
               "Unable to find generated component implementation "
-                  + "dagger.DaggerJustComponentNoAnnotation for component "
-                  + "dagger.JustComponentNoAnnotation");
+                  + "dagger.Dagger"
+                  + JustComponentNoAnnotation.class.getSimpleName()
+                  + " for component "
+                  + "dagger."
+                  + JustComponentNoAnnotation.class.getSimpleName());
     }
   }
 
   @Test
   public void builder() {
-    BuilderComponent.Builder actual = Dagger.builder(BuilderComponent.Builder.class);
-    assertThat(actual).isInstanceOf(DaggerBuilderComponent.builder().getClass());
+    BuilderComponent.Builder builder = Dagger.builder(BuilderComponent.Builder.class);
+    assertThat(builder).isInstanceOf(DaggerBuilderComponent.builder().getClass());
+    BuilderComponent component = builder.build();
+    assertThat(component).isInstanceOf(DaggerBuilderComponent.class);
   }
 
   @Test
@@ -58,8 +63,11 @@ public final class DaggerCodegenTest {
           .hasMessageThat()
           .isEqualTo(
               "Unable to find generated component implementation "
-                  + "dagger.DaggerBuilderComponentNoAnnotation for component "
-                  + "dagger.BuilderComponentNoAnnotation");
+                  + "dagger.Dagger"
+                  + BuilderComponentNoAnnotation.class.getSimpleName()
+                  + " for component "
+                  + "dagger."
+                  + BuilderComponentNoAnnotation.class.getSimpleName());
     }
   }
 
@@ -72,14 +80,17 @@ public final class DaggerCodegenTest {
       assertThat(e)
           .hasMessageThat()
           .isEqualTo(
-              "dagger.BuilderNotNested is not a nested type inside of a component interface");
+              BuilderNotNested.class.getName()
+                  + " is not a nested type inside of a component interface");
     }
   }
 
   @Test
   public void factory() {
-    FactoryComponent.Factory actual = Dagger.factory(FactoryComponent.Factory.class);
-    assertThat(actual).isInstanceOf(DaggerFactoryComponent.factory().getClass());
+    FactoryComponent.Factory factory = Dagger.factory(FactoryComponent.Factory.class);
+    assertThat(factory).isInstanceOf(DaggerFactoryComponent.factory().getClass());
+    FactoryComponent component = factory.create();
+    assertThat(component).isInstanceOf(DaggerFactoryComponent.class);
   }
 
   @Test
@@ -92,8 +103,11 @@ public final class DaggerCodegenTest {
           .hasMessageThat()
           .isEqualTo(
               "Unable to find generated component implementation "
-                  + "dagger.DaggerFactoryComponentNoAnnotation for component "
-                  + "dagger.FactoryComponentNoAnnotation");
+                  + "dagger.Dagger"
+                  + FactoryComponentNoAnnotation.class.getSimpleName()
+                  + " for component "
+                  + "dagger."
+                  + FactoryComponentNoAnnotation.class.getSimpleName());
     }
   }
 
@@ -106,7 +120,8 @@ public final class DaggerCodegenTest {
       assertThat(e)
           .hasMessageThat()
           .isEqualTo(
-              "dagger.FactoryNotNested is not a nested type inside of a component interface");
+              FactoryNotNested.class.getName()
+                  + " is not a nested type inside of a component interface");
     }
   }
 }
