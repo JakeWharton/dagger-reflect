@@ -6,6 +6,7 @@ import com.intellij.psi.PsiEnumConstant;
 import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 import java.util.List;
+import kotlin.annotation.AnnotationRetention;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jetbrains.uast.UAnnotation;
@@ -30,8 +31,6 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
       "kotlin.annotation.AnnotationRetention.RUNTIME";
   private static final String FIX_ANNOTATION_RETENTION_JAVA =
       "@java.lang.annotation.Retention(" + FIX_RETENTION_TYPE_JAVA + ")\n";
-  private static final String FIX_ANNOTATION_RETENTION_KOTLIN =
-      "@kotlin.annotation.Retention(" + FIX_RETENTION_TYPE_KOTLIN + ")\n";
 
   @Override
   public List<Class<? extends UElement>> getApplicableUastTypes() {
@@ -56,15 +55,15 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
         final boolean isKotlin = Lint.isKotlin(node);
         final UAnnotation retentionAnnotation =
             node.findAnnotation(isKotlin ? ANNOTATION_RETENTION_KOTLIN : ANNOTATION_RETENTION_JAVA);
-        if (retentionAnnotation == null) {
-          final UAnnotation reflectRelatedAnnotation =
-              qualifierAnnotation != null ? qualifierAnnotation : mapKeyAnnotation;
-          reportMissingRetention(context, isKotlin, node, reflectRelatedAnnotation);
-        } else {
+        if (retentionAnnotation != null) {
           final String retentionPolicy = getRetentionPolicy(context, isKotlin, retentionAnnotation);
           if (!"RUNTIME".equals(retentionPolicy)) {
             reportWrongRetentionType(context, isKotlin, retentionAnnotation, retentionPolicy);
           }
+        } else if (!isKotlin) {
+          final UAnnotation reflectRelatedAnnotation =
+              qualifierAnnotation != null ? qualifierAnnotation : mapKeyAnnotation;
+          reportMissingRetention(context, node, reflectRelatedAnnotation);
         }
       }
     };
@@ -72,20 +71,19 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
 
   private static void reportMissingRetention(
       @NotNull JavaContext context,
-      boolean isKotlin,
       @NotNull UClass node,
       @NotNull UAnnotation reflectRelatedAnnotation) {
     context.report(
         ISSUE_WRONG_RETENTION,
         node,
         context.getNameLocation(node),
-        "Annotation used by Dagger Reflect must be annotated with `@Retention(RUNTIME)`.",
+        "Java annotations used by Dagger Reflect must be annotated with `@Retention(RUNTIME)`.",
         LintFix.create()
             .replace()
             .name("Add: `@Retention(RUNTIME)`")
             .range(context.getLocation(reflectRelatedAnnotation))
             .beginning()
-            .with(isKotlin ? FIX_ANNOTATION_RETENTION_KOTLIN : FIX_ANNOTATION_RETENTION_JAVA)
+            .with(FIX_ANNOTATION_RETENTION_JAVA)
             .reformat(true)
             .shortenNames()
             .build());
@@ -102,7 +100,7 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
         retentionAnnotation,
         context.getLocation(retentionAnnotation),
         String.format(
-            "Annotation used by Dagger Reflect must be annotated with `@Retention(RUNTIME)` but is `@Retention(%s)`.",
+            "Annotations used by Dagger Reflect must have RUNTIME retention. Found %s.",
             actualRetention),
         LintFix.create()
             .name("Replace with: `@Retention(RUNTIME)`")
@@ -116,61 +114,52 @@ public final class WrongRetentionDetector extends Detector implements Detector.U
 
   @NotNull
   private static String getRetentionPolicy(
-      @NotNull JavaContext context, boolean isKotlin, @NotNull UAnnotation retentationAnnotation) {
-    final UExpression annotationValue = UastLintUtils.getAnnotationValue(retentationAnnotation);
-    final String retentionPolicyQualifiedName =
-        isKotlin
-            ? getQualifiedNameForValueKotlin(context, annotationValue)
-            : getQualifiedNameForValueJava(context, annotationValue);
-    final String retentionPolicy = getRetentionPolicyForQualifiedName(retentionPolicyQualifiedName);
-    if (retentionPolicy != null) {
-      return retentionPolicy;
+      @NotNull JavaContext context, boolean isKotlin, @NotNull UAnnotation retentionAnnotation) {
+    final UExpression annotationValue = UastLintUtils.getAnnotationValue(retentionAnnotation);
+    if (isKotlin) {
+      return getRetentionPolicyKotlin(context, annotationValue);
+    } else {
+      return getRetentionPolicyJava(context, annotationValue);
     }
-    throw new IllegalStateException("RetentionPolicy must not be null if @Retention is present");
   }
 
   @NotNull
-  private static String getQualifiedNameForValueKotlin(
+  private static String getRetentionPolicyKotlin(
       @NotNull JavaContext context, @Nullable UExpression annotationValue) {
     final Object evaluatedAnnotationValue = ConstantEvaluator.evaluate(context, annotationValue);
     if (evaluatedAnnotationValue instanceof kotlin.Pair) {
       final kotlin.Pair<?, ?> value = (kotlin.Pair<?, ?>) evaluatedAnnotationValue;
-      final String qualifiedName = (value.getFirst() + "." + value.getSecond());
-      return qualifiedName.replace("/", ".");
+      final String qualifiedName = (value.getFirst() + "." + value.getSecond()).replace("/", ".");
+      for (AnnotationRetention retention : AnnotationRetention.values()) {
+        if (qualifiedName.equals(CLASS_KOTLIN_RETENTION_POLICY + "." + retention.name())) {
+          return retention.name();
+        }
+      }
     }
-    throw new IllegalStateException("RetentionPolicy must not be null if @Retention is present");
+    throw new IllegalStateException("AnnotationRetention not found");
   }
 
   @NotNull
-  private static String getQualifiedNameForValueJava(
+  private static String getRetentionPolicyJava(
       @NotNull JavaContext context, @Nullable UExpression annotationValue) {
     final Object evaluatedAnnotationValue = ConstantEvaluator.evaluate(context, annotationValue);
     if (evaluatedAnnotationValue instanceof PsiEnumConstant) {
-      return UastLintUtils.getQualifiedName((PsiEnumConstant) evaluatedAnnotationValue);
-    }
-    throw new IllegalStateException("RetentionPolicy must not be null if @Retention is present");
-  }
-
-  @Nullable
-  private static String getRetentionPolicyForQualifiedName(@NotNull String retentionPolicy) {
-    // Values are same for Kotlin and Java
-    for (RetentionPolicy policy : RetentionPolicy.values()) {
-      final String javaQualifiedName = CLASS_JAVA_RETENTION_POLICY + "." + policy.name();
-      final String kotlinQualifiedName = CLASS_KOTLIN_RETENTION_POLICY + "." + policy.name();
-      if (javaQualifiedName.equals(retentionPolicy)
-          || kotlinQualifiedName.equals(retentionPolicy)) {
-        return policy.name();
+      final String qualifiedName = UastLintUtils.getQualifiedName(
+          (PsiEnumConstant) evaluatedAnnotationValue);
+      for (RetentionPolicy policy : RetentionPolicy.values()) {
+        if (qualifiedName.equals(CLASS_JAVA_RETENTION_POLICY + "." + policy.name())) {
+          return policy.name();
+        }
       }
     }
-    return null;
+    throw new IllegalStateException("RetentionPolicy must not be null if @Retention is present");
   }
 
   public static final Issue ISSUE_WRONG_RETENTION =
       Issue.create(
           "WrongRetention",
-          "Dagger annotations need to have Runtime Retention",
-          "To make annotation accessible during runtime for Dagger Reflect, "
-              + "the need to have the Retention annotation with the runtime RetentionPolicy.",
+          "Annotations used by Dagger Reflect must have RUNTIME retention",
+          "Annotations with SOURCE or CLASS/BINARY retention are not visible to reflection",
           Category.CORRECTNESS,
           10,
           Severity.ERROR,

@@ -55,6 +55,23 @@ public final class WrongRetentionDetectorTest {
   }
 
   @Test
+  public void ignoresQualifierAnnotationWithDefaultRetention() {
+    lint()
+        .files(
+            kotlin(
+                "package foo\n"
+                    + "\n"
+                    + "import javax.inject.Qualifier\n"
+                    + "\n"
+                    + "@Qualifier\n"
+                    + "internal annotation class MyQualifier"),
+            QUALIFIER_STUB)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .run()
+        .expectClean();
+  }
+
+  @Test
   public void ignoresQualifierAnnotationWithRuntimeRetention() {
     lint()
         .files(
@@ -74,7 +91,7 @@ public final class WrongRetentionDetectorTest {
   }
 
   @Test
-  public void reportsQualifierAnnotationWithWrongRetentionAsStaticImport() {
+  public void reportsQualifierAnnotationWithSourceRetentionAsStaticImport() {
     lint()
         .files(
             kotlin(
@@ -90,7 +107,7 @@ public final class WrongRetentionDetectorTest {
         .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
-            "src/foo/MyQualifier.kt:7: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
+            "src/foo/MyQualifier.kt:7: Error: Annotations used by Dagger Reflect must have RUNTIME retention. Found SOURCE. [WrongRetention]\n"
                 + "@Retention(SOURCE)\n"
                 + "~~~~~~~~~~~~~~~~~~\n"
                 + "1 errors, 0 warnings")
@@ -98,6 +115,34 @@ public final class WrongRetentionDetectorTest {
             "Fix for src/foo/MyQualifier.kt line 7: Replace with: `@Retention(RUNTIME)`:\n"
                 + "@@ -7 +7\n"
                 + "- @Retention(SOURCE)\n"
+                + "+ @Retention(kotlin.annotation.AnnotationRetention.RUNTIME)");
+  }
+
+  @Test
+  public void reportsQualifierAnnotationWithBinaryRetentionAsStaticImport() {
+    lint()
+        .files(
+            kotlin(
+                "package foo\n"
+                    + "\n"
+                    + "import javax.inject.Qualifier\n"
+                    + "import kotlin.annotation.AnnotationRetention.BINARY\n"
+                    + "\n"
+                    + "@Qualifier\n"
+                    + "@Retention(BINARY)\n"
+                    + "internal annotation class MyQualifier"),
+            QUALIFIER_STUB)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .run()
+        .expect(
+            "src/foo/MyQualifier.kt:7: Error: Annotations used by Dagger Reflect must have RUNTIME retention. Found BINARY. [WrongRetention]\n"
+                + "@Retention(BINARY)\n"
+                + "~~~~~~~~~~~~~~~~~~\n"
+                + "1 errors, 0 warnings")
+        .expectFixDiffs(
+            "Fix for src/foo/MyQualifier.kt line 7: Replace with: `@Retention(RUNTIME)`:\n"
+                + "@@ -7 +7\n"
+                + "- @Retention(BINARY)\n"
                 + "+ @Retention(kotlin.annotation.AnnotationRetention.RUNTIME)");
   }
 
@@ -117,7 +162,7 @@ public final class WrongRetentionDetectorTest {
         .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
-            "src/foo/MyQualifier.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
+            "src/foo/MyQualifier.kt:6: Error: Annotations used by Dagger Reflect must have RUNTIME retention. Found SOURCE. [WrongRetention]\n"
                 + "@Retention(AnnotationRetention.SOURCE)\n"
                 + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                 + "1 errors, 0 warnings")
@@ -144,7 +189,7 @@ public final class WrongRetentionDetectorTest {
         .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
-            "src/foo/MyQualifier.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
+            "src/foo/MyQualifier.kt:6: Error: Annotations used by Dagger Reflect must have RUNTIME retention. Found SOURCE. [WrongRetention]\n"
                 + "@Retention(value = AnnotationRetention.SOURCE)\n"
                 + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                 + "1 errors, 0 warnings")
@@ -153,31 +198,6 @@ public final class WrongRetentionDetectorTest {
                 + "@@ -6 +6\n"
                 + "- @Retention(value = AnnotationRetention.SOURCE)\n"
                 + "+ @Retention(value = kotlin.annotation.AnnotationRetention.RUNTIME)");
-  }
-
-  @Test
-  public void reportsQualifierAnnotationWithoutRetention() {
-    lint()
-        .files(
-            kotlin(
-                "package foo\n"
-                    + "\n"
-                    + "import javax.inject.Qualifier\n"
-                    + "\n"
-                    + "@Qualifier\n"
-                    + "internal annotation class MyQualifier"),
-            QUALIFIER_STUB)
-        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
-        .run()
-        .expect(
-            "src/foo/MyQualifier.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [WrongRetention]\n"
-                + "internal annotation class MyQualifier\n"
-                + "                          ~~~~~~~~~~~\n"
-                + "1 errors, 0 warnings")
-        .expectFixDiffs(
-            "Fix for src/foo/MyQualifier.kt line 6: Add: `@Retention(RUNTIME)`:\n"
-                + "@@ -5 +5\n"
-                + "+ @kotlin.annotation.Retention(kotlin.annotation.AnnotationRetention.RUNTIME)");
   }
 
   // MapKey Annotation
@@ -199,6 +219,23 @@ public final class WrongRetentionDetectorTest {
                 "package foo\n"
                     + "\n"
                     + "import foo.bar.MapKey\n"
+                    + "\n"
+                    + "@MapKey\n"
+                    + "internal annotation class MyMapKey"),
+            MAP_KEY_STUB)
+        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
+        .run()
+        .expectClean();
+  }
+
+  @Test
+  public void ignoresMapKeyAnnotationWithDefaultRetention() {
+    lint()
+        .files(
+            kotlin(
+                "package foo\n"
+                    + "\n"
+                    + "import dagger.MapKey\n"
                     + "\n"
                     + "@MapKey\n"
                     + "internal annotation class MyMapKey"),
@@ -243,7 +280,7 @@ public final class WrongRetentionDetectorTest {
         .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
         .run()
         .expect(
-            "src/foo/MyMapKey.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME) but is @Retention(SOURCE). [WrongRetention]\n"
+            "src/foo/MyMapKey.kt:6: Error: Annotations used by Dagger Reflect must have RUNTIME retention. Found SOURCE. [WrongRetention]\n"
                 + "@Retention(AnnotationRetention.SOURCE)\n"
                 + "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n"
                 + "1 errors, 0 warnings")
@@ -252,31 +289,6 @@ public final class WrongRetentionDetectorTest {
                 + "@@ -6 +6\n"
                 + "- @Retention(AnnotationRetention.SOURCE)\n"
                 + "+ @Retention(kotlin.annotation.AnnotationRetention.RUNTIME)");
-  }
-
-  @Test
-  public void reportsMapKeyAnnotationWithoutRetention() {
-    lint()
-        .files(
-            kotlin(
-                "package foo\n"
-                    + "\n"
-                    + "import dagger.MapKey\n"
-                    + "\n"
-                    + "@MapKey\n"
-                    + "internal annotation class MyMapKey"),
-            MAP_KEY_STUB)
-        .issues(WrongRetentionDetector.ISSUE_WRONG_RETENTION)
-        .run()
-        .expect(
-            "src/foo/MyMapKey.kt:6: Error: Annotation used by Dagger Reflect must be annotated with @Retention(RUNTIME). [WrongRetention]\n"
-                + "internal annotation class MyMapKey\n"
-                + "                          ~~~~~~~~\n"
-                + "1 errors, 0 warnings")
-        .expectFixDiffs(
-            "Fix for src/foo/MyMapKey.kt line 6: Add: `@Retention(RUNTIME)`:\n"
-                + "@@ -5 +5\n"
-                + "+ @kotlin.annotation.Retention(kotlin.annotation.AnnotationRetention.RUNTIME)");
   }
 
   private static final LintDetectorTest.TestFile MAP_KEY_STUB =
