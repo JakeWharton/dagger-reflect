@@ -232,6 +232,12 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void justInTimeGenericNested() {
+    JustInTimeGenericNested component = backend.create(JustInTimeGenericNested.class);
+    assertThat(component.thing()).isNotNull();
+  }
+
+  @Test
   public void justInTimeMembersInjection() {
     JustInTimeMembersInjection component = backend.create(JustInTimeMembersInjection.class);
     JustInTimeMembersInjection.Thing thing = component.thing();
