@@ -28,7 +28,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 
 final class ComponentBuilderInvocationHandler implements InvocationHandler {
   static <B> B forComponentBuilder(Class<B> builderClass) {
@@ -87,7 +89,7 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
       return method.invoke(proxy, args);
     }
 
-    Class<?> returnType = method.getReturnType();
+    Type returnType = resolveReturnType(method);
     Type[] parameterTypes = method.getGenericParameterTypes();
     Annotation[][] parameterAnnotations = method.getParameterAnnotations();
 
@@ -165,5 +167,27 @@ final class ComponentBuilderInvocationHandler implements InvocationHandler {
     }
 
     throw new IllegalStateException(method.toString()); // TODO report unsupported method shape
+  }
+
+  private Type resolveReturnType(Method method) {
+    Type genericReturnType = method.getGenericReturnType();
+
+    if (genericReturnType != null) {
+      Class<?> declaringClass = method.getDeclaringClass();
+      TypeVariable<? extends Class<?>>[] typeParameters = declaringClass.getTypeParameters();
+      for (int i = 0; i < typeParameters.length; i++) {
+        if (typeParameters[i].equals(genericReturnType)) {
+          Type[] genericInterfaces = builderClass.getGenericInterfaces();
+          for (Type genericInterface : genericInterfaces) {
+            ParameterizedType implementationType = (ParameterizedType) genericInterface;
+            if (implementationType.getRawType().equals(declaringClass)) {
+              return implementationType.getActualTypeArguments()[i];
+            }
+          }
+        }
+      }
+    }
+
+    return method.getReturnType();
   }
 }
