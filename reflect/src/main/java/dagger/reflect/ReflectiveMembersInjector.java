@@ -25,9 +25,12 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import javax.inject.Inject;
@@ -36,7 +39,26 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
   static <T> MembersInjector<T> create(Class<T> cls, Scope scope) {
     Deque<ClassInjector<T>> classInjectors = new ArrayDeque<>();
     Class<?> target = cls;
+    Map<String, Class<?>> typeVariablesBindings = new HashMap<>();
     while (target != Object.class && target != null) {
+      Type genericSuperclass = target.getGenericSuperclass();
+      if (genericSuperclass instanceof ParameterizedType) {
+        ParameterizedType type = (ParameterizedType) genericSuperclass;
+        Type[] actualTypeArguments = type.getActualTypeArguments();
+        TypeVariable<? extends Class<?>>[] typeParameters =
+            ((Class<?>) type.getRawType()).getTypeParameters();
+        for (int i = 0; i < actualTypeArguments.length; i++) {
+          Type actualTypeArgument = actualTypeArguments[i];
+          if (!(actualTypeArgument instanceof Class)) {
+            // skip generics
+            continue;
+          }
+          String name = typeParameters[i].getName();
+          Class<?> arg = (Class<?>) actualTypeArguments[i];
+          typeVariablesBindings.put(name, arg);
+        }
+      }
+
       Map<Field, LinkedBinding<?>> fieldBindings = new LinkedHashMap<>();
       for (Field field : target.getDeclaredFields()) {
         if (field.getAnnotation(Inject.class) == null) {
@@ -57,7 +79,36 @@ final class ReflectiveMembersInjector<T> implements MembersInjector<T> {
                   + field.getName());
         }
 
-        Key key = Key.of(findQualifier(field.getDeclaredAnnotations()), field.getGenericType());
+        Type resultType = null;
+        Type genericType = field.getGenericType();
+        if (genericType instanceof ParameterizedType) {
+          ParameterizedType parameterizedType = (ParameterizedType) genericType;
+          Type[] actualTypeArguments = parameterizedType.getActualTypeArguments();
+          Type[] typeArguments = new Type[parameterizedType.getActualTypeArguments().length];
+          for (int i = 0; i < typeArguments.length; i++) {
+            Type actualTypeArgument = actualTypeArguments[i];
+            if (actualTypeArgument instanceof TypeVariable) {
+              TypeVariable<?> typeVariable = (TypeVariable<?>) actualTypeArgument;
+              String typeName = typeVariable.getName();
+              typeArguments[i] = typeVariablesBindings.get(typeName);
+            } else {
+              typeArguments[i] = actualTypeArgument;
+            }
+          }
+          resultType =
+              new TypeUtil.ParameterizedTypeImpl(
+                  parameterizedType.getOwnerType(), parameterizedType.getRawType(), typeArguments);
+        } else if (genericType instanceof TypeVariable) {
+          TypeVariable<?> typeVariable = (TypeVariable<?>) genericType;
+          resultType = typeVariablesBindings.get(typeVariable.getName());
+          if (resultType == null) {
+            resultType = field.getGenericType();
+          }
+        } else {
+          resultType = field.getGenericType();
+        }
+
+        Key key = Key.of(findQualifier(field.getDeclaredAnnotations()), resultType);
         LinkedBinding<?> binding = scope.getBinding(key);
 
         fieldBindings.put(field, binding);
