@@ -35,6 +35,11 @@ final class Scope {
     this.parent = parent;
   }
 
+  @Nullable
+  public Scope getParent() {
+    return parent;
+  }
+
   @Override
   public String toString() {
     return "Scope" + annotations;
