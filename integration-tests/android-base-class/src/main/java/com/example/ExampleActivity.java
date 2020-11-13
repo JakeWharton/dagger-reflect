@@ -35,12 +35,6 @@ public final class ExampleActivity extends DaggerActivity {
     startService(new Intent(this, ExampleService.class));
   }
 
-  @Module
-  static abstract class ExampleActivityModule {
-    @ContributesAndroidInjector(modules = LongModule.class)
-    abstract ExampleActivity activity();
-  }
-
   @Module(includes = IntegerModule.class)
   static class LongModule {
 
