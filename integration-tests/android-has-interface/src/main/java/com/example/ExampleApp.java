@@ -8,7 +8,8 @@ import dagger.android.HasAndroidInjector;
 public final class ExampleApp extends Application implements HasAndroidInjector {
   private AppComponent component;
 
-  @Override public void onCreate() {
+  @Override
+  public void onCreate() {
     super.onCreate();
 
     component = Dagger.create(AppComponent.class);
