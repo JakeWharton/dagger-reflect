@@ -10,6 +10,7 @@ dependencies {
 
   testImplementation deps.junit
   testImplementation deps.truth
+  testImplementation deps.dagger.androidRuntimeJar
   testImplementation project(':reflect')
   testImplementation project(':codegen')
   testAnnotationProcessor deps.auto.value.compiler
