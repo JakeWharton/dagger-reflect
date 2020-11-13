@@ -7,7 +7,6 @@ import android.widget.Toast;
 import dagger.Module;
 import dagger.android.AndroidInjection;
 import dagger.android.ContributesAndroidInjector;
-
 import javax.inject.Inject;
 
 public final class ExampleService extends Service {
@@ -29,7 +28,7 @@ public final class ExampleService extends Service {
   }
 
   @Module
-  static abstract class ExampleServiceModule {
+  abstract static class ExampleServiceModule {
     @ContributesAndroidInjector
     abstract ExampleService service();
   }

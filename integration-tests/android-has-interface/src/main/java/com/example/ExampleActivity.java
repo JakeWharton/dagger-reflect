@@ -1,5 +1,9 @@
 package com.example;
 
+import static android.util.TypedValue.COMPLEX_UNIT_DIP;
+import static android.view.Gravity.CENTER;
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
@@ -10,10 +14,6 @@ import dagger.Module;
 import dagger.Provides;
 import dagger.android.AndroidInjection;
 import javax.inject.Inject;
-
-import static android.util.TypedValue.COMPLEX_UNIT_DIP;
-import static android.view.Gravity.CENTER;
-import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 
 public final class ExampleActivity extends Activity {
   @Inject String string;
@@ -42,7 +42,6 @@ public final class ExampleActivity extends Activity {
     static long provideLong() {
       return 10L;
     }
-
   }
 
   @Module
@@ -53,5 +52,4 @@ public final class ExampleActivity extends Activity {
       return 20;
     }
   }
-
 }
