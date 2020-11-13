@@ -9,7 +9,6 @@ import androidx.annotation.Nullable;
 import dagger.Module;
 import dagger.Provides;
 import dagger.android.AndroidInjection;
-import dagger.android.ContributesAndroidInjector;
 import javax.inject.Inject;
 
 import static android.util.TypedValue.COMPLEX_UNIT_DIP;
@@ -34,12 +33,6 @@ public final class ExampleActivity extends Activity {
     setContentView(textView);
 
     startService(new Intent(this, ExampleService.class));
-  }
-
-  @Module
-  static abstract class ExampleActivityModule {
-    @ContributesAndroidInjector(modules = LongModule.class)
-    abstract ExampleActivity activity();
   }
 
   @Module(includes = IntegerModule.class)
