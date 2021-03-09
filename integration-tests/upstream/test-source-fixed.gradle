@@ -1,0 +1,71 @@
+//Tasks for "fixing" small things in upstream test sources and running them
+
+def output = file("$buildDir/test-source-fixed")
+
+sourceSets.test.java {
+  srcDir(output)
+}
+
+def fix = { String testClassName,
+            Class<TestSourceFix> taskClass ->
+
+  sourceSets.test.java {
+    exclude testClassName
+  }
+
+  def testSource = file("dagger/javatests/$testClassName")
+  def fixedSource = file("$output/${testClassName.replaceFirst("functional", "functional/fixed")}")
+
+  def task = tasks.register(taskClass.simpleName, taskClass) { TestSourceFix task ->
+    task.group = 'test-source-fixed'
+
+    task.testSource.set(testSource)
+    task.fixedSource.set(fixedSource)
+  }
+
+  tasks.named("compileTestJava") {
+    dependsOn(task)
+  }
+}
+
+abstract class TestSourceFix extends DefaultTask {
+  @InputFile  RegularFileProperty testSource  = project.objects.fileProperty();
+  @OutputFile RegularFileProperty fixedSource = project.objects.fileProperty();
+
+  @TaskAction
+  void execute() {
+    def from = testSource.get().asFile
+    def to = fixedSource.get().asFile
+
+    def fixedSource = fixSource(from.text)
+      .replaceFirst("package dagger.functional", "package dagger.functional.fixed")
+
+    to.delete()
+    to.parentFile.mkdirs()
+
+    to.newWriter().withCloseable { writer ->
+      writer.write(fixedSource)
+    }
+  }
+
+  String fixSource(String source) {
+    return source.readLines()
+      .collect { line -> fixSourceLine(line) }
+      .join("\r\n")
+  }
+
+  abstract String fixSourceLine(String sourceLine)
+}
+
+abstract class AssistedFactoryTestFix extends TestSourceFix {
+
+  @Override
+  String fixSourceLine(String sourceLine) {
+    return sourceLine
+      .replace("abstract static class AbstractFooFactory", "interface AbstractFooFactory")
+      .replace("void concreteMethod",   "default void concreteMethod")
+      .replace("Foo concreteFooMethod", "default Foo concreteFooMethod")
+  }
+}
+
+fix('dagger/functional/assisted/AssistedFactoryTest.java', AssistedFactoryTestFix)

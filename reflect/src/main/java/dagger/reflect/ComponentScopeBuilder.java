@@ -115,6 +115,7 @@ final class ComponentScopeBuilder {
     Scope.Builder scopeBuilder =
         new Scope.Builder(parent, scopeAnnotations)
             .addJustInTimeLookupFactory(new ReflectiveJustInTimeLookupFactory())
+            .addJustInTimeLookupFactory(new ReflectiveAssistedFactoryLookupFactory())
             .addJustInTimeLookupFactory(new MembersInjectorJustInTimeFactory());
 
     for (Map.Entry<Key, Object> entry : boundInstances.entrySet()) {

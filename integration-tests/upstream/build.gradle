@@ -87,7 +87,16 @@ test.filter {
 
   // TODO reflect bug! Subcomponent multibindings propagation does not work.
   excludeTest 'dagger.functional.subcomponent.SubcomponentMultibindingsTest', null
+
+  // TODO reflect bug! Generics...
+  excludeTest 'dagger.functional.assisted.AssistedFactoryParameterizedTest', null
+
+  // a) Provision of Assisted types not implemented in dagger-reflect
+  // b) java component in this test is not public
+  excludeTest 'dagger.functional.assisted.AssistedFactoryAsQualifiedBindingTest', null
 }
+
+apply from: "test-source-fixed.gradle"
 
 dependencies {
   testImplementation project(':reflect')

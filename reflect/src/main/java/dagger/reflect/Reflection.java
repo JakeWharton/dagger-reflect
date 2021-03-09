@@ -23,6 +23,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Proxy;
 import java.lang.reflect.Type;
 import java.util.Collections;
@@ -240,6 +241,12 @@ final class Reflection {
       }
     }
     return type;
+  }
+
+  static boolean isDefault(Method method) {
+    return (method.getModifiers() & (Modifier.ABSTRACT | Modifier.PUBLIC | Modifier.STATIC))
+            == Modifier.PUBLIC
+        && method.getDeclaringClass().isInterface();
   }
 
   private Reflection() {

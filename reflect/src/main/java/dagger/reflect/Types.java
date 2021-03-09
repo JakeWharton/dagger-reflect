@@ -28,6 +28,18 @@ import org.jetbrains.annotations.Nullable;
 final class Types {
   private Types() {}
 
+  static @Nullable <T> Class<T> getRawClassOrInterface(Type type) {
+    if (type instanceof Class<?>) {
+      //noinspection unchecked
+      return (Class<T>) type;
+    } else if (type instanceof ParameterizedType) {
+      //noinspection unchecked
+      return (Class<T>) ((ParameterizedType) type).getRawType();
+    } else {
+      return null;
+    }
+  }
+
   static Class<?> getRawType(Type type) {
     if (type instanceof Class<?>) {
       // type is a normal class.

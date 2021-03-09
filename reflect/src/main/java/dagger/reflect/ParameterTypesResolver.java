@@ -1,46 +1,62 @@
 package dagger.reflect;
 
-import static dagger.reflect.Reflection.findQualifier;
-
-import dagger.MembersInjector;
-import dagger.reflect.Binding.UnlinkedBinding;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import org.jetbrains.annotations.Nullable;
 
-final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
+/** Resolves actual types of generic parameters of method/constructor */
+final class ParameterTypesResolver<T> {
   private final Class<T> cls;
-  private final Constructor<T> constructor;
-  // Type arguments might be used as types for this binding's parameterized constructor parameters.
   private @Nullable Type[] concreteTypeArguments;
+  /** type arguments of cls method/constructor from getGenericParameterTypes() */
+  private final Type[] parameterTypes;
 
-  UnlinkedJustInTimeBinding(
-      Class<T> cls, Constructor<T> constructor, @Nullable Type[] concreteTypeArguments) {
+  private ParameterTypesResolver(
+      Class<T> cls, Type[] parameterTypes, @Nullable Type[] concreteTypeArguments) {
     this.cls = cls;
-    this.constructor = constructor;
+    this.parameterTypes = parameterTypes;
     this.concreteTypeArguments = concreteTypeArguments;
   }
 
-  @Override
-  public LinkedBinding<?> link(Linker linker, Scope scope) {
-    Type[] parameterTypes = constructor.getGenericParameterTypes();
-    Annotation[][] parameterAnnotations = constructor.getParameterAnnotations();
+  public static <T> ParameterTypesResolver<T> ofConstructor(
+      Type type, Constructor<T> typeConstructor) {
+    return ofExecutable(type, typeConstructor.getGenericParameterTypes());
+  }
 
-    LinkedBinding<?>[] bindings = new LinkedBinding<?>[parameterTypes.length];
-    for (int i = 0; i < parameterTypes.length; i++) {
-      Type parameterType = parameterTypes[i];
-      Key key =
-          Key.of(findQualifier(parameterAnnotations[i]), getTypeKeyForParameter(parameterType));
-      bindings[i] = linker.get(key);
+  public static <T> ParameterTypesResolver<T> ofMethod(Type type, Method typeMethod) {
+    return ofExecutable(type, typeMethod.getGenericParameterTypes());
+  }
+
+  private static <T> ParameterTypesResolver<T> ofExecutable(
+      Type type, Type[] executableParameterTypes) {
+
+    Type[] typeArguments = null;
+    if (type instanceof ParameterizedType) {
+      typeArguments = ((ParameterizedType) type).getActualTypeArguments();
     }
 
-    MembersInjector<T> membersInjector = ReflectiveMembersInjector.create(cls, scope);
+    Class<T> cls = Types.getRawClassOrInterface(type);
 
-    return new LinkedJustInTimeBinding<>(constructor, bindings, membersInjector);
+    if (cls == null) {
+      throw new IllegalStateException("Arrays are not supported");
+    }
+
+    return new ParameterTypesResolver<>(cls, executableParameterTypes, typeArguments);
+  }
+
+  public Type[] getActualParameterTypes() {
+    Type[] types = new Type[parameterTypes.length];
+    for (int i = 0; i < parameterTypes.length; i++) {
+      Type parameterType = parameterTypes[i];
+      types[i] = getTypeKeyForParameter(parameterType);
+    }
+
+    // TODO cache this?
+    return types;
   }
 
   private Type getTypeKeyForParameter(Type parameterType) {
@@ -123,12 +139,7 @@ final class UnlinkedJustInTimeBinding<T> extends UnlinkedBinding {
             + Arrays.toString(typeParameters));
   }
 
-  @Override
-  public String toString() {
-    return "@Inject[" + cls.getName() + getTypeArgumentsStringOrEmpty() + ".<init>(…)]";
-  }
-
-  private String getTypeArgumentsStringOrEmpty() {
+  String getTypeArgumentsStringOrEmpty() {
     if (concreteTypeArguments == null) {
       return "";
     }
