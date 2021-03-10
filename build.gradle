@@ -2,7 +2,8 @@ import net.ltgt.gradle.errorprone.CheckSeverity
 
 buildscript {
   ext.versions = [
-      'dagger': '2.29.1',
+      'dagger': '2.33',
+      'kotlin': '1.4.20',
       'incap': '0.2',
       'androidTools': '26.4.1',
   ]
@@ -14,6 +15,9 @@ buildscript {
           'androidRuntime': "com.google.dagger:dagger-android:${versions.dagger}",
           'androidRuntimeJar': "com.google.dagger:dagger-android-jarimpl:${versions.dagger}",
           'androidCompiler': "com.google.dagger:dagger-android-processor:${versions.dagger}",
+      ],
+      'kotlin': [
+          'gradle': "org.jetbrains.kotlin:kotlin-gradle-plugin:${versions.kotlin}"
       ],
       'junit': 'junit:junit:4.13',
       'truth': 'com.google.truth.extensions:truth-java8-extension:1.0',

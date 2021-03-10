@@ -4,7 +4,6 @@ import static dagger.reflect.Reflection.findScope;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import javax.inject.Inject;
 import org.jetbrains.annotations.Nullable;
@@ -21,19 +20,9 @@ final class ReflectiveJustInTimeLookupFactory implements JustInTimeLookup.Factor
   }
 
   private @Nullable <T> JustInTimeLookup getJustInTimeLookup(Type type) {
-    Class<T> cls;
-    Type[] typeArguments = null;
-    if (type instanceof ParameterizedType) {
-      // Assume that "representing the class or interface that declared this type" is a Class<?>.
-      @SuppressWarnings("unchecked")
-      Class<T> rawType = (Class<T>) ((ParameterizedType) type).getRawType();
-      cls = rawType;
-      typeArguments = ((ParameterizedType) type).getActualTypeArguments();
-    } else if (type instanceof Class<?>) {
-      @SuppressWarnings("unchecked")
-      Class<T> directClass = (Class<T>) type;
-      cls = directClass;
-    } else {
+    Class<T> cls = Types.getRawClassOrInterface(type);
+
+    if (cls == null) {
       return null; // Array types can't be just-in-time satisfied.
     }
 
@@ -43,7 +32,9 @@ final class ReflectiveJustInTimeLookupFactory implements JustInTimeLookup.Factor
     }
 
     Annotation scope = findScope(cls.getAnnotations());
-    Binding binding = new UnlinkedJustInTimeBinding<>(cls, target, typeArguments);
+    ParameterTypesResolver<T> parameterTypesResolver =
+        ParameterTypesResolver.ofConstructor(type, target);
+    Binding binding = new UnlinkedJustInTimeBinding<>(cls, target, parameterTypesResolver);
     return new JustInTimeLookup(scope, binding);
   }
 

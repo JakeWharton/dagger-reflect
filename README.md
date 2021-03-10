@@ -129,12 +129,15 @@ Unsupported Features and Limitations
 ### Abstract Classes
 
 Because Dagger Reflect is implemented using a [`Proxy`][proxy], only interface components,
-factories, and builders are supported.
+factories, assisted factories and builders are supported.
 
 ### Component Visibility
 
 In order for a factory or builder which is backed by a `Proxy` to create an instance of the
 enclosing component which is also backed by a `Proxy`, the component has to be public.
+
+### AssistedInject
+[Provision of assisted dependencies](https://github.com/google/dagger/issues/2370) is not implemented.
 
 ### Producers
 
