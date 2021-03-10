@@ -42,23 +42,24 @@ test.filter {
   // dagger-reflect does not produce the exact same behavior as dagger-compiler for @Reusable.
   excludeTest 'dagger.functional.ReusableTest', null
 
-  // Uses nested component interfaces which are not public and thus cannot be proxied.
-  excludeTest 'dagger.functional.ComponentDependenciesTest', 'testPolymorphicOverridesStillCompiles'
-  excludeTest 'dagger.functional.ComponentDependenciesTest', 'testSameMethodTwice'
-
   // TODO reflect bug! Need something like ByteBuddy for proxying classes at runtime.
   excludeTest 'dagger.functional.aot.PrunedFrameworkInstanceWithModuleInstanceTest', 'prunedBindingWithModuleInstance_doesntThrowDuringInitialization'
-  excludeTest 'dagger.functional.builder.BuilderBindsInstanceParameterTest', null
-  excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', null
-  excludeTest 'dagger.functional.factory.FactoryBindsInstanceTest', null
-  excludeTest 'dagger.functional.factory.FactoryDependenciesTest', null
-  excludeTest 'dagger.functional.factory.FactoryImplicitModulesTest', null
-  excludeTest 'dagger.functional.factory.FactoryMixedParametersTest', null
-  excludeTest 'dagger.functional.factory.FactoryRequiredModulesTest', null
-  excludeTest 'dagger.functional.factory.SubcomponentFactoryTest', null
-  excludeTest 'dagger.functional.subcomponent.SubcomponentTest', null
-  excludeTest 'dagger.functional.subcomponent.repeat.RepeatedModuleTest', null
   excludeTest 'dagger.functional.BasicTest', null
+
+  // TODO reflect bug! Builder @Binds method inheritance
+  excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', 'builderBinds'
+  excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', 'builderBindsNullableNotSet'
+  excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', 'builderBindsNullableWithNull'
+  // TODO nullability checks
+  excludeTest 'dagger.functional.builderbinds.BuilderBindsTest', 'builderBindsNonNullableWithNull'
+
+  // TODO nullability checks
+  excludeTest 'dagger.functional.factory.FactoryBindsInstanceTest', 'nonNullableBindsInstance_failsOnNull'
+
+  // TODO reflect bug! Generics don't work well.
+  excludeTest 'dagger.functional.subcomponent.SubcomponentTest', null
+  // TODO reflect bug! something with repeated modules
+  excludeTest 'dagger.functional.subcomponent.repeat.RepeatedModuleTest', null
 
   // TODO reflect bug! Generics don't work well.
   excludeTest 'dagger.functional.GenericTest', 'complexGenerics'
@@ -77,7 +78,6 @@ test.filter {
   excludeTest 'dagger.functional.aot.MapFrameworkInstanceWithContributionsInMultipleImplementationsTest', 'mapFactoryCanBeInstantiatedAcrossComponentImplementations'
   excludeTest 'dagger.functional.subcomponent.pruning.SubcomponentOnlyRequestedBySiblingTest', 'subcomponentAddedInParent_onlyUsedInSibling'
   excludeTest 'dagger.functional.subcomponent.ModuleWithSubcomponentsTest', null
-  excludeTest 'dagger.functional.subcomponent.SubcomponentBuilderMultibindingsTest', null
 
   // TODO reflect bug! Injecting Optional<Provides<T>> does not work.
   excludeTest 'dagger.functional.guava.OptionalBindingComponentsAbsentTest', null
@@ -92,7 +92,6 @@ test.filter {
   excludeTest 'dagger.functional.assisted.AssistedFactoryParameterizedTest', null
 
   // a) Provision of Assisted types not implemented in dagger-reflect
-  // b) java component in this test is not public
   excludeTest 'dagger.functional.assisted.AssistedFactoryAsQualifiedBindingTest', null
 }
 

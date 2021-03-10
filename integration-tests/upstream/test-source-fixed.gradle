@@ -9,14 +9,25 @@ sourceSets.test.java {
 def fix = { String testClassName,
             Class<TestSourceFix> taskClass ->
 
+  // We change the directory but keep the package name so we're able to replace the file
+  // while retaining package visibility between original and replaced sources.
+  // The downside is that ide will show package errors, but build works
+  def fixedTestClassName = "fixed/$testClassName"
+
+  def testClassSimpleName = testClassName.substring(
+    testClassName.lastIndexOf('/') + 1,
+    testClassName.lastIndexOf('.')
+  )
+
   sourceSets.test.java {
     exclude testClassName
+    include fixedTestClassName
   }
 
   def testSource = file("dagger/javatests/$testClassName")
-  def fixedSource = file("$output/${testClassName.replaceFirst("functional", "functional/fixed")}")
+  def fixedSource = file("$output/$fixedTestClassName")
 
-  def task = tasks.register(taskClass.simpleName, taskClass) { TestSourceFix task ->
+  def task = tasks.register(testClassSimpleName, taskClass) { TestSourceFix task ->
     task.group = 'test-source-fixed'
 
     task.testSource.set(testSource)
@@ -25,6 +36,17 @@ def fix = { String testClassName,
 
   tasks.named("compileTestJava") {
     dependsOn(task)
+  }
+
+  return task
+}
+
+def replace = { String testClassName,
+                Map<String, String> replacements ->
+  def fixTask = fix(testClassName, TestSourceFixReplace)
+
+  fixTask.configure { task ->
+    task.replacements.set(replacements)
   }
 }
 
@@ -38,7 +60,6 @@ abstract class TestSourceFix extends DefaultTask {
     def to = fixedSource.get().asFile
 
     def fixedSource = fixSource(from.text)
-      .replaceFirst("package dagger.functional", "package dagger.functional.fixed")
 
     to.delete()
     to.parentFile.mkdirs()
@@ -48,24 +69,55 @@ abstract class TestSourceFix extends DefaultTask {
     }
   }
 
-  String fixSource(String source) {
-    return source.readLines()
-      .collect { line -> fixSourceLine(line) }
-      .join("\r\n")
-  }
-
-  abstract String fixSourceLine(String sourceLine)
+  abstract String fixSource(String source)
 }
 
-abstract class AssistedFactoryTestFix extends TestSourceFix {
+abstract class TestSourceFixReplace extends TestSourceFix {
+
+  @Input MapProperty<String, String> replacements = project.objects.mapProperty(String, String)
 
   @Override
-  String fixSourceLine(String sourceLine) {
-    return sourceLine
-      .replace("abstract static class AbstractFooFactory", "interface AbstractFooFactory")
-      .replace("void concreteMethod",   "default void concreteMethod")
-      .replace("Foo concreteFooMethod", "default Foo concreteFooMethod")
+  String fixSource(String source) {
+    return replacements.get().inject(source) { acc, replace, replacement ->
+      acc.replace(replace, replacement)
+    }
   }
 }
 
-fix('dagger/functional/assisted/AssistedFactoryTest.java', AssistedFactoryTestFix)
+def publicNestedClasses = ["static class": "public static class"]
+def intefaces = [
+  "interface": "public interface",
+  //fixes
+  "public public": "public",
+  "@public interface": "@interface",
+]
+
+replace('dagger/functional/ComponentDependenciesTest.java',                               intefaces)
+replace('dagger/functional/builder/BuilderBindsInstanceParameterTest.java',               intefaces)
+replace('dagger/functional/builderbinds/BuilderBindsTest.java',                           intefaces)
+replace('dagger/functional/builderbinds/TestComponent.java',                              intefaces)
+replace('dagger/functional/factory/FactoryBindsInstanceTest.java',                        intefaces)
+replace('dagger/functional/factory/FactoryDependenciesTest.java',                         intefaces)
+replace('dagger/functional/factory/FactoryImplicitModulesTest.java',                      intefaces)
+replace('dagger/functional/factory/FactoryMixedParametersTest.java',                      intefaces)
+replace('dagger/functional/factory/FactoryRequiredModulesTest.java',                      intefaces)
+replace('dagger/functional/factory/SubcomponentFactoryTest.java',                         intefaces + publicNestedClasses)
+/* TODO reflect bug! Generics
+replace('dagger/functional/subcomponent/ChildAbstractClassComponent.java',  [
+  "abstract class ChildAbstractClassComponent implements": "interface ChildAbstractClassComponent extends"
+])
+replace('dagger/functional/subcomponent/SubcomponentTest.java',                           intefaces)
+*/
+/* TODO reflect bug! something with repeated modules
+replace('dagger/functional/subcomponent/repeat/RepeatedModuleTest.java',                  intefaces)
+replace('dagger/functional/subcomponent/repeat/ParentComponent.java',                     intefaces)
+replace('dagger/functional/subcomponent/repeat/SubcomponentWithRepeatedModule.java',      intefaces)
+replace('dagger/functional/subcomponent/repeat/SubcomponentWithoutRepeatedModule.java',   intefaces)
+replace('dagger/functional/subcomponent/repeat/OtherSubcomponentWithRepeatedModule.java', intefaces)
+*/
+
+replace('dagger/functional/assisted/AssistedFactoryTest.java', [
+  "abstract static class AbstractFooFactory": "interface AbstractFooFactory",
+  "void concreteMethod"                     : "default void concreteMethod",
+  "Foo concreteFooMethod"                   : "default Foo concreteFooMethod",
+])
