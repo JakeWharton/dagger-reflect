@@ -1479,7 +1479,7 @@ public final class IntegrationTest {
   }
 
   @Test
-  @Ignore("Reflect doesn't work. Test was created to illustrate the problem")
+  @ReflectBug
   public void subcomponentMultibindingsTransitiveBindingNotCachedByParent() {
     SubcomponentMultibinding component = backend.create(SubcomponentMultibinding.class);
 
