@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import javax.inject.Provider;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
@@ -1475,6 +1476,18 @@ public final class IntegrationTest {
             .create(new SubcomponentFactoryProvision.Nested.Module2(2L));
     assertThat(nested.one()).isEqualTo("one");
     assertThat(nested.two()).isEqualTo(2L);
+  }
+
+  @Test
+  @Ignore("Reflect doesn't work. Test was created to illustrate the problem")
+  public void subcomponentMultibindingsTransitiveBindingNotCachedByParent() {
+    SubcomponentMultibinding component = backend.create(SubcomponentMultibinding.class);
+
+    // this call caches LinkedBinding for InjectsMultibindings and by extension set multibindings
+    assertThat(component.injectsMultibindings().multibindings).containsExactly("one");
+
+    assertThat(component.nested().injectsMultibindings().multibindings)
+        .containsExactly("one", "two");
   }
 
   @Test

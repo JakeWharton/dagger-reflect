@@ -73,8 +73,8 @@ test.filter {
   excludeTest 'dagger.functional.jdk8.OptionalBindingComponentsEmptyTest', null
   excludeTest 'dagger.functional.jdk8.OptionalBindingComponentsPresentTest', null
 
-  // TODO reflect bug! Subcomponent multibindings propagation does not work.
-  excludeTest 'dagger.functional.subcomponent.SubcomponentMultibindingsTest', null
+  // TODO reflect bug! see test subcomponentMultibindingsTransitiveBindingNotCachedByParent
+  excludeTest 'dagger.functional.subcomponent.SubcomponentMultibindingsTest', 'testParentWithProvisionHasChildWithoutProvision'
 }
 
 dependencies {

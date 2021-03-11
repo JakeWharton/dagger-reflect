@@ -8,6 +8,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,14 +25,23 @@ final class Scope {
 
   private final @Nullable Scope parent;
 
+  /** Original set and map bindings for Subcomponent multibindings propagation */
+  private final Map<Key, Builder.SetBindings> keyToSetBindings;
+
+  private final Map<Key, Map<Object, Binding>> keyToMapBindings;
+
   private Scope(
       ConcurrentHashMap<Key, Binding> bindings,
       List<JustInTimeLookup.Factory> jitLookupFactories,
       Set<Annotation> annotations,
+      Map<Key, Builder.SetBindings> keyToSetBindings,
+      Map<Key, Map<Object, Binding>> keyToMapBindings,
       @Nullable Scope parent) {
     this.bindings = bindings;
     this.jitLookupFactories = jitLookupFactories;
     this.annotations = annotations;
+    this.keyToSetBindings = keyToSetBindings;
+    this.keyToMapBindings = keyToMapBindings;
     this.parent = parent;
   }
 
@@ -349,8 +359,42 @@ final class Scope {
     Scope build() {
       ConcurrentHashMap<Key, Binding> allBindings = new ConcurrentHashMap<>(keyToBinding);
 
+      Map<Key, SetBindings> hierarchyKeyToSetBindings = new HashMap<>(keyToSetBindings);
+      Map<Key, Map<Object, Binding>> hierarchyKeyToMapBindings = new HashMap<>(keyToMapBindings);
+
+      // fold parent set and map bindings into multimaps
+      Scope currentParent = this.parent;
+      while (currentParent != null) {
+
+        for (Map.Entry<Key, SetBindings> entry : currentParent.keyToSetBindings.entrySet()) {
+          SetBindings existing = hierarchyKeyToSetBindings.get(entry.getKey());
+
+          if (existing == null) {
+            existing = new SetBindings();
+            hierarchyKeyToSetBindings.put(entry.getKey(), existing);
+          }
+
+          existing.elementBindings.addAll(entry.getValue().elementBindings);
+          existing.elementsBindings.addAll(entry.getValue().elementsBindings);
+        }
+
+        for (Map.Entry<Key, Map<Object, Binding>> entry :
+            currentParent.keyToMapBindings.entrySet()) {
+          Map<Object, Binding> existing = hierarchyKeyToMapBindings.get(entry.getKey());
+
+          if (existing == null) {
+            existing = new HashMap<>();
+            hierarchyKeyToMapBindings.put(entry.getKey(), existing);
+          }
+
+          existing.putAll(entry.getValue());
+        }
+
+        currentParent = currentParent.parent;
+      }
+
       // Coalesce all of the set contribution bindings for each key into a single set binding.
-      for (Map.Entry<Key, SetBindings> entry : keyToSetBindings.entrySet()) {
+      for (Map.Entry<Key, SetBindings> entry : hierarchyKeyToSetBindings.entrySet()) {
         Key key = entry.getKey();
 
         // Take a defensive copy in case the builder is being re-used.
@@ -366,7 +410,7 @@ final class Scope {
       }
 
       // Coalesce all of the bindings for each key into a single map binding.
-      for (Map.Entry<Key, Map<Object, Binding>> entry : keyToMapBindings.entrySet()) {
+      for (Map.Entry<Key, Map<Object, Binding>> entry : hierarchyKeyToMapBindings.entrySet()) {
         Key mapOfValueKey = entry.getKey();
 
         // Take a defensive copy in case the builder is being re-used.
@@ -398,7 +442,13 @@ final class Scope {
         }
       }
 
-      return new Scope(allBindings, jitLookupFactories, annotations, parent);
+      return new Scope(
+          allBindings,
+          jitLookupFactories,
+          annotations,
+          new HashMap<>(keyToSetBindings),
+          new HashMap<>(keyToMapBindings),
+          parent);
     }
 
     private static final class SetBindings {
