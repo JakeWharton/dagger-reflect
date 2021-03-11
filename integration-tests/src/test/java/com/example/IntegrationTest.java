@@ -1478,6 +1478,18 @@ public final class IntegrationTest {
   }
 
   @Test
+  @ReflectBug
+  public void subcomponentMultibindingsTransitiveBindingNotCachedByParent() {
+    SubcomponentMultibinding component = backend.create(SubcomponentMultibinding.class);
+
+    // this call caches LinkedBinding for InjectsMultibindings and by extension set multibindings
+    assertThat(component.injectsMultibindings().multibindings).containsExactly("one");
+
+    assertThat(component.nested().injectsMultibindings().multibindings)
+        .containsExactly("one", "two");
+  }
+
+  @Test
   public void componentBindingInstance() {
     ComponentBindingInstance instance = backend.create(ComponentBindingInstance.class);
     assertThat(instance).isSameInstanceAs(instance.self());
