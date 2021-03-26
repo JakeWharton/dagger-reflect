@@ -637,6 +637,16 @@ public final class IntegrationTest {
   }
 
   @Test
+  public void memberInjectionGenericInjector() {
+    final String expectedStr = "expected";
+    MemberInjectionGenericInjector component =
+        backend.factory(MemberInjectionGenericInjector.Factory.class).create(expectedStr);
+    MemberInjectionGenericInjector.Target target = new MemberInjectionGenericInjector.Target();
+    component.inject(target);
+    assertThat(target.one).isEqualTo(expectedStr);
+  }
+
+  @Test
   public void memberInjectionEmptyAbstractClass() {
     MemberInjectionEmptyAbstract component = backend.create(MemberInjectionEmptyAbstract.class);
     MemberInjectionEmptyAbstract.Target target = new MemberInjectionEmptyAbstract.Target() {};
