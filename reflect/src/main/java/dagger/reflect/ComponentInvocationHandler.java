@@ -24,6 +24,7 @@ import dagger.reflect.Binding.LinkedBinding;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.lang.reflect.TypeVariable;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.Nullable;
 
@@ -60,8 +61,24 @@ final class ComponentInvocationHandler implements InvocationHandler {
     }
 
     MethodInvocationHandler handler = handlers.get(method);
+    final Class<?>[] parameterTypes = method.getParameterTypes();
     if (handler == null) {
-      handler = createMethodInvocationHandler(method, scope);
+      final int argsCount = args != null ? args.length : 0;
+      for (int index = 0; index < argsCount; ++index) {
+        final Object arg = args[index];
+        if (arg == null) continue; // ignore null arguments
+        if (!TypeVariable.class.isAssignableFrom(
+            method.getGenericParameterTypes()[index].getClass()))
+          continue; // ignore args not using generics
+
+        final Class<?> parameter = parameterTypes[index];
+        // Replace generic boundary class with actual class being invoked
+        if (parameter.isAssignableFrom(arg.getClass())) {
+          parameterTypes[index] = arg.getClass();
+        }
+      }
+
+      handler = createMethodInvocationHandler(method, parameterTypes, scope);
       MethodInvocationHandler replaced = handlers.putIfAbsent(method, handler);
       if (replaced != null) {
         handler = replaced;
@@ -71,9 +88,8 @@ final class ComponentInvocationHandler implements InvocationHandler {
   }
 
   private static ComponentInvocationHandler.MethodInvocationHandler createMethodInvocationHandler(
-      Method method, Scope scope) {
+      Method method, Class<?>[] parameterTypes, Scope scope) {
     Type returnType = method.getGenericReturnType();
-    Class<?>[] parameterTypes = method.getParameterTypes();
 
     if (returnType instanceof Class<?>) {
       Class<?> returnClass = (Class<?>) returnType;
