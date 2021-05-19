@@ -55,7 +55,7 @@ final class ComponentInvocationHandler implements InvocationHandler {
 
   @Override
   public @Nullable Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-    if (method.getDeclaringClass() == Object.class) {
+    if (method.getDeclaringClass() == Object.class || method.isDefault()) {
       return method.invoke(this, args);
     }
 
